@@ -160,7 +160,7 @@
     <div class="fleetlist hidden" id="fleetA"></div>
   </div>
   <div id="center">
-    <div id="matchClock">90</div>
+    <div id="matchClock">120</div>
     <div id="turn"><div id="roundText"></div><b id="turnText"></b><div id="timerbar"><div id="timerfill"></div></div></div>
   </div>
   <div class="fighter right">
@@ -230,7 +230,7 @@
   </div>
   <div class="rules">
     Paródia bem-humorada: ninguém se machuca, quem é "atingido" só senta, cansado de tanto gritar. 🎺<br>
-    Partida de 90 s: vence quem derrubar mais torcedores · Atire com o mouse/toque · R gira a torcida · 1–4 escolhem poderes · Esc cancela
+    Partida de 120 s (2 min): vence quem derrubar mais torcedores · Atire com o mouse/toque · R gira a torcida · 1–4 escolhem poderes · Esc cancela
   </div>
 </div>
 
@@ -268,7 +268,7 @@ const SIDES = {
 const COST = { normal:0, radar:2, cross:3, ultra:6 };
 const MAX_ENERGY = 9;
 const TURN_TIME = 20;
-const MATCH_TIME = 90;
+const MATCH_TIME = 120;
 const FLEET_TOTAL = FLEET.reduce((a,f) => a+f.len, 0);
 
 /* ================================================================
@@ -1647,7 +1647,7 @@ function animate() {
     if (p.life<=0 || p.m.position.y < 0) { scene.remove(p.m); p.m.material.dispose(); particles.splice(i,1); }
   }
 
-  // cronômetro da partida (90 s)
+  // cronômetro da partida (120 s)
   if (G.phase==="battle") {
     const left = Math.max(0, Math.ceil((G.matchEnd - Date.now())/1000));
     setClock(left); if (left<=0) timeUp();
