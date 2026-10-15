@@ -90,6 +90,24 @@
   #gain { position:absolute; right:6px; top:-6px; font-weight:900; color:var(--amarelo); animation:gain 1s ease-out forwards; pointer-events:none; text-shadow:0 2px 4px #000; }
   @keyframes gain { from { opacity:1; transform:translateY(8px) scale(1.2);} to { opacity:0; transform:translateY(-22px);} }
   #roundText .scn-name { opacity:.9; margin-right:6px; }
+  kbd { display:inline-block; min-width:22px; padding:1px 6px; border-radius:6px; font:700 12px/1.5 ui-monospace,Consolas,monospace;
+        color:#fff; background:linear-gradient(#4a5568,#2d3748); border:1px solid #fff5; border-bottom-width:3px; text-align:center; }
+  .power { display:flex; align-items:center; gap:9px; min-width:176px; padding-right:34px; }
+  .power .ptxt { display:flex; flex-direction:column; align-items:flex-start; }
+  .power .ptxt b { font-size:14px; }
+  .power kbd { position:absolute; top:5px; right:6px; }
+  .shape { display:grid; grid-template-columns:repeat(5,7px); gap:1px; padding:3px; background:#0008; border-radius:6px; flex:none; }
+  .shape i { width:7px; height:7px; background:#ffffff22; border-radius:1px; display:block; }
+  .shape i.on { background:var(--amarelo); box-shadow:0 0 4px var(--amarelo); }
+  #shipChips { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px; }
+  .chip { display:flex; align-items:center; gap:6px; padding:4px 8px; border-radius:8px; background:#fff1; border:1px solid #fff2; font-size:12px; opacity:.65; }
+  .chip .sq { display:flex; gap:2px; } .chip .sq i { width:9px; height:9px; border-radius:2px; background:#fff4; display:block; }
+  .chip.cur { opacity:1; border-color:var(--amarelo); box-shadow:0 0 10px #ffdf0066; animation:glow .9s infinite alternate; }
+  .chip.cur .sq i, .chip.done .sq i { background:var(--sc,#009c3b); }
+  .chip.done { opacity:.9; } .chip.done::after { content:"✔"; color:#4cd964; }
+  #placePanel .btn kbd { margin-left:4px; }
+  #mute, #musicBtn { pointer-events:auto; background:#0006; border:1px solid #fff4; color:#fff; border-radius:8px; padding:6px 10px; cursor:pointer; }
+  #musicBtn.off { opacity:.45; text-decoration:line-through; }
   .hidden { display:none !important; }
   .rules { font-size:13px; opacity:.75; max-width:640px; }
   @media (max-width:700px) {
@@ -112,7 +130,8 @@
   <div id="sideA" class="side"></div>
   <div id="turn"><div id="roundText"></div><b id="turnText"></b><div id="timerbar"><div id="timerfill"></div></div></div>
   <div id="sideB" class="side"></div>
-  <button id="mute">🔊</button>
+  <button id="musicBtn" title="Música">🎵</button>
+  <button id="mute" title="Som">🔊</button>
 </div>
 
 <div id="action" class="abs hidden"></div>
@@ -121,13 +140,15 @@
 
 <div id="bottom" class="abs">
   <div id="placePanel" class="panel hidden">
+    <div id="shipChips"></div>
     <div id="placeText" style="margin-bottom:8px;font-weight:700"></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn" id="btnRotate">↻ Girar (R)</button>
+      <button class="btn" id="btnRotate">↻ Girar <kbd>R</kbd></button>
       <button class="btn" id="btnUndo">↶ Desfazer</button>
       <button class="btn" id="btnRandom">🎲 Aleatório</button>
       <button class="btn primary" id="btnStart" disabled>▶ Começar a disputa</button>
     </div>
+    <div style="margin-top:8px;font-size:12px;opacity:.8">Clique no <b>seu tabuleiro</b> para posicionar · <kbd>R</kbd> ou botão direito gira</div>
   </div>
   <div id="battlePanel" class="panel hidden">
     <div id="energy"></div>
@@ -253,6 +274,84 @@ const sfx = {
   place:() => tone(500,.08,"square",.05),
 };
 
+
+/* ================================================================
+   Música procedural por cenário (WebAudio, sem arquivos)
+   ================================================================ */
+const midiF = n => 440*Math.pow(2,(n-69)/12);
+const bars = (...b) => [].concat(...b);
+const arpBar = (n) => [0,1,2,1,0,1,2,1].flatMap(i => [n[i%3], 0]);
+const SONGS = {
+  /* Paulista: pop eletrônico urbano em Lá menor */
+  paulista: { bpm:118, chords:[45,41,48,43], kick:{f:150,g:45,d:.18,v:.9}, lead:{type:"sawtooth", filter:2400, dur:.16, vol:.11},
+    k:[1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0], s:[0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0], h:[0,0,.8,0,0,0,.8,0,0,0,.8,0,0,0,.8,.4], x:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    bass:[1,0,1,0,2,0,1,0,1,0,1,0,2,0,1,0],
+    melody: bars(arpBar([69,72,76]), arpBar([65,69,72]), arpBar([67,72,76]), arpBar([67,71,74])) },
+  /* Rio: samba em Lá menor (surdo, tamborim, cavaquinho) */
+  rio: { bpm:100, chords:[45,50,52,45], kick:{f:115,g:60,d:.3,v:1}, lead:{type:"triangle", filter:4200, dur:.11, vol:.2},
+    k:[.5,0,0,0,1,0,0,0,.5,0,0,0,1,0,0,0], s:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], h:[1,.3,.6,.3,1,.3,.6,.3,1,.3,.6,.3,1,.3,.6,.3], x:[1,0,0,1,0,0,1,0,1,0,1,0,1,0,0,0],
+    bass:[1,0,0,0,0,0,2,0,1,0,0,0,0,0,2,0],
+    melody: bars([76,0,0,74,72,0,69,0,72,0,74,0,76,0,0,0],[74,0,0,72,69,0,0,0,74,0,77,0,76,0,74,0],
+                 [76,0,0,79,76,0,74,0,71,0,74,0,76,0,0,0],[72,0,74,0,76,0,74,72,69,0,0,0,69,0,0,0]) },
+  /* Porto Alegre: milonga/gaúcha em Sol maior (bombo, acordeão) */
+  poa: { bpm:92, chords:[43,48,50,43], kick:{f:100,g:55,d:.26,v:1}, lead:{type:"sawtooth", filter:1700, dur:.24, vol:.1},
+    k:[1,0,0,1,0,0,1,0,1,0,0,1,0,0,1,0], s:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], h:[0,0,.7,0,0,0,.7,0,0,0,.7,0,0,0,.7,0], x:[0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,.6],
+    bass:[1,0,0,2,0,0,1,0,1,0,0,2,0,0,1,0],
+    melody: bars([74,0,71,0,67,0,71,0,74,0,0,71,72,0,71,0],[72,0,76,0,72,0,67,0,71,0,72,0,76,0,0,0],
+                 [74,0,78,0,74,0,69,0,72,0,74,0,78,0,74,0],[74,0,71,0,67,0,0,71,74,0,0,0,67,0,0,0]) },
+};
+const Music = { gain:null, timer:null, step:0, next:0, song:null, noise:null, on:true };
+function musicVol() { if (Music.gain) Music.gain.gain.value = (muted || !Music.on) ? 0 : .55; }
+function mOsc(t, type, f, dur, vol, glide, filt) {
+  const c = actx, o = c.createOscillator(), g = c.createGain();
+  o.type = type; o.frequency.setValueAtTime(f, t);
+  if (glide) o.frequency.exponentialRampToValueAtTime(Math.max(20,glide), t+dur);
+  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t+dur);
+  if (filt) { const fl = c.createBiquadFilter(); fl.type = "lowpass"; fl.frequency.value = filt; o.connect(fl); fl.connect(g); } else o.connect(g);
+  g.connect(Music.gain); o.start(t); o.stop(t+dur+.02);
+}
+function mNoise(t, dur, vol, hp) {
+  const c = actx, n = c.createBufferSource(), g = c.createGain(), f = c.createBiquadFilter();
+  n.buffer = Music.noise; f.type = "highpass"; f.frequency.value = hp;
+  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t+dur);
+  n.connect(f); f.connect(g); g.connect(Music.gain); n.start(t); n.stop(t+dur+.02);
+}
+function musicStep(i, t) {
+  const S = Music.song, bar = ((i/16)|0)%4, st = i%16;
+  if (S.k[st]) mOsc(t, "sine", S.kick.f, S.kick.d, S.kick.v*S.k[st], S.kick.g);
+  if (S.s[st]) mNoise(t, .13, .3*S.s[st], 1500);
+  if (S.h[st]) mNoise(t, .05, .13*S.h[st], 7000);
+  if (S.x[st]) mOsc(t, "square", 2300, .05, .06*S.x[st]);
+  if (S.bass[st]) mOsc(t, "triangle", midiF(S.chords[bar] + (S.bass[st]===2 ? 7 : 0)), .22, .45, 0, 700);
+  const n = S.melody[i%64];
+  if (n) mOsc(t, S.lead.type, midiF(n), S.lead.dur, S.lead.vol, 0, S.lead.filter);
+}
+function musicTick() {
+  if (!Music.song || !actx) return;
+  const sp = 60/Music.song.bpm/4;
+  while (Music.next < actx.currentTime + .15) { musicStep(Music.step, Music.next); Music.next += sp; Music.step++; }
+}
+function musicStop() {
+  clearInterval(Music.timer); Music.timer = null;
+  if (Music.gain) { try { Music.gain.disconnect(); } catch(e) {} Music.gain = null; }
+}
+function musicStart(id) {
+  try {
+    musicStop();
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    actx.state === "suspended" && actx.resume();
+    Music.song = SONGS[id] || SONGS.paulista;
+    Music.gain = actx.createGain(); Music.gain.connect(actx.destination); musicVol();
+    if (!Music.noise) {
+      const b = actx.createBuffer(1, actx.sampleRate*.5, actx.sampleRate), d = b.getChannelData(0);
+      for (let i=0;i<d.length;i++) d[i] = Math.random()*2-1;
+      Music.noise = b;
+    }
+    Music.step = 0; Music.next = actx.currentTime + .1;
+    Music.timer = setInterval(musicTick, 40);
+  } catch(e) {}
+}
+
 /* ================================================================
    Cena 3D
    ================================================================ */
@@ -353,26 +452,62 @@ const SCENARIOS = [
 
   /* ---------- Rio de Janeiro: Cristo Redentor ---------- */
   { id:"rio", name:"Cristo Redentor", short:"Cristo Redentor", of:"do Cristo Redentor", emoji:"⛰️", city:"Rio de Janeiro · RJ",
-    thumb:"linear-gradient(170deg,#7fd0ff,#3d9a4d 75%)", sky:0x86cdfa, fog:[0xcfeaff,70,190], tiles:[0x9d927e,0x8d8370],
+    thumb:"linear-gradient(170deg,#7fd0ff,#3d9a4d 75%)", sky:0x86cdfa, fog:[0xcfeaff,70,190], tiles:[0x5fae5f,0x3f8a3f],
     build() {
-      groundPlane(150,70,0x8c8470,-.12,-8);                    // mirante de pedra
-      for (let x=-70; x<=70; x+=7) E(box(.1,.02,70, 0x776f5e, x,-.1,-8));
-      E(box(150,.9,.5,0xd8d2c4, 0,.35,13));                    // mureta frontal
+      groundPlane(170,80,0x8c8470,-.12,-12);                   // mirante de pedra
       const sea = new THREE.Mesh(new THREE.PlaneGeometry(900,700), LM(0x2f86c9)); sea.rotation.x = -Math.PI/2; sea.position.set(0,-5,-120); E(sea);
-      // Cristo
+
+      /* campo de futebol no centro, com os dois tabuleiros sobre as metades */
+      const FX = 20, FZ = 8.6, line = 0xf4f4f4;
+      const pitch = new THREE.Mesh(new THREE.PlaneGeometry(FX*2, FZ*2), LM(0x2e8b3a)); pitch.rotation.x = -Math.PI/2; pitch.position.y = -.1; E(pitch);
+      for (let i=0;i<10;i+=2) E(box(4,.01,FZ*2, 0x36973f, -FX+2+i*4,-.095,0));
+      const L = (w,d,x,z) => E(box(w,.012,d,line, x,-.085,z));
+      L(FX*2,.18,0,FZ); L(FX*2,.18,0,-FZ); L(.18,FZ*2,FX,0); L(.18,FZ*2,-FX,0); L(.18,FZ*2,0,0);
+      const ring = new THREE.Mesh(new THREE.RingGeometry(2.6,2.78,48), new THREE.MeshBasicMaterial({color:line, side:THREE.DoubleSide}));
+      ring.rotation.x = -Math.PI/2; ring.position.y = -.08; E(ring);
+      [-1,1].forEach(sx => {
+        const x0 = sx*FX;
+        L(.18,13,x0-sx*5.5,0); L(5.5,.18,x0-sx*2.75,6.5); L(5.5,.18,x0-sx*2.75,-6.5);   // grande área
+        L(.18,6,x0-sx*2.2,0);  L(2.2,.18,x0-sx*1.1,3); L(2.2,.18,x0-sx*1.1,-3);        // pequena área
+        // trave, travessão e rede
+        [-2.6,2.6].forEach(z => E(cyl(.08,.08,2.4,0xffffff, x0,1.2,z,8)));
+        E(box(.16,.16,5.28,0xffffff, x0,2.4,0));
+        const netM = new THREE.MeshBasicMaterial({color:0xffffff, transparent:true, opacity:.28, side:THREE.DoubleSide, depthWrite:false});
+        const back = new THREE.Mesh(new THREE.PlaneGeometry(5.2,2.4), netM); back.rotation.y = Math.PI/2; back.position.set(x0+sx*1.7,1.2,0); E(back);
+        [-2.6,2.6].forEach(z => { const sd = new THREE.Mesh(new THREE.PlaneGeometry(1.7,2.4), netM); sd.position.set(x0+sx*.85,1.2,z); E(sd); });
+        const top = new THREE.Mesh(new THREE.PlaneGeometry(1.7,5.2), netM); top.rotation.x = Math.PI/2; top.position.set(x0+sx*.85,2.4,0); E(top);
+      });
+      const bola = ball(.3,0xffffff, 0,.3,0); E(bola);
+      for (let i=0;i<5;i++) { const a = i/5*Math.PI*2, d = ball(.1,0x222222, Math.cos(a)*.26,.3+Math.sin(a*2)*.12,Math.sin(a)*.26); E(d); }
+
+      /* Cristo */
       const st = new THREE.Group(), stone = 0xf0eee6;
       st.add(box(4.6,2.6,4.6,0xcfc9bb, 0,1.3,0)); st.add(box(3,1.6,3,0xdcd6c8, 0,3.4,0));
       st.add(cyl(.65,.95,4.6,stone, 0,6.5,0,14));
       st.add(box(9.6,.75,.8,stone, 0,8.3,0)); st.add(box(2.2,1,1.1,stone, 0,8.3,0));
       st.add(ball(.62,stone, 0,9.45,0));
-      st.position.set(0,0,-21); E(st);
-      // morros, Pão de Açúcar e nuvens
-      [[-52,-62,15,0x2f7d3a],[48,-70,17,0x2c7536],[-20,-90,12,0x3a8a45],[26,-52,9,0x8a8478],[-70,-30,11,0x2f7d3a]].forEach(([x,z,r,c]) => {
-        const h = ball(r,c, x,-5,z); h.scale.y = 1.15; E(h);
-      });
-      for (let i=0;i<9;i++) { const c = ball(2.5+Math.random()*2.5,0xffffff, -50+i*13+Math.random()*6, 11+Math.random()*4, -40-Math.random()*30); c.scale.y = .45; E(c); }
+      st.position.set(0,0,-26); E(st);
+
+      /* morros com favela */
+      const PAL = [0xe4572e,0xf3a712,0xf7e7ce,0x2e86ab,0xa8c686,0xe8a0bf,0xd9534f,0x7ecbc2,0xf2d0a4,0xc97b4a,0xffffff];
+      const favela = (hx,hz,r,sy,n,spread) => {
+        const hill = ball(r,0x4f8a3e, hx,-5,hz); hill.scale.y = sy; E(hill);
+        for (let i=0;i<n;i++) {
+          const th = (Math.random()-.5)*spread, ph = .1 + Math.random()*1.1;
+          const x = hx + Math.sin(th)*r*Math.cos(ph), y = -5 + r*sy*Math.sin(ph), z = hz + Math.cos(th)*r*Math.cos(ph);
+          const w = .9 + Math.random()*.9;
+          const h = box(w, .7+Math.random()*.8, w*(.8+Math.random()*.4), PAL[rand(PAL.length)], x, y+.2, z);
+          h.rotation.y = th*.4; E(h);
+          if (Math.random()<.5) E(box(w*1.05,.12,w*1.0, 0x6b4a3a, x, y+.2+.5, z).clone());   // laje
+          if (Math.random()<.1) E(cyl(.25,.25,.5,0x2e86ab, x, y+1.2, z, 8));              // caixa d'água
+        }
+      };
+      favela(-48,-46,17,1.0,110,2.7); favela(46,-44,16,1.0,100,2.7); favela(-22,-72,14,1.1,80,2.5);
+      favela(78,-36,15,1.0,80,2.6);  favela(-82,-34,14,1.0,70,2.6);
+      const pao = ball(9,0x8a8478, 22,-5,-58); pao.scale.y = 1.25; E(pao);               // Pão de Açúcar
+      for (let i=0;i<9;i++) { const c = ball(2.5+Math.random()*2.5,0xffffff, -50+i*13+Math.random()*6, 12+Math.random()*4, -45-Math.random()*30); c.scale.y = .45; E(c); }
       // palmeiras
-      [[-17,8],[-24,-4],[-30,6],[18,7],[26,-3],[33,5],[-14,-14],[15,-15]].forEach(([x,z]) => {
+      [[-24,11],[-31,-7],[-34,9],[24,11],[31,-7],[34,9],[-14,-15],[15,-16]].forEach(([x,z]) => {
         E(cyl(.15,.25,3.2,0x7a5a3a, x,1.6,z,6));
         for (let k=0;k<6;k++) { const l = box(1.8,.06,.4,0x2f9a3f, x,3.3,z); l.rotation.y = k*Math.PI/3; l.rotation.z = .35; l.position.x += Math.cos(k*Math.PI/3)*.7; l.position.z -= Math.sin(k*Math.PI/3)*.7; E(l); }
       });
@@ -870,9 +1005,9 @@ function fxThrow(tb, r, c, who, th) {
     if (!impacted) {
       impacted = true; mesh.position.copy(to);
       switch (th.id) {
-        case "tomate": addDecal(to.x,to.z,0xc4180f,.4); burst(to,[0xe0261b,0xff5a3a,0x9b0f0a],24,4); mesh.visible=false; tone(140,.18,"sawtooth",.09,-80); break;
-        case "ovo":    addDecal(to.x,to.z,0xfdf4dc,.38); addDecal(to.x,to.z,0xffc400,.15,.03); burst(to,[0xffffff,0xffc400,0xfff3dc],20,3.5); mesh.visible=false; tone(220,.1,"square",.06,-120); break;
-        case "pedra":  addDecal(to.x,to.z,0x24272c,.28); burst(to,[0x9aa0a8,0x6a7078,0xcfd3d8],22,4.5); mesh.visible=false; tone(90,.2,"sawtooth",.1,-40); break;
+        case "tomate": addDecal(to.x,to.z,0xc4180f,.4); burst(to,[0xe0261b,0xff5a3a,0x9b0f0a],24,4); mesh.scale.set(1.6,.35,1.6); mesh.position.y = .06; tone(140,.18,"sawtooth",.09,-80); break;
+        case "ovo":    addDecal(to.x,to.z,0xfdf4dc,.38); addDecal(to.x,to.z,0xffc400,.15,.03); burst(to,[0xffffff,0xffc400,0xfff3dc],20,3.5); mesh.scale.set(1.8,.25,1.8); mesh.position.y = .04; tone(220,.1,"square",.06,-120); break;
+        case "pedra":  addDecal(to.x,to.z,0x24272c,.28); burst(to,[0x9aa0a8,0x6a7078,0xcfd3d8],22,4.5); mesh.position.y = .12; tone(90,.2,"sawtooth",.1,-40); break;
         case "bandeira": mesh.rotation.set(-Math.PI/2.4,0,0); mesh.position.y = .55; burst(to,[s.main,s.alt,0xffffff],16,3); tone(300,.1,"square",.05); break;
         case "chinelo": mesh.rotation.set(0,Math.random()*3,0); mesh.position.y = .05; burst(to,[0x1e88e5,0xffffff],10,2.5); tone(260,.08,"square",.07,-100); break;
         case "cavalete": burst(to,[0xffffff,0xd32f2f,0xbbbbbb],14,3.5); tone(120,.2,"square",.08,-60); break;
@@ -885,8 +1020,22 @@ function fxThrow(tb, r, c, who, th) {
     }
     if (th.id==="bandeira") mesh.position.y = .55 - k*.15;
     if (th.id==="chinelo") mesh.rotation.y += dt*12*(1-k);
-  }, () => scene.remove(mesh));
-  return { delay: th.dur*1000 };
+  }, () => {
+    /* o objeto fica no chão onde caiu: a algazarra vai se acumulando */
+    const ry = Math.random()*Math.PI*2;
+    switch (th.id) {
+      case "cone":     mesh.rotation.set(0, ry, Math.random()<.5 ? Math.PI/2 : 0); mesh.position.y = mesh.rotation.z ? .17 : .2; break;
+      case "tomate":   mesh.position.y = .06; break;
+      case "bandeira": mesh.rotation.set(.1, ry, 0); mesh.position.y = .1; break;
+      case "cavalete": mesh.rotation.set(Math.PI/2, ry, 0); mesh.position.y = .12; break;
+      case "chinelo":  mesh.rotation.set(0, ry, 0); mesh.position.y = .04; break;
+      case "pedra":    mesh.rotation.set(Math.random()*3, ry, Math.random()*3); mesh.position.y = .12; break;
+      case "ovo":      mesh.position.y = .04; break;
+    }
+    mesh.position.x += (Math.random()-.5)*.12; mesh.position.z += (Math.random()-.5)*.12;
+    markerGroup.add(mesh);
+  });
+  return { delay: th.dur*1000, noCone: true };
 }
 function pickThrow() { return THROWS[rand(THROWS.length)]; }
 
@@ -960,7 +1109,7 @@ function captainReact(b, kind) {
 }
 
 /* aplica um tiro numa célula. Retorna "hit" | "miss" | "sunk" */
-function applyShot(b, r, c) {
+function applyShot(b, r, c, noCone) {
   const cell = G.boards[b][r][c];
   cell.shot = true; refreshTile(b,r,c);
   const p = tilePos(b,r,c);
@@ -974,9 +1123,11 @@ function applyShot(b, r, c) {
     if (ship.hits >= ship.len) { ship.sunk = true; return "sunk"; }
     return "hit";
   }
-  const cone = new THREE.Mesh(new THREE.ConeGeometry(.2,.45,10), new THREE.MeshLambertMaterial({color:0xff7a1a}));
-  cone.position.set(p.x,.22,p.z); markerGroup.add(cone);
-  const band = new THREE.Mesh(new THREE.CylinderGeometry(.13,.15,.08,10), mat(0xffffff)); band.position.set(p.x,.25,p.z); markerGroup.add(band);
+  if (!noCone) {   // poderes especiais não arremessam objeto: marcam a casa com um cone
+    const cone = new THREE.Mesh(new THREE.ConeGeometry(.2,.45,10), new THREE.MeshLambertMaterial({color:0xff7a1a}));
+    cone.position.set(p.x,.22,p.z); markerGroup.add(cone);
+    const band = new THREE.Mesh(new THREE.CylinderGeometry(.13,.15,.08,10), mat(0xffffff)); band.position.set(p.x,.25,p.z); markerGroup.add(band);
+  }
   sfx.miss();
   return "miss";
 }
@@ -991,7 +1142,7 @@ function resolveShots(targetB, cells, who, powerLabel, opts = {}) {
     const tm = (opts.delay||0) + (opts.time ? opts.time(r,c) : i*90);
     maxT = Math.max(maxT, tm);
     setTimeout(() => {
-      const res = applyShot(targetB, r, c);
+      const res = applyShot(targetB, r, c, opts.noCone);
       if (res !== "miss") hits++;
       if (res === "sunk") {
         const sh = G.boards[targetB][r][c].ship; sunkNames.push(G.fleets[targetB][sh].name);
@@ -1198,8 +1349,11 @@ function ui() {
     $("turnText").textContent = `Posicione sua torcida ${G.scn ? G.scn.of.replace(/^d(a|o)s? /,"n$1 ") : ""}`;
     $("timerfill").style.width = "0%";
     $("placeText").textContent = idx<FLEET.length
-      ? `Clique no seu tabuleiro para posicionar: ${FLEET[idx].name} (${FLEET[idx].len}) · ${G.horiz?"horizontal":"vertical"}`
-      : "Torcida pronta! Pode começar a disputa.";
+      ? `Agora: ${FLEET[idx].name} (${FLEET[idx].len}) · ${G.horiz?"↔ horizontal":"↕ vertical"}`
+      : "✅ Torcida pronta! Clique em Começar a disputa.";
+    $("btnRotate").innerHTML = `${G.horiz?"↔":"↕"} Girar <kbd>R</kbd>`;
+    $("shipChips").innerHTML = FLEET.map((f,i) =>
+      `<div class="chip ${i<idx?"done":i===idx?"cur":""}" style="--sc:${s0.css}"><span class="sq">${"<i></i>".repeat(f.len)}</span>${f.name}</div>`).join("");
     $("btnStart").disabled = idx < FLEET.length;
     $("btnUndo").disabled = idx === 0;
   }
@@ -1229,7 +1383,7 @@ function ui() {
       b.className = "btn power" + (G.power===id ? " armed":"") + (ready && cost ? " ready":"");
       b.style.setProperty("--p", Math.min(100, G.energy[0]/Math.max(1,cost)*100)+"%");
       const badge = !cost ? "" : ready ? `<span class="cost ok">PRONTO</span>` : `<span class="cost">⚡${G.energy[0]}/${cost}</span>`;
-      b.innerHTML = `${label}<small>[${key}] ${desc}</small>${badge}<span class="fill"></span>`;
+      b.innerHTML = `${shapeHTML(id, s0)}<span class="ptxt"><b>${label}</b><small>${desc}</small>${badge}</span><kbd>${key}</kbd><span class="fill"></span>`;
       b.disabled = !myTurn || !ready;
       b.onclick = () => selectPower(id);
       $("powers").appendChild(b);
@@ -1241,6 +1395,12 @@ function ui() {
   } else if (G.phase==="place") {
     $("fleetPanel").classList.add("hidden");
   }
+}
+function shapeHTML(id, side) {
+  const on = { normal:[12], radar:[6,7,8,11,12,13,16,17,18], cross:[7,11,12,13,17] };
+  on.ultra = side.ultraMode==="row" ? [10,11,12,13,14] : [2,7,12,17,22];
+  const set = new Set(on[id]);
+  return `<span class="shape">${Array.from({length:25},(_,i)=>`<i class="${set.has(i)?"on":""}"></i>`).join("")}</span>`;
 }
 function selectPower(id) {
   if (G.phase!=="battle" || G.turn!==0 || G.busy) return;
@@ -1300,8 +1460,10 @@ $("btnUndo").onclick = () => {
 };
 $("btnRandom").onclick = () => { randomFleet(0); refreshAll(); ui(); updateHoverPreview(); sfx.place(); };
 $("btnStart").onclick = startBattle;
-$("mute").onclick = () => { muted = !muted; $("mute").textContent = muted ? "🔇" : "🔊"; };
-$("btnAgain").onclick = () => { $("endscreen").classList.add("hidden"); $("menu").classList.remove("hidden"); G.phase="menu"; };
+$("mute").onclick = () => { muted = !muted; $("mute").textContent = muted ? "🔇" : "🔊"; musicVol(); };
+$("musicBtn").onclick = () => { Music.on = !Music.on; $("musicBtn").classList.toggle("off", !Music.on); musicVol(); };
+cv.addEventListener("contextmenu", e => { e.preventDefault(); if (G.phase==="place") { G.horiz = !G.horiz; ui(); updateHoverPreview(); } });
+$("btnAgain").onclick = () => { musicStop(); $("endscreen").classList.add("hidden"); $("menu").classList.remove("hidden"); G.phase="menu"; };
 document.querySelectorAll(".card").forEach(card => card.onclick = () => {
   actx && actx.state==="suspended" && actx.resume();
   newGame(card.dataset.side);
@@ -1330,6 +1492,7 @@ function newGame(playerKey) {
   G.energy = [1,1]; G.hover = null;
   const pool = SCENARIOS;
   applyScenario(G.scnChoice==="random" ? pool[rand(pool.length)] : (pool.find(x => x.id===G.scnChoice) || pool[0]));
+  musicStart(G.scn.id);
   $("action").classList.add("hidden"); clearMarkers(); resetFleet(0); resetFleet(1); randomFleet(1);
   for (let b=0;b<2;b++) {
     frames[b].material.color.setHex(SIDES[G.side[b]].main);
@@ -1401,11 +1564,30 @@ function animate() {
     }
   }
 
+  // dicas flutuantes
+  const bob = Math.sin(t*4)*.12;
+  hintAttack.visible = G.phase==="battle" && G.turn===0 && !G.busy;
+  hintAttack.position.set(BX[1], .9+bob, 6.6);
+  hintPlace.visible = G.phase==="place" && G.fleets[0].length < FLEET.length;
+  hintPlace.position.set(BX[0], .9+bob, 6.6);
+
   // câmera com leve balanço
   camera.position.x = Math.sin(t*.2) * .6;
   camera.lookAt(camLook);
   renderer.render(scene, camera);
 }
+function makeHint(text, color) {
+  const c = document.createElement("canvas"); c.width = 1024; c.height = 170;
+  const x = c.getContext("2d");
+  x.fillStyle = "rgba(10,14,22,.9)"; x.beginPath(); x.roundRect ? x.roundRect(10,10,1004,150,60) : x.rect(10,10,1004,150); x.fill();
+  x.lineWidth = 8; x.strokeStyle = color; x.stroke();
+  x.fillStyle = "#fff"; x.font = "bold 56px 'Segoe UI',Arial,sans-serif"; x.textAlign = "center"; x.textBaseline = "middle";
+  x.fillText(text, 512, 88, 940);
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map:new THREE.CanvasTexture(c), transparent:true, depthTest:false }));
+  sp.scale.set(6.4,1.06,1); sp.renderOrder = 10; sp.visible = false; scene.add(sp); return sp;
+}
+const hintAttack = makeHint("▲  CLIQUE AQUI PARA ATACAR  ▲", "#ffdf00");
+const hintPlace  = makeHint("▲  POSICIONE SUA TORCIDA AQUI  ▲", "#4cd964");
 applyScenario(SCENARIOS[0]);
 animate();
 </script>
