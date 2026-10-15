@@ -12,7 +12,25 @@
   html,body { margin:0; height:100%; overflow:hidden; background:#10151c; color:#fff; font-family:"Segoe UI",system-ui,sans-serif; user-select:none; -webkit-user-select:none; }
   canvas { display:block; }
   .abs { position:absolute; }
-  #top { top:0; left:0; right:0; padding:10px 14px; display:flex; align-items:center; gap:14px; background:linear-gradient(#000a,#0000); pointer-events:none; }
+  #top { top:0; left:0; right:0; padding:10px 14px 18px; display:grid; grid-template-columns:1fr auto 1fr auto; align-items:start; gap:14px; background:linear-gradient(#000c,#0000); pointer-events:none; }
+  .fighter { min-width:0; }
+  .fhead { display:flex; align-items:center; gap:8px; margin-bottom:5px; }
+  .fighter.right .fhead { flex-direction:row-reverse; }
+  .fhp { font-weight:800; font-size:13px; text-shadow:0 1px 3px #000; opacity:.95; }
+  .hp { position:relative; height:28px; border-radius:6px; background:#000a; border:3px solid #fff; box-shadow:0 3px 12px #000a; overflow:hidden; transform:skewX(-14deg); }
+  .fighter.right .hp { transform:skewX(14deg); }
+  .hp .fill, .hp .trail { position:absolute; top:0; bottom:0; left:0; width:100%; transition:width .3s ease-out; }
+  .fighter.right .hp .fill, .fighter.right .hp .trail { left:auto; right:0; }
+  .hp .trail { background:#ff3b30; transition:width 1s ease-out .5s; }
+  .hp .fill::after { content:""; position:absolute; inset:0 0 55% 0; background:linear-gradient(#fff6,#fff0); }
+  .hp.low .fill { animation:lowhp .45s infinite alternate; }
+  @keyframes lowhp { to { filter:brightness(1.9) saturate(1.4); } }
+  #center { display:flex; flex-direction:column; align-items:center; min-width:150px; }
+  #matchClock { font:900 42px/1 Impact,"Arial Black",sans-serif; min-width:86px; text-align:center; padding:4px 10px 2px; border-radius:10px;
+                background:linear-gradient(#1b2433,#0b0f17); border:3px solid #fff; box-shadow:0 3px 12px #000a; text-shadow:0 2px 0 #000; margin-top:-2px; }
+  #matchClock.low { color:#ff5a4a; border-color:#ff5a4a; animation:clockpulse .5s infinite alternate; }
+  @keyframes clockpulse { to { transform:scale(1.12); } }
+  #topBtns { display:flex; gap:6px; }
   #top .side { font-weight:800; font-size:15px; letter-spacing:.3px; padding:4px 10px; border-radius:8px; }
   #turn { flex:1; text-align:center; }
   #turn b { font-size:18px; }
@@ -21,7 +39,7 @@
   #timerbar { margin:6px auto 0; width:min(320px,60%); height:6px; background:#fff3; border-radius:4px; overflow:hidden; }
   #timerfill { height:100%; width:100%; background:var(--amarelo); transition:width .2s linear; }
   #mute { pointer-events:auto; background:#0006; border:1px solid #fff4; color:#fff; border-radius:8px; padding:6px 10px; cursor:pointer; }
-  #fleetPanel { position:fixed; right:14px; top:58px; }
+  #fleetPanel { position:fixed; right:14px; top:112px; }
   #bottom { left:0; right:0; bottom:0; padding:10px 14px 14px; display:flex; gap:12px; align-items:flex-end; justify-content:center; flex-wrap:wrap; pointer-events:none; }
   .panel { background:var(--panel); border:1px solid #fff2; border-radius:14px; padding:10px 12px; pointer-events:auto; backdrop-filter:blur(6px); }
   button.btn { font:inherit; font-weight:700; color:#fff; background:#2a3342; border:1px solid #fff3; border-radius:10px; padding:9px 14px; cursor:pointer; transition:.15s; }
@@ -38,7 +56,7 @@
   #powers { display:flex; gap:8px; flex-wrap:wrap; }
   #fleetinfo { font-size:12px; line-height:1.5; min-width:170px; }
   #fleetinfo .sunk { text-decoration:line-through; opacity:.5; }
-  #log { left:14px; top:64px; width:290px; font-size:12.5px; line-height:1.35; pointer-events:none; text-shadow:0 1px 3px #000; }
+  #log { left:14px; top:112px; width:290px; font-size:12.5px; line-height:1.35; pointer-events:none; text-shadow:0 1px 3px #000; }
   #log div { margin-bottom:3px; animation:fade .4s; }
   @keyframes fade { from { opacity:0; transform:translateX(-8px);} }
   #toast { top:30%; left:0; right:0; text-align:center; font-size:clamp(28px,6vw,64px); font-weight:900; pointer-events:none; opacity:0; text-shadow:0 4px 16px #000; }
@@ -68,7 +86,7 @@
   .card small { display:block; font-weight:400; font-size:13px; margin-top:6px; opacity:.9; }
   .card.f { background:linear-gradient(160deg,#00842f,#0aa845 60%,#e5c800); }
   .card.l { background:linear-gradient(160deg,#a50f12,#d7191c 70%,#e8b900); }
-  #action { top:58px; left:50%; transform:translateX(-50%); max-width:min(640px,92vw); text-align:center; pointer-events:none;
+  #action { top:122px; left:50%; transform:translateX(-50%); max-width:min(640px,92vw); text-align:center; pointer-events:none;
             font-size:clamp(16px,2.4vw,24px); font-weight:800; padding:10px 20px; border-radius:14px;
             background:rgba(10,14,22,.88); border:2px solid var(--amarelo); box-shadow:0 6px 24px #0008; text-shadow:0 2px 4px #000; z-index:3; }
   #action.bump { animation:bump .35s ease-out; }
@@ -112,11 +130,15 @@
   .rules { font-size:13px; opacity:.75; max-width:640px; }
   @media (max-width:700px) {
     #fleetPanel, #log { display:none !important; }
-    #top { padding:8px 8px; gap:6px; flex-wrap:wrap; }
+    #top { padding:6px 6px 12px; gap:6px; grid-template-columns:1fr auto 1fr; }
+    #topBtns { grid-column:1 / -1; justify-content:flex-end; margin-top:-4px; }
+    #center { min-width:100px; }
+    #matchClock { font-size:30px; min-width:62px; }
+    .hp { height:20px; border-width:2px; }
     #top .side { font-size:12px; padding:3px 7px; }
     #turnText { display:none; }
     #roundText { font-size:11px; }
-    #action { top:78px; font-size:15px; padding:7px 12px; }
+    #action { top:128px; font-size:15px; padding:7px 12px; }
     #action small { display:none; }
     #energy > div > span { display:none; }
     .power { min-width:0; flex:1 1 44%; padding:8px; font-size:13px; }
@@ -127,11 +149,19 @@
 <body>
 
 <div id="top" class="abs">
-  <div id="sideA" class="side"></div>
-  <div id="turn"><div id="roundText"></div><b id="turnText"></b><div id="timerbar"><div id="timerfill"></div></div></div>
-  <div id="sideB" class="side"></div>
-  <button id="musicBtn" title="Música">🎵</button>
-  <button id="mute" title="Som">🔊</button>
+  <div class="fighter left">
+    <div class="fhead"><span id="sideA" class="side"></span><span class="fhp" id="hpAtxt"></span></div>
+    <div class="hp" id="hpA"><div class="trail" id="trailA"></div><div class="fill" id="fillA"></div></div>
+  </div>
+  <div id="center">
+    <div id="matchClock">90</div>
+    <div id="turn"><div id="roundText"></div><b id="turnText"></b><div id="timerbar"><div id="timerfill"></div></div></div>
+  </div>
+  <div class="fighter right">
+    <div class="fhead"><span id="sideB" class="side"></span><span class="fhp" id="hpBtxt"></span></div>
+    <div class="hp" id="hpB"><div class="trail" id="trailB"></div><div class="fill" id="fillB"></div></div>
+  </div>
+  <div id="topBtns"><button id="musicBtn" title="Música">🎵</button><button id="mute" title="Som">🔊</button></div>
 </div>
 
 <div id="action" class="abs hidden"></div>
@@ -194,7 +224,7 @@
   </div>
   <div class="rules">
     Paródia bem-humorada: ninguém se machuca, quem é "atingido" só senta, cansado de tanto gritar. 🎺<br>
-    Atire com o mouse/toque · R gira a torcida · 1–4 escolhem poderes · Esc cancela
+    Partida de 90 s: vence quem derrubar mais torcedores · Atire com o mouse/toque · R gira a torcida · 1–4 escolhem poderes · Esc cancela
   </div>
 </div>
 
@@ -232,6 +262,8 @@ const SIDES = {
 const COST = { normal:0, radar:2, cross:3, ultra:6 };
 const MAX_ENERGY = 9;
 const TURN_TIME = 20;
+const MATCH_TIME = 90;
+const FLEET_TOTAL = FLEET.reduce((a,f) => a+f.len, 0);
 
 /* ================================================================
    Estado
@@ -1087,6 +1119,21 @@ function pattern(power, r, c) {
   return out;
 }
 
+/* frases de reação (contexto político, tom de brincadeira) */
+const HIT_PHRASES = ["Na mosca!","Arribaaaa!","Viva a democracia!","Aprovado por unanimidade!","Maioria absoluta!","Ganhou o debate!",
+  "Voto certeiro!","A urna confirmou!","Direto no palanque!","Que comício!","A pesquisa não mentiu!","Vai pro segundo turno!",
+  "Eleito no primeiro turno!","Esse é do povo!","Boca de urna certeira!","Mandou bem na campanha!"];
+const MULTI_PHRASES = ["Lavada nas urnas!","Maioria esmagadora!","Virada histórica!","Showmício de acertos!","Chapa completa!",
+  "Varreu a convenção!","Combo no horário eleitoral!","Aprovado em todas as seções!"];
+const MISS_PHRASES = ["Não foi desta vez!","Por pouco!","Errrouuuuu!","Voto nulo!","Foi pra urna errada!","Abstenção!",
+  "Projeto arquivado!","Vetado!","Pediram vista!","Cadê o quórum?","Sumiu na tramitação!","Passou longe da tribuna!",
+  "Caiu no orçamento secreto!","Mira de CPI!","Fake news: não acertou ninguém!"];
+const SUNK_PHRASES = ["TORCIDA DISPERSADA!","COMÍCIO ESVAZIADO!","FOI TUDO PRA CASA!","CABO ELEITORAL DESISTIU!","CARREATA DISSOLVIDA!"];
+let lastPhrase = "";
+function pickPhrase(list) {
+  let p; do { p = list[rand(list.length)]; } while (p===lastPhrase && list.length>1);
+  return lastPhrase = p;
+}
 function setAction(html, color, sub) {
   const a = $("action"); a.classList.remove("hidden");
   a.innerHTML = html + (sub ? `<small>${sub}</small>` : "");
@@ -1156,17 +1203,19 @@ function resolveShots(targetB, cells, who, powerLabel, opts = {}) {
       G.energy[who] = Math.min(MAX_ENERGY, G.energy[who] + hits);
       captainReact(who,"jump"); captainReact(targetB,"shake");
       log(`<b style="color:${SIDES[G.side[who]].cssAlt}">${sname(who)}</b>: ${powerLabel} acertou <b>${hits}</b> torcedor${hits>1?"es":""} de ${target}!`);
-      toast(hits>1 ? `${hits} ACERTOS!` : "ACERTOU!", SIDES[G.side[who]].cssAlt);
-      setAction(`✅ ${hits>1 ? hits+" acertos" : "Acertou"} em ${target}!`, "#4cd964", `${powerLabel} derrubou ${hits} torcedor${hits>1?"es":""} · +${hits} ⚡ de energia`);
+      const phrase = pickPhrase(hits>1 ? MULTI_PHRASES : HIT_PHRASES);
+      toast(phrase, SIDES[G.side[who]].cssAlt);
+      setAction(`✅ ${phrase}`, "#4cd964", `${powerLabel} derrubou ${hits} torcedor${hits>1?"es":""} de ${target} · +${hits} ⚡ de energia`);
     } else {
-      setAction("❌ Errou! Só asfalto…", "#9aa7b5", `${powerLabel} não pegou ninguém`);
-      log(`${sname(who)}: ${powerLabel} caiu na avenida... só cone. 🚧`);
-      toast("ÁGUA… DIGO, ASFALTO!", "#cfd8e3");
+      setAction(`❌ ${phrase}`, "#9aa7b5", `${powerLabel} não pegou ninguém`);
+      log(`${sname(who)}: ${powerLabel} errou o alvo. 🚧`);
+      const phrase = pickPhrase(MISS_PHRASES);
+      toast(phrase, "#cfd8e3");
     }
     sunkNames.forEach(n => {
       sfx.sunk();
       log(`🎺 <b>${n}</b> de ${target} se dispersou!`);
-      toast("TORCIDA DISPERSADA!", "#ffdf00");
+      toast(pickPhrase(SUNK_PHRASES), "#ffdf00");
       setAction(`🎺 ${n} de ${target} se dispersou!`, "#ffdf00", "Grupo inteiro fora de combate");
     });
     ui();
@@ -1199,6 +1248,7 @@ function doRadar(targetB, r, c, who, cb) {
    ================================================================ */
 function startBattle() {
   G.phase = "battle"; G.turn = 0; G.round = 1; G.power = "normal"; G.firstTurn = true;
+  G.finished = false; G.matchEnd = Date.now() + MATCH_TIME*1000;
   G.energy = [1,1]; lastEnergy = 1; $("log").innerHTML = "";
   log(`⚔️ A disputa começou! <b>${sname(0)}</b> contra <b>${sname(1)}</b>.`);
   $("placePanel").classList.add("hidden");
@@ -1218,7 +1268,7 @@ function startTurn() {
   }
   ui();
 }
-function nextTurn() { G.turn = 1-G.turn; if (G.turn===0) G.round++; startTurn(); }
+function nextTurn() { if (G.phase!=="battle") return; G.turn = 1-G.turn; if (G.turn===0) G.round++; startTurn(); }
 
 function playerFire(r,c) {
   if (G.phase!=="battle" || G.turn!==0 || G.busy) return;
@@ -1312,21 +1362,47 @@ function cpuPlay() {
   } else doShot();
 }
 
-function finish(winner) {
-  G.phase = "over"; G.busy = true;
-  // revela torcida restante do adversário
-  Object.values(G.fans[1]).forEach(f => f.visible = true);
-  const youWin = winner===0, s = SIDES[G.side[winner]];
-  youWin ? sfx.win() : sfx.lose();
-  for (let i=0;i<8;i++) setTimeout(() => {
-    burst(new THREE.Vector3(BX[winner]+(Math.random()-.5)*8, 0, (Math.random()-.5)*6), [s.main,s.alt,0xffffff], 40, 6);
-  }, i*250);
-  captainReact(winner,"jump");
+const dmgDealt = who => G.fleets[1-who].reduce((n,sh) => n + sh.hits, 0);
+
+/* acabou o tempo: vence quem derrubou mais torcedores (desempate: mais grupos dispersados) */
+function timeUp() {
+  if (G.phase!=="battle") return;
+  G.phase = "over"; G.busy = true; clearPreview(); ui();
+  toast("TEMPO ESGOTADO!", "#ff5a4a");
+  setAction("⏱️ Tempo esgotado!", "#ff5a4a", "Vence quem derrubou mais torcedores");
+  setTimeout(() => {                                    // deixa o último tiro cair
+    const a = dmgDealt(0), b = dmgDealt(1);
+    let w = a>b ? 0 : b>a ? 1 : null;
+    if (w===null) {
+      const sa = G.fleets[1].filter(x => x.sunk).length, sb = G.fleets[0].filter(x => x.sunk).length;
+      w = sa>sb ? 0 : sb>sa ? 1 : null;
+    }
+    finish(w, "time");
+  }, 1600);
+}
+
+function finish(winner, reason) {
+  if (G.finished) return; G.finished = true;
+  G.phase = "over"; G.busy = true; ui();
+  Object.values(G.fans[1]).forEach(f => f.visible = true);     // revela a torcida adversária
+  const draw = winner === null, youWin = winner === 0;
+  const s = draw ? null : SIDES[G.side[winner]];
+  draw ? sfx.sunk() : youWin ? sfx.win() : sfx.lose();
+  if (draw) { captainReact(0,"jump"); captainReact(1,"jump"); }
+  else {
+    for (let i=0;i<8;i++) setTimeout(() => {
+      burst(new THREE.Vector3(BX[winner]+(Math.random()-.5)*8, 0, (Math.random()-.5)*6), [s.main,s.alt,0xffffff], 40, 6);
+    }, i*250);
+    captainReact(winner,"jump");
+  }
+  const a = dmgDealt(0), b = dmgDealt(1), rounds = `${G.round} rodada${G.round>1?"s":""}`;
   setTimeout(() => {
-    $("endTitle").textContent = youWin ? "VITÓRIA!" : "DERROTA!";
-    $("endText").textContent = youWin
-      ? `${s.name} (${s.party}) tomou conta ${G.scn.of} em ${G.round} rodada${G.round>1?"s":""}! A torcida adversária foi pra casa mais cedo.`
-      : `${s.name} (${s.party}) dominou ${G.scn.of} em ${G.round} rodada${G.round>1?"s":""}. Que tal pedir a revanche?`;
+    $("endTitle").textContent = draw ? "EMPATE!" : youWin ? "VITÓRIA!" : "DERROTA!";
+    $("endText").textContent =
+      reason==="time" && draw ? `Tempo esgotado e tudo igual: ${a} × ${b} torcedores derrubados. A disputa ${G.scn.of} termina sem vencedor!`
+      : reason==="time"       ? `Tempo esgotado! ${s.name} (${s.party}) venceu nos pontos, ${winner===0?a:b} × ${winner===0?b:a} torcedores derrubados, e leva a vitória ${G.scn.of}.`
+      : youWin                ? `${s.name} (${s.party}) tomou conta ${G.scn.of} em ${rounds}! A torcida adversária foi pra casa mais cedo.`
+      :                         `${s.name} (${s.party}) dominou ${G.scn.of} em ${rounds}. Que tal pedir a revanche?`;
     $("endscreen").classList.remove("hidden");
   }, 2600);
 }
@@ -1342,6 +1418,13 @@ function ui() {
   $("sideA").textContent = `${s0.short} (você)`; $("sideA").style.background = s0.css;
   $("sideB").textContent = `${s1.short} (CPU)` + (G.phase==="battle" ? ` ⚡${G.energy[1]}` : "");  $("sideB").style.background = s1.css;
   $("sideA").style.color = s0.key==="flavio" ? "#ffdf00" : "#fff";
+  [[0,"A",s0],[1,"B",s1]].forEach(([b,k,sd]) => {
+    const left = FLEET_TOTAL - G.fleets[b].reduce((n,sh) => n + sh.hits, 0), pct = Math.max(0,left/FLEET_TOTAL*100);
+    $("fill"+k).style.width = pct+"%"; $("trail"+k).style.width = pct+"%";
+    $("fill"+k).style.background = `linear-gradient(${b===0?90:270}deg, ${sd.css}, ${sd.cssAlt})`;
+    $("hp"+k).classList.toggle("low", pct>0 && pct<=30);
+    $("hp"+k+"txt").textContent = `${left}/${FLEET_TOTAL}`;
+  });
   $("sideB").style.color = s1.key==="flavio" ? "#ffdf00" : "#fff";
 
   if (G.phase==="place") {
@@ -1401,6 +1484,11 @@ function shapeHTML(id, side) {
   on.ultra = side.ultraMode==="row" ? [10,11,12,13,14] : [2,7,12,17,22];
   const set = new Set(on[id]);
   return `<span class="shape">${Array.from({length:25},(_,i)=>`<i class="${set.has(i)?"on":""}"></i>`).join("")}</span>`;
+}
+let lastClock = -1;
+function setClock(v) {
+  if (v===lastClock) return; lastClock = v;
+  const el = $("matchClock"); el.textContent = v; el.classList.toggle("low", v<=10 && G.phase==="battle");
 }
 function selectPower(id) {
   if (G.phase!=="battle" || G.turn!==0 || G.busy) return;
@@ -1551,6 +1639,12 @@ function animate() {
     p.m.rotation.x += p.spin*dt; p.m.rotation.y += p.spin*dt;
     if (p.life<=0 || p.m.position.y < 0) { scene.remove(p.m); p.m.material.dispose(); particles.splice(i,1); }
   }
+
+  // cronômetro da partida (90 s)
+  if (G.phase==="battle") {
+    const left = Math.max(0, Math.ceil((G.matchEnd - Date.now())/1000));
+    setClock(left); if (left<=0) timeUp();
+  } else if (G.phase==="place" || G.phase==="menu") setClock(MATCH_TIME);
 
   // cronômetro do turno
   if (G.phase==="battle" && G.turn===0 && !G.busy) {
