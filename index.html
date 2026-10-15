@@ -1207,10 +1207,10 @@ function resolveShots(targetB, cells, who, powerLabel, opts = {}) {
       toast(phrase, SIDES[G.side[who]].cssAlt);
       setAction(`✅ ${phrase}`, "#4cd964", `${powerLabel} derrubou ${hits} torcedor${hits>1?"es":""} de ${target} · +${hits} ⚡ de energia`);
     } else {
-      setAction(`❌ ${phrase}`, "#9aa7b5", `${powerLabel} não pegou ninguém`);
-      log(`${sname(who)}: ${powerLabel} errou o alvo. 🚧`);
       const phrase = pickPhrase(MISS_PHRASES);
+      log(`${sname(who)}: ${powerLabel} errou o alvo. 🚧`);
       toast(phrase, "#cfd8e3");
+      setAction(`❌ ${phrase}`, "#9aa7b5", `${powerLabel} não pegou ninguém`);
     }
     sunkNames.forEach(n => {
       sfx.sunk();
