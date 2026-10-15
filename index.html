@@ -66,6 +66,7 @@
   @keyframes pop { 0% { opacity:0; transform:scale(.4);} 20% { opacity:1; transform:scale(1.15);} 70% { opacity:1; transform:scale(1);} 100% { opacity:0; transform:scale(1.05) translateY(-20px);} }
   .overlay { inset:0; background:radial-gradient(circle at 50% 30%,#1c2a3acc,#05080dee); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px; z-index:5; }
   .overlay { overflow:auto; }
+  #menu { background:radial-gradient(circle at 50% 25%,#1d2c40,#070a10 80%); }
   .overlay > :first-child { margin-top:auto; } .overlay > :last-child { margin-bottom:auto; }
   #logo svg { width:min(560px,84vw); height:auto; filter:drop-shadow(0 6px 18px #000a); }
   .tag { margin:6px 0 14px; font-size:15px; }
@@ -131,6 +132,25 @@
   #focusTag { top:118px; left:50%; transform:translateX(-50%); padding:5px 14px; border-radius:20px; font-weight:800; font-size:13px; white-space:nowrap;
               background:rgba(10,14,22,.85); border:2px solid var(--amarelo); pointer-events:none; z-index:3; display:none; }
   body.mobile #focusTag:not(.hidden) { display:block; }
+  .card.sel { outline:4px solid var(--amarelo); box-shadow:0 0 22px #ffdf0088; }
+  #levelsWrap { width:100%; display:flex; flex-direction:column; align-items:center; }
+  #levelGrid { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:10px; max-width:960px; width:100%; }
+  .lvl { display:flex; gap:10px; align-items:center; text-align:left; padding:10px 12px; border-radius:14px; border:2px solid #fff3; cursor:pointer;
+         position:relative; background-size:cover; transition:.15s; text-shadow:0 1px 3px #000; min-height:84px; overflow:hidden; }
+  .lvl::before { content:""; position:absolute; inset:0; background:linear-gradient(90deg,#000b,#0006); }
+  .lvl > * { position:relative; }
+  .lvl:hover:not(.locked):not(.soon) { transform:translateY(-3px); border-color:#fff8; }
+  .lvl .face { flex:none; border-radius:50%; background:#0007; line-height:0; }
+  .lvl .info b { font-size:16px; display:block; }
+  .lvl .tg { font-size:11px; letter-spacing:1px; font-weight:800; color:var(--amarelo); }
+  .lvl small { display:block; opacity:.92; font-size:12px; line-height:1.35; }
+  .lvl .badge { position:absolute; bottom:8px; right:10px; font-size:11px; font-weight:900; background:var(--amarelo); color:#222; padding:1px 8px; border-radius:8px; text-shadow:none; }
+  .lvl.locked { filter:grayscale(1) brightness(.55); cursor:not-allowed; }
+  .lvl.soon { opacity:.5; cursor:default; border-style:dashed; }
+  .lvl.done .badge { background:#4cd964; }
+  .lvl.fresh { border-color:var(--amarelo); animation:glow .9s infinite alternate; }
+  .lvl.boss { border-color:#ff5a4a; }
+  .lvl.boss .tg { color:#ff8a7a; }
   .hidden { display:none !important; }
   .rules { font-size:13px; opacity:.75; max-width:640px; }
   @media (max-width:700px) {
@@ -246,25 +266,29 @@
   </g></g>
   <text x="320" y="328" font-size="25" font-weight="700" fill="#ffffff" stroke="#000" stroke-width="5" paint-order="stroke" text-anchor="middle" font-family="'Segoe UI',Arial,sans-serif" textLength="560" lengthAdjust="spacingAndGlyphs">Posicione a torcida. Acerte o adversário. Domine a avenida!</text>
 </svg></div>
-  <p class="tag">Eleições 2026 em modo estratégia: duas torcidas, um território e muita bandeira.
-     Posicione sua torcida, descubra onde a oposição está escondida e desmobilize todo mundo antes que façam o mesmo com você!</p>
-  <div class="step">1 · Escolha o cenário</div>
-  <div id="scnGrid"></div>
-  <div class="step">2 · Escolha o seu lado e comece</div>
+  <p class="tag">Eleições 2026 em modo campanha: escolha seu lado, vença uma fase por vez e chegue ao chefão final.</p>
+  <div class="step">1 · Escolha o seu lado</div>
   <div class="choose">
     <div class="card f" data-side="flavio">Flávio Bolsonaro<small>PL · verde e amarelo<br>Poder final: Motociata (linha inteira)</small></div>
     <div class="card l" data-side="lula">Lula<small>PT · vermelho e estrela<br>Poder final: Caravana (coluna inteira)</small></div>
   </div>
+  <div id="levelsWrap" class="hidden">
+    <div class="step" id="levelsTitle">2 · Escolha a fase</div>
+    <div id="levelGrid"></div>
+  </div>
   <div class="rules">
     Paródia bem-humorada: ninguém se machuca, quem é "atingido" só senta, cansado de tanto gritar. 🎺<br>
-    Sem limite de tempo: vence quem dispersar toda a torcida adversária · Atire com o mouse/toque · R gira a torcida · 1–4 escolhem poderes · Esc cancela
+    Atire com o mouse/toque · R gira a torcida · 1–4 escolhem poderes · Esc cancela · O progresso fica só nesta aba (atualizou, recomeça)
   </div>
 </div>
 
 <div id="endscreen" class="overlay abs hidden">
   <h1 id="endTitle"></h1>
   <p id="endText"></p>
-  <button class="btn primary" id="btnAgain" style="font-size:18px;padding:12px 22px">Jogar de novo</button>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+    <button class="btn primary" id="btnAgain" style="font-size:18px;padding:12px 22px">Continuar</button>
+    <button class="btn" id="btnMenu" style="font-size:18px;padding:12px 22px">Voltar ao menu</button>
+  </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -292,6 +316,33 @@ const SIDES = {
             cross:"Comício", ultra:"Caravana", ultraDesc:"coluna inteira", ultraMode:"col",
             skin:0xe8b48c, hair:0xf2f2f2, beard:true, shirts:[0xd7191c,0xffffff,0xd7191c,0xb01015] },
 };
+/* personagens: os dois líderes e os adversários de cada trilha */
+const CHARS = {
+  flavio:  { name:"Flávio Bolsonaro",    short:"Flávio",   party:"PL",           camp:"flavio", skin:0xf2c9a5, hair:0x2b1d14, hairStyle:"short" },
+  lula:    { name:"Lula",                short:"Lula",     party:"PT",           camp:"lula",   skin:0xe8b48c, hair:0xf2f2f2, hairStyle:"short", beard:true },
+  boulos:  { name:"Guilherme Boulos",    short:"Boulos",   party:"PSOL",         camp:"lula",   skin:0xe0ac82, hair:0x1d1510, hairStyle:"short", beard:true, beardColor:0x3a2a20 },
+  gleisi:  { name:"Gleisi Hoffmann",     short:"Gleisi",   party:"PT",           camp:"lula",   skin:0xf2c9a5, hair:0x6b4a2a, hairStyle:"bob" },
+  moraes:  { name:"Alexandre de Moraes", short:"Moraes",   party:"STF",          camp:"lula",   skin:0xe8b48c, hair:0x222222, hairStyle:"bald", glasses:true },
+  nikolas: { name:"Nikolas Ferreira",    short:"Nikolas",  party:"PL",           camp:"flavio", skin:0xf2c9a5, hair:0x2b1d14, hairStyle:"short" },
+  tarcisio:{ name:"Tarcísio de Freitas", short:"Tarcísio", party:"Republicanos", camp:"flavio", skin:0xe8b48c, hair:0x2b2018, hairStyle:"short", glasses:true },
+  michelle:{ name:"Michelle Bolsonaro",  short:"Michelle", party:"PL",           camp:"flavio", skin:0xf2c9a5, hair:0xd9b36a, hairStyle:"long" },
+};
+/* adversários por fase, conforme o lado que você escolheu (o chefão é sempre o líder do outro lado) */
+const TRACKS = {
+  flavio: ["boulos","gleisi","moraes","lula"],
+  lula:   ["nikolas","tarcisio","michelle","flavio"],
+};
+/* fases: cenário, dificuldade, tamanho da torcida adversária (índices de FLEET) e nível da IA */
+const LEVELS = [
+  { scn:"paulista", diff:"Fácil",   ai:1, def:[4,3,2] },
+  { scn:"poa",      diff:"Médio",   ai:2, def:[1,2,3,4] },
+  { scn:"rio",      diff:"Difícil", ai:3, def:[0,1,2,4] },
+  { scn:"brasilia", diff:"CHEFÃO",  ai:4, def:[0,1,2,3,4], boss:true },
+];
+/* progresso só em memória: recarregar a página recomeça */
+const PROG = { flavio:1, lula:1 };               // fases liberadas por trilha
+const CLEARED = { flavio:[], lula:[] };          // fases já vencidas
+let menuSide = null, justUnlocked = -1;
 const COST = { normal:0, radar:2, cross:3, ultra:6 };
 const MAX_ENERGY = 9;
 const TURN_TIME = Infinity;    // segundos por jogada (Infinity = sem limite)
@@ -303,7 +354,7 @@ const FLEET_TOTAL = FLEET.reduce((a,f) => a+f.len, 0);
    ================================================================ */
 let lastEnergy = 1;
 const G = {
-  round:1, scn:null, scnChoice:"random",
+  round:1, scn:null, level:1, levelIdx:0, enemy:null, defs:[FLEET,FLEET],
   phase:"menu", side:[null,null], boards:[], fleets:[[],[]], fans:[{},{}],
   energy:[1,1], turn:0, busy:false, timeLeft:TURN_TIME, power:"normal",
   horiz:true, firstTurn:true, captains:[null,null], hover:null,
@@ -433,6 +484,12 @@ const SONGS = {
     bass:[1,0,0,0,0,0,2,0,1,0,0,0,0,0,2,0],
     melody: bars([76,0,0,74,72,0,69,0,72,0,74,0,76,0,0,0],[74,0,0,72,69,0,0,0,74,0,77,0,76,0,74,0],
                  [76,0,0,79,76,0,74,0,71,0,74,0,76,0,0,0],[72,0,74,0,76,0,74,72,69,0,0,0,69,0,0,0]) },
+  /* Brasília: marcha solene com fanfarra em Dó maior */
+  brasilia: { bpm:108, chords:[48,53,55,48], kick:{f:130,g:50,d:.22,v:1}, lead:{type:"sawtooth", filter:2000, dur:.2, vol:.12},
+    k:[1,0,0,0,0,0,1,0,1,0,0,0,0,0,1,0], s:[0,0,0,0,1,0,0,.5,0,0,0,0,1,0,.5,.5], h:[0,0,.7,0,0,0,.7,0,0,0,.7,0,0,0,.7,0], x:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    bass:[1,0,0,0,2,0,0,0,1,0,0,0,2,0,0,0],
+    melody: bars([72,0,0,76,79,0,0,0,76,0,79,0,84,0,0,0],[77,0,0,81,84,0,0,0,81,0,77,0,79,0,0,0],
+                 [79,0,0,83,86,0,0,0,83,0,79,0,86,0,0,0],[84,0,79,0,76,0,79,0,72,0,0,0,72,0,0,0]) },
   /* Porto Alegre: milonga/gaúcha em Sol maior (bombo, acordeão) */
   poa: { bpm:92, chords:[43,48,50,43], kick:{f:100,g:55,d:.26,v:1}, lead:{type:"sawtooth", filter:1700, dur:.24, vol:.1},
     k:[1,0,0,1,0,0,1,0,1,0,0,1,0,0,1,0], s:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], h:[0,0,.7,0,0,0,.7,0,0,0,.7,0,0,0,.7,0], x:[0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,.6],
@@ -723,6 +780,32 @@ const SCENARIOS = [
       });
     } },
 
+  /* ---------- Brasília: Esplanada dos Ministérios ---------- */
+  { id:"brasilia", name:"Esplanada dos Ministérios", short:"Brasília", of:"da Esplanada dos Ministérios", emoji:"🏛️", city:"Brasília · DF",
+    thumb:"linear-gradient(170deg,#6ec0ff,#cfc8b4 70%)", sky:0x7fc4ff, fog:[0xcfe8ff,70,190], tiles:[0xb3ac97,0xa29b87],
+    build() {
+      groundPlane(320,220,0x76a95c,-.12,-20);                   // gramado da Esplanada
+      E(box(320,.05,17,0x9a9484, 0,-.1,0));                       // pavimento central
+      E(box(46,.03,7,0x4aa3df, 0,-.09,-13));                      // espelho d'água
+      const cg = new THREE.Group(), white = 0xf1eee4;            // Congresso Nacional
+      cg.add(box(54,2,12,white, 0,1,0)); cg.add(box(44,.5,9,0xe0dccf, 0,2.25,0));
+      const dome = new THREE.Mesh(new THREE.SphereGeometry(5.4,28,14,0,Math.PI*2,0,Math.PI/2), LM(0xeeeeee)); dome.position.set(-13,2.5,0); cg.add(dome);
+      const bowl = new THREE.Mesh(new THREE.SphereGeometry(5.4,28,14,0,Math.PI*2,0,Math.PI/2),
+        new THREE.MeshLambertMaterial({color:0xeeeeee, side:THREE.DoubleSide})); bowl.rotation.x = Math.PI; bowl.position.set(13,7.9,0); cg.add(bowl);
+      cg.add(box(3.4,19,5,0xe9e6dc, -2,12,0)); cg.add(box(3.4,19,5,0xe9e6dc, 2,12,0)); cg.add(box(7,1.1,2.4,0xd8d4c8, 0,17.5,0));
+      cg.position.set(0,0,-31); E(cg);
+      for (let i=0;i<6;i++) [-1,1].forEach(sx => {                // ministérios
+        const x = sx*(30+i*11);
+        E(box(10,6,5,0xf4f1e8, x,3,-26)); E(box(10.1,1.5,5.1,0x5aa0d0, x,3.8,-26));
+      });
+      const flagM = new THREE.MeshBasicMaterial({map:flagTex("flavio"), side:THREE.DoubleSide});      // bandeira do Brasil
+      [-17,17].forEach(x => {
+        E(cyl(.12,.15,12,0xeeeeee, x,6,-11,8));
+        const f = new THREE.Mesh(new THREE.PlaneGeometry(4.6,3.2), flagM); f.position.set(x+2.4,10.2,-11); E(f);
+      });
+      for (let i=0;i<8;i++) { const c = ball(2.5+Math.random()*2.5,0xffffff, -55+i*15+Math.random()*6, 13+Math.random()*4, -50-Math.random()*30); c.scale.y = .45; E(c); }
+    } },
+
   /* >>> ADICIONE NOVOS CENÁRIOS AQUI <<< */
 ];
 const SCENARIO_SLOTS = 2;                                       // lacunas "Em breve" exibidas no menu
@@ -799,8 +882,8 @@ function makeFan(sideKey) {
   return g;
 }
 
-function makeCaptain(sideKey) {
-  const s = SIDES[sideKey], g = new THREE.Group();
+function makeCaptain(sideKey, chr) {
+  const s = SIDES[sideKey], g = new THREE.Group(), ch = chr || CHARS[sideKey], hs = ch.hairStyle || "short";
   // capa real
   const cape = new THREE.Mesh(new THREE.PlaneGeometry(1.2,1.5), new THREE.MeshLambertMaterial({color:s.main,side:THREE.DoubleSide}));
   cape.position.set(0,1.15,-.38); g.add(cape);
@@ -810,12 +893,23 @@ function makeCaptain(sideKey) {
   em.position.set(0,.95,.4); g.add(em);
   const legs = box(.7,.3,.4,0x22262e, 0,.15,0); g.add(legs);
   // cabeça
-  const head = new THREE.Mesh(new THREE.SphereGeometry(.34,18,14), mat(s.skin)); head.position.y = 1.7; g.add(head);
-  const hair = new THREE.Mesh(new THREE.SphereGeometry(.355,16,8,0,Math.PI*2,0,Math.PI/2.05), mat(s.hair));
-  hair.position.set(0,1.73,-.02); g.add(hair);
-  if (s.beard) {
-    const beard = new THREE.Mesh(new THREE.SphereGeometry(.28,12,10), mat(s.hair));
+  const head = new THREE.Mesh(new THREE.SphereGeometry(.34,18,14), mat(ch.skin)); head.position.y = 1.7; g.add(head);
+  if (hs !== "bald") {
+    const hair = new THREE.Mesh(new THREE.SphereGeometry(.355,16,8,0,Math.PI*2,0,Math.PI/2.05), mat(ch.hair));
+    hair.position.set(0,1.73,-.02); g.add(hair);
+  }
+  if (hs === "bob" || hs === "long") {
+    const len = hs === "long" ? .95 : .55;
+    g.add(box(.8,len,.22,ch.hair, 0,1.95-len/2,-.24));
+    [-.36,.36].forEach(x => g.add(box(.1,len*.9,.34,ch.hair, x,1.95-len*.45,-.04)));
+  }
+  if (ch.beard) {
+    const beard = new THREE.Mesh(new THREE.SphereGeometry(.28,12,10), mat(ch.beardColor || ch.hair));
     beard.scale.set(1,.7,.8); beard.position.set(0,1.55,.1); g.add(beard);
+  }
+  if (ch.glasses) {
+    [-.125,.125].forEach(x => { const r = new THREE.Mesh(new THREE.TorusGeometry(.095,.016,8,16), mat(0x111111)); r.position.set(x,1.745,.325); g.add(r); });
+    g.add(box(.1,.02,.02,0x111111, 0,1.745,.33));
   }
   [-.12,.12].forEach(x => { const e = new THREE.Mesh(new THREE.SphereGeometry(.04,8,6), mat(0x111111)); e.position.set(x,1.74,.31); g.add(e); });
   const smile = new THREE.Mesh(new THREE.TorusGeometry(.08,.015,6,12,Math.PI), mat(0x7a1c1c));
@@ -836,8 +930,8 @@ function makeCaptain(sideKey) {
   const flag = new THREE.Mesh(new THREE.PlaneGeometry(.9,.62), new THREE.MeshBasicMaterial({map:flagTex(sideKey),side:THREE.DoubleSide}));
   flag.position.set(.46,1.35,0); arm.add(flag);
   g.add(arm);
-  const label = labelSprite(s.short+" · "+s.party, s.css); label.position.set(0,2.75,0); g.add(label);
-  g.scale.setScalar(1.7);
+  const label = labelSprite(ch.short+" · "+ch.party, s.css); label.position.set(0,2.75,0); g.add(label);
+  g.scale.setScalar(ch.boss ? 2.05 : 1.7);
   g.userData = { arm, jump:0, shake:0, base:null };
   return g;
 }
@@ -1217,7 +1311,7 @@ function canPlace(b, cells) {
   return cells.every(([r,c]) => inb(r,c) && G.boards[b][r][c].ship < 0);
 }
 function placeShip(b, idx, cells) {
-  const ship = { ...FLEET[idx], idx, cells, hits:0, sunk:false };
+  const ship = { ...G.defs[b][idx], idx, cells, hits:0, sunk:false };
   G.fleets[b].push(ship);
   cells.forEach(([r,c]) => { G.boards[b][r][c].ship = G.fleets[b].length-1; addFan(b,r,c); });
   return ship;
@@ -1227,7 +1321,7 @@ function resetFleet(b) {
 }
 function randomFleet(b) {
   resetFleet(b);
-  FLEET.forEach((def, idx) => {
+  G.defs[b].forEach((def, idx) => {
     for (let tries=0; tries<500; tries++) {
       const h = Math.random()<.5, r = rand(N), c = rand(N), cells = shipCells(r,c,def.len,h);
       if (canPlace(b,cells)) { placeShip(b,idx,cells); break; }
@@ -1279,7 +1373,7 @@ function toast(text, color="#fff") {
   const t = $("toast"); t.textContent = text; t.style.color = color;
   t.classList.remove("show"); void t.offsetWidth; t.classList.add("show");
 }
-const sname = b => SIDES[G.side[b]].short;
+const sname = b => (b===1 && G.enemy) ? G.enemy.short : SIDES[G.side[b]].short;
 
 function captainReact(b, kind) {
   const cp = G.captains[b]; if (!cp) return;
@@ -1380,14 +1474,15 @@ function doRadar(targetB, r, c, who, cb) {
 function startBattle() {
   G.phase = "battle"; G.turn = 0; G.round = 1; G.power = "normal"; G.firstTurn = true;
   G.finished = false; G.matchEnd = Date.now() + MATCH_TIME*1000;
-  G.energy = [1,1]; lastEnergy = 1; $("log").innerHTML = "";
-  log(`⚔️ A disputa começou! <b>${sname(0)}</b> contra <b>${sname(1)}</b>.`);
+  G.energy = [1, G.level>=4 ? 3 : 1]; lastEnergy = 1; $("log").innerHTML = "";
+  log(`⚔️ Fase ${G.level}: <b>${sname(0)}</b> contra <b>${G.enemy.name}</b> (${LEVELS[G.levelIdx].diff}).`);
+  if (LEVELS[G.levelIdx].boss) setTimeout(() => toast(`CHEFÃO: ${G.enemy.short.toUpperCase()}!`, "#ff5a4a"), 300);
   $("placePanel").classList.add("hidden");
   $("battlePanel").classList.remove("hidden");
   startTurn();
 }
 function startTurn() {
-  if (!G.firstTurn) G.energy[G.turn] = Math.min(MAX_ENERGY, G.energy[G.turn]+1);
+  if (!G.firstTurn) G.energy[G.turn] = Math.min(MAX_ENERGY, G.energy[G.turn] + 1 + (G.turn===1 && G.level>=4 ? 1 : 0));   // chefão ganha energia extra
   G.firstTurn = false;
   G.timeLeft = TURN_TIME; G.power = "normal";
   if (G.turn===0) {
@@ -1426,6 +1521,7 @@ function playerFire(r,c) {
 function cpuPlay() {
   if (G.phase!=="battle") return;
   const B = G.boards[0], me = SIDES[G.side[1]];
+  const lvl = G.level || 3, eName = G.enemy ? G.enemy.short : me.short;
   const unshot = [];
   for (let r=0;r<N;r++) for (let c=0;c<N;c++) if (!B[r][c].shot) unshot.push([r,c]);
   // acertos pendentes (navio atingido e ainda não afundado)
@@ -1435,7 +1531,7 @@ function cpuPlay() {
   const scannedShips = unshot.filter(([r,c]) => B[r][c].scanned && B[r][c].ship>=0);
 
   const pickTarget = () => {
-    if (wounded.length) {
+    if (wounded.length && (lvl>=2 || Math.random()<.45)) {
       const cand = [];
       wounded.forEach(([r,c]) => [[1,0],[-1,0],[0,1],[0,-1]].forEach(([dr,dc]) => {
         const rr=r+dr, cc=c+dc;
@@ -1447,8 +1543,8 @@ function cpuPlay() {
       }));
       if (cand.length) return cand[rand(cand.length)];
     }
-    if (scannedShips.length) return scannedShips[rand(scannedShips.length)];
-    const par = unshot.filter(([r,c]) => (r+c)%2===0);
+    if (lvl>=3 && scannedShips.length) return scannedShips[rand(scannedShips.length)];
+    const par = lvl>=3 ? unshot.filter(([r,c]) => (r+c)%2===0) : [];
     const pool = par.length ? par : unshot;
     return pool[rand(pool.length)];
   };
@@ -1457,7 +1553,7 @@ function cpuPlay() {
     let [r,c] = pickTarget();
     let power = "normal";
     const e = G.energy[1];
-    if (e >= COST.ultra && Math.random() < .6) {
+    if (lvl>=3 && e >= COST.ultra && Math.random() < (lvl>=4 ? .9 : .55)) {
       power = "ultra";
       if (!wounded.length) { // linha/coluna com mais células livres
         const idx = []; for (let i=0;i<N;i++) idx.push(i);
@@ -1465,26 +1561,26 @@ function cpuPlay() {
         idx.sort((a,b)=>free(b)-free(a)); const top = idx[rand(3)];
         if (me.ultraMode==="row") r = top; else c = top;
       }
-    } else if (e >= COST.cross && Math.random() < .5) {
+    } else if (lvl>=2 && e >= COST.cross && Math.random() < (lvl>=4 ? .8 : lvl===3 ? .5 : .3)) {
       power = "cross"; r = Math.min(N-2,Math.max(1,r)); c = Math.min(N-2,Math.max(1,c));
     }
     const cells = pattern(power,r,c).filter(([rr,cc]) => !B[rr][cc].shot);
     if (!cells.length) { const [rr,cc]=unshot[rand(unshot.length)]; cells.push([rr,cc]); power="normal"; }
     G.energy[1] -= COST[power];
-    if (power!=="normal") { sfx.power(); toast(`${me.short.toUpperCase()}: ${(power==="cross"?me.cross:me.ultra).toUpperCase()}!`, me.cssAlt); }
+    if (power!=="normal") { sfx.power(); toast(`${eName.toUpperCase()}: ${(power==="cross"?me.cross:me.ultra).toUpperCase()}!`, me.cssAlt); }
     let opts, label;
     if (power==="normal") {
       const th = pickThrow(); const [tr,tc] = cells[0]; label = th.def; opts = fxThrow(0, tr, tc, 1, th);
-      setAction(`${th.emoji} ${me.short} arremessa ${th.indef.toUpperCase()}!`, me.cssAlt, "Contra a sua torcida");
+      setAction(`${th.emoji} ${eName} arremessa ${th.indef.toUpperCase()}!`, me.cssAlt, "Contra a sua torcida");
     } else {
       label = power==="cross" ? me.cross : me.ultra;
-      setAction(`⚡ ${me.short.toUpperCase()}: ${label.toUpperCase()}!`, me.cssAlt, "Poder especial do adversário");
+      setAction(`⚡ ${eName.toUpperCase()}: ${label.toUpperCase()}!`, me.cssAlt, "Poder especial do adversário");
       opts = playSpecial(power, 0, r, c, 1);
     }
     resolveShots(0, cells, 1, label, opts);
   };
 
-  if (G.energy[1] >= COST.radar && !wounded.length && !scannedShips.length && Math.random() < .25) {
+  if (lvl>=3 && G.energy[1] >= COST.radar && !wounded.length && !scannedShips.length && Math.random() < .25) {
     const [r,c] = unshot[rand(unshot.length)];
     doRadar(0, Math.min(N-2,Math.max(1,r)), Math.min(N-2,Math.max(1,c)), 1, () => {
       scannedShips.length = 0;
@@ -1526,14 +1622,30 @@ function finish(winner, reason) {
     }, i*250);
     captainReact(winner,"jump");
   }
-  const a = dmgDealt(0), b = dmgDealt(1), rounds = `${G.round} rodada${G.round>1?"s":""}`;
+  const rounds = `${G.round} rodada${G.round>1?"s":""}`;
+  const side = G.side[0], last = LEVELS.length-1;
+  let title, text, btn;
+  if (youWin) {
+    CLEARED[side][G.levelIdx] = true;
+    if (G.levelIdx < last && PROG[side] === G.levelIdx+1) { PROG[side]++; justUnlocked = G.levelIdx+1; }
+    if (G.levelIdx === last) {
+      title = "CAMPEÃO!";
+      text = `${G.enemy.name} foi derrotado ${G.scn.of}! Você zerou a trilha de ${CHARS[side].name} em ${rounds} na última fase. 🏆`;
+      btn = "Voltar ao menu";
+    } else {
+      const nxt = LEVELS[G.levelIdx+1], sc = SCENARIOS.find(x => x.id===nxt.scn), en = CHARS[TRACKS[side][G.levelIdx+1]];
+      title = "VITÓRIA!";
+      text = `${G.enemy.name} (${G.enemy.party}) foi dispersado ${G.scn.of} em ${rounds}! Fase desbloqueada: ${sc.name}, contra ${en.name}${nxt.boss ? " — o CHEFÃO!" : "."}`;
+      btn = "Continuar ▶";
+    }
+  } else {
+    title = "DERROTA!";
+    text = `${G.enemy.name} (${G.enemy.party}) dominou a disputa ${G.scn.of} em ${rounds}. Reorganize a torcida e tente de novo!`;
+    btn = "Tentar de novo ↻";
+  }
+  G.lastWin = youWin;
   setTimeout(() => {
-    $("endTitle").textContent = draw ? "EMPATE!" : youWin ? "VITÓRIA!" : "DERROTA!";
-    $("endText").textContent =
-      reason==="time" && draw ? `Tempo esgotado e tudo igual: ${a} × ${b} torcedores derrubados. A disputa ${G.scn.of} termina sem vencedor!`
-      : reason==="time"       ? `Tempo esgotado! ${s.name} (${s.party}) venceu nos pontos, ${winner===0?a:b} × ${winner===0?b:a} torcedores derrubados, e leva a vitória ${G.scn.of}.`
-      : youWin                ? `${s.name} (${s.party}) tomou conta ${G.scn.of} em ${rounds}! A torcida adversária foi pra casa mais cedo.`
-      :                         `${s.name} (${s.party}) dominou ${G.scn.of} em ${rounds}. Que tal pedir a revanche?`;
+    $("endTitle").textContent = title; $("endText").textContent = text; $("btnAgain").textContent = btn;
     $("endscreen").classList.remove("hidden");
   }, 2600);
 }
@@ -1547,7 +1659,7 @@ function ui() {
   $("roundText").innerHTML = (G.scn ? `<span class="scn-name">📍 ${G.scn.short}</span>` : "") +
     (G.phase==="battle" || G.phase==="over" ? ` · Rodada <b>${G.round}</b>` : "");
   $("sideA").textContent = `${s0.short} (você)`; $("sideA").style.background = s0.css;
-  $("sideB").textContent = `${s1.short} (CPU)` + (G.phase==="battle" ? ` ⚡${G.energy[1]}` : "");  $("sideB").style.background = s1.css;
+  $("sideB").textContent = `${G.enemy ? G.enemy.short : s1.short} (CPU)` + (G.phase==="battle" ? ` ⚡${G.energy[1]}` : "");  $("sideB").style.background = s1.css;
   $("sideA").style.color = s0.key==="flavio" ? "#ffdf00" : "#fff";
   const ft = $("focusTag");
   if (G.phase==="battle") {
@@ -1557,11 +1669,12 @@ function ui() {
   } else if (G.phase==="place") { ft.classList.remove("hidden"); ft.textContent = "🧭 SUA ARENA · toque para posicionar"; ft.style.borderColor = "#4cd964"; }
   else ft.classList.add("hidden");
   [[0,"A",s0],[1,"B",s1]].forEach(([b,k,sd]) => {
-    const left = FLEET_TOTAL - G.fleets[b].reduce((n,sh) => n + sh.hits, 0), pct = Math.max(0,left/FLEET_TOTAL*100);
+    const tot = G.defs[b].reduce((a,f) => a+f.len, 0);
+    const left = tot - G.fleets[b].reduce((n,sh) => n + sh.hits, 0), pct = Math.max(0,left/tot*100);
     $("fill"+k).style.width = pct+"%"; $("trail"+k).style.width = pct+"%";
     $("fill"+k).style.background = `linear-gradient(${b===0?90:270}deg, ${sd.css}, ${sd.cssAlt})`;
     $("hp"+k).classList.toggle("low", pct>0 && pct<=30);
-    $("hp"+k+"txt").textContent = `${left}/${FLEET_TOTAL}`;
+    $("hp"+k+"txt").textContent = `${left}/${tot}`;
   });
   $("sideB").style.color = s1.key==="flavio" ? "#ffdf00" : "#fff";
 
@@ -1613,7 +1726,7 @@ function ui() {
     const row = (b) => G.fleets[b].map(sh =>
       `<div class="${sh.sunk?"sunk":""}">${"●".repeat(sh.len-sh.hits)}${"○".repeat(sh.hits)} ${sh.name}</div>`).join("");
     $("fleetA").innerHTML = `<b style="color:${s0.cssAlt}">Sua torcida</b>${row(0)}`;
-    $("fleetB").innerHTML = `<b style="color:${s1.cssAlt}">Torcida adversária</b>${row(1)}`;
+    $("fleetB").innerHTML = `<b style="color:${s1.cssAlt}">Torcida de ${G.enemy ? G.enemy.short : s1.short}</b>${row(1)}`;
   } else if (G.phase==="place") {
     $("fleetA").classList.add("hidden"); $("fleetB").classList.add("hidden");
   }
@@ -1690,41 +1803,88 @@ $("btnStart").onclick = startBattle;
 $("mute").onclick = () => { muted = !muted; $("mute").textContent = muted ? "🔇" : "🔊"; musicVol(); };
 $("musicBtn").onclick = () => { Music.on = !Music.on; $("musicBtn").classList.toggle("off", !Music.on); musicVol(); };
 cv.addEventListener("contextmenu", e => { e.preventDefault(); if (G.phase==="place") { G.horiz = !G.horiz; ui(); updateHoverPreview(); } });
-$("btnAgain").onclick = () => { musicStop(); $("endscreen").classList.add("hidden"); $("menu").classList.remove("hidden"); G.phase="menu"; };
+const hexCss = n => "#" + n.toString(16).padStart(6,"0");
+/* rosto estilizado do personagem para os cartões de fase */
+function faceSVG(ch, size, boss) {
+  const camp = SIDES[ch.camp], hs = ch.hairStyle || "short", hair = hexCss(ch.hair), skin = hexCss(ch.skin);
+  let h = `<svg viewBox="0 0 64 64" width="${size}" height="${size}"><circle cx="32" cy="32" r="30" fill="${camp.css}" stroke="${camp.cssAlt}" stroke-width="3"/>`;
+  if (hs==="long" || hs==="bob") h += `<rect x="14" y="20" width="36" height="${hs==="long"?36:26}" rx="12" fill="${hair}"/>`;
+  h += `<ellipse cx="32" cy="36" rx="15" ry="17" fill="${skin}"/>`;
+  if (hs !== "bald") h += `<path d="M16 33 C14 13 50 13 48 33 C44 23 20 23 16 33Z" fill="${hair}"/>`;
+  if (ch.beard) h += `<path d="M18 39 C20 57 44 57 46 39 C42 47 22 47 18 39Z" fill="${hexCss(ch.beardColor || ch.hair)}"/>`;
+  h += `<circle cx="26" cy="36" r="1.8" fill="#111"/><circle cx="38" cy="36" r="1.8" fill="#111"/>`;
+  if (ch.glasses) h += `<circle cx="26" cy="36" r="5" fill="none" stroke="#111" stroke-width="1.6"/><circle cx="38" cy="36" r="5" fill="none" stroke="#111" stroke-width="1.6"/><path d="M31 36h2" stroke="#111" stroke-width="1.6"/>`;
+  if (boss) h += `<path d="M19 14 L22 4 L32 11 L42 4 L45 14Z" fill="#ffd23a" stroke="#3b2600" stroke-width="1.5"/>`;
+  return h + "</svg>";
+}
+
+function buildMenu() {
+  document.querySelectorAll(".card").forEach(c => c.classList.toggle("sel", c.dataset.side === menuSide));
+  const wrap = $("levelsWrap"), grid = $("levelGrid");
+  if (!menuSide) { wrap.classList.add("hidden"); return; }
+  wrap.classList.remove("hidden");
+  const done = CLEARED[menuSide].filter(Boolean).length;
+  $("levelsTitle").textContent = `2 · Trilha de ${CHARS[menuSide].short}: escolha a fase (${done}/${LEVELS.length} vencidas)`;
+  grid.innerHTML = "";
+  LEVELS.forEach((L, i) => {
+    const sc = SCENARIOS.find(x => x.id === L.scn), en = CHARS[TRACKS[menuSide][i]];
+    const total = L.def.reduce((a,idx) => a + FLEET[idx].len, 0);
+    const locked = i >= PROG[menuSide], cleared = CLEARED[menuSide][i], fresh = i === justUnlocked;
+    const d = document.createElement("div");
+    d.className = "lvl" + (locked ? " locked" : "") + (cleared ? " done" : "") + (fresh ? " fresh" : "") + (L.boss ? " boss" : "");
+    d.style.backgroundImage = sc.thumb;
+    d.innerHTML = locked
+      ? `<span class="face">${faceSVG({camp:en.camp, hair:0x333333, skin:0x555555, hairStyle:"bald"}, 54, false)}</span>
+         <span class="info"><span class="tg">FASE ${i+1} · ${L.diff.toUpperCase()}</span><b>🔒 ???</b><small>Vença a fase ${i} para liberar</small></span>`
+      : `<span class="face">${faceSVG(en, 54, L.boss)}</span>
+         <span class="info"><span class="tg">FASE ${i+1} · ${L.diff.toUpperCase()}</span><b>${en.name}</b>
+         <small>${en.party} · ${sc.name}<br>👥 ${total} torcedores para dispersar</small></span>
+         ${fresh ? '<span class="badge">NOVA!</span>' : cleared ? '<span class="badge">✔ VENCIDA</span>' : ""}`;
+    if (!locked) d.onclick = () => startLevel(i);
+    grid.appendChild(d);
+  });
+  const soon = document.createElement("div"); soon.className = "lvl soon";
+  soon.innerHTML = `<span class="face" style="font-size:34px;line-height:54px;width:54px;text-align:center">🔒</span><span class="info"><span class="tg">EM BREVE</span><b>Novas fases</b><small>Mais cenários a caminho</small></span>`;
+  grid.appendChild(soon);
+}
+function showMenu() {
+  musicStop(); G.phase = "menu";
+  ["endscreen","placePanel","battlePanel","focusTag","action"].forEach(id => $(id).classList.add("hidden"));
+  $("menu").classList.remove("hidden");
+  buildMenu(); justUnlocked = -1;
+}
+function startLevel(i) {
+  if (!menuSide || i >= PROG[menuSide]) return;
+  actx && actx.state==="suspended" && actx.resume();
+  newGame(menuSide, i);
+}
+$("btnMenu").onclick = showMenu;
+$("btnAgain").onclick = () => {
+  if (G.lastWin) showMenu();            // vitória: volta à tela inicial já com a próxima fase liberada
+  else startLevel(G.levelIdx);          // derrota: tenta a mesma fase de novo
+};
 document.querySelectorAll(".card").forEach(card => card.onclick = () => {
   actx && actx.state==="suspended" && actx.resume();
-  newGame(card.dataset.side);
+  menuSide = card.dataset.side; buildMenu();
 });
+buildMenu();
 
-function buildScenarioMenu() {
-  const grid = $("scnGrid"); grid.innerHTML = "";
-  const card = (id, em, name, sub, thumb, soon) => {
-    const d = document.createElement("div");
-    d.className = "scn" + (soon ? " soon" : "") + (!soon && G.scnChoice===id ? " sel" : "");
-    d.style.background = thumb || "";
-    d.innerHTML = `<span class="em">${em}</span>${name}<small>${sub}</small>`;
-    if (!soon) d.onclick = () => { G.scnChoice = id; buildScenarioMenu(); };
-    grid.appendChild(d);
-  };
-  card("random","🎲","Aleatório","surpreenda-me","linear-gradient(135deg,#009c3b,#ffdf00 50%,#d7191c)");
-  SCENARIOS.forEach(sc => card(sc.id, sc.emoji, sc.name, sc.city, sc.thumb));
-  for (let i=0;i<SCENARIO_SLOTS;i++) card("slot"+i, "🔒", "Em breve", "novo cenário", "", true);
-}
-buildScenarioMenu();
-
-function newGame(playerKey) {
+function newGame(playerKey, levelIdx = 0) {
   const other = playerKey==="flavio" ? "lula" : "flavio";
+  const L = LEVELS[levelIdx];
   G.side = [playerKey, other];
+  G.levelIdx = levelIdx; G.level = levelIdx + 1; G.lastWin = false;
+  G.enemy = { ...CHARS[TRACKS[playerKey][levelIdx]], boss: !!L.boss };
+  G.defs = [FLEET, L.def.map(i => FLEET[i])];
   G.phase = "place"; G.turn = 0; G.busy = false; G.horiz = true; G.power = "normal";
   G.energy = [1,1]; G.hover = null;
-  const pool = SCENARIOS;
-  applyScenario(G.scnChoice==="random" ? pool[rand(pool.length)] : (pool.find(x => x.id===G.scnChoice) || pool[0]));
+  applyScenario(SCENARIOS.find(x => x.id === L.scn) || SCENARIOS[0]);
   musicStart(G.scn.id);
   $("action").classList.add("hidden"); clearMarkers(); resetFleet(0); resetFleet(1); randomFleet(1);
   for (let b=0;b<2;b++) {
     frames[b].material.color.setHex(SIDES[G.side[b]].main);
     if (G.captains[b]) scene.remove(G.captains[b]);
-    const cp = makeCaptain(G.side[b]);
+    const cp = makeCaptain(G.side[b], b===0 ? CHARS[G.side[0]] : G.enemy);
     cp.position.set(BX[b], 0, -7.7); cp.rotation.y = b===0 ? .25 : -.25;
     cp.userData.base = cp.position.clone(); scene.add(cp); G.captains[b] = cp;
   }
@@ -1732,7 +1892,8 @@ function newGame(playerKey) {
   $("menu").classList.add("hidden"); $("endscreen").classList.add("hidden");
   $("placePanel").classList.remove("hidden"); $("battlePanel").classList.add("hidden");
   $("log").innerHTML = "";
-  log(`📍 Cenário: <b>${G.scn.name}</b> (${G.scn.city})`);
+  log(`📍 Fase ${G.level}/${LEVELS.length} · <b>${G.scn.name}</b> (${G.scn.city}) · ${L.diff}`);
+  log(`Adversário: <b>${G.enemy.name}</b> (${G.enemy.party})${L.boss ? " 🔥 CHEFÃO" : ""}`);
   log(`Você lidera a torcida de <b>${SIDES[playerKey].name}</b>. Posicione seus apoiadores!`);
   ui();
 }
