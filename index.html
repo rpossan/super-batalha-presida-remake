@@ -128,10 +128,16 @@
   #placePanel .btn kbd { margin-left:4px; }
   #mute, #musicBtn { pointer-events:auto; background:#0006; border:1px solid #fff4; color:#fff; border-radius:8px; padding:6px 10px; cursor:pointer; }
   #musicBtn.off { opacity:.45; text-decoration:line-through; }
+  #focusTag { top:118px; left:50%; transform:translateX(-50%); padding:5px 14px; border-radius:20px; font-weight:800; font-size:13px; white-space:nowrap;
+              background:rgba(10,14,22,.85); border:2px solid var(--amarelo); pointer-events:none; z-index:3; display:none; }
+  body.mobile #focusTag:not(.hidden) { display:block; }
   .hidden { display:none !important; }
   .rules { font-size:13px; opacity:.75; max-width:640px; }
   @media (max-width:700px) {
     .fleetlist, #log { display:none !important; }
+    #shipChips, #placePanel > div:last-child { display:none; }
+    #placeText { font-size:13px; margin-bottom:6px !important; }
+    #placePanel .btn { padding:7px 10px; font-size:13px; }
   }
   @media (max-width:1150px) {
     #log { display:none !important; }
@@ -143,11 +149,31 @@
     #top .side { font-size:12px; padding:3px 7px; }
     #turnText { display:none; }
     #roundText { font-size:11px; }
-    #action { top:128px; font-size:15px; padding:7px 12px; }
+    #action { top:156px; font-size:15px; padding:7px 12px; }
     #action small { display:none; }
     #energy > div > span { display:none; }
     .power { min-width:0; flex:1 1 44%; padding:8px; font-size:13px; }
     #toast { top:34%; }
+  }
+  /* celular na horizontal: faixa de poderes compacta, sem cobrir o tabuleiro */
+  @media (max-height:520px) and (pointer:coarse), (max-height:520px) and (max-width:700px) {
+    #top { padding:4px 8px 6px; }
+    #matchClock { font-size:24px; min-width:52px; padding:2px 8px 0; }
+    .hp { height:14px; } .fhead { margin-bottom:2px; }
+    #roundText { font-size:9px; } #turnText { font-size:11px !important; }
+    #topBtns { grid-column:auto; margin-top:0; }
+    #bottom { padding:4px 8px 6px; }
+    #battlePanel { padding:6px 8px; }
+    #energy { display:none; }
+    #powers { flex-wrap:nowrap; gap:6px; }
+    .power { min-width:0; flex:1 1 0; padding:6px 6px; gap:5px; font-size:12px; }
+    .power .ptxt small, .shape, .power kbd { display:none; }
+    .power .ptxt b { font-size:12px; }
+    #action { display:none; }
+    #focusTag { top:56px; font-size:11px; padding:3px 10px; }
+    .fleetlist { display:none !important; }
+    #placePanel .btn { padding:6px 8px; font-size:12px; }
+    #shipChips, #placePanel > div:last-child { display:none; }
   }
 </style>
 </head>
@@ -172,6 +198,7 @@
 </div>
 
 <div id="action" class="abs hidden"></div>
+<div id="focusTag" class="abs hidden"></div>
 <div id="log" class="abs"></div>
 <div id="toast" class="abs"></div>
 
@@ -478,17 +505,39 @@ scene.background = new THREE.Color(0x8fc0ef);
 scene.fog = new THREE.Fog(0x8fc0ef, 55, 120);
 const camera = new THREE.PerspectiveCamera(62, innerWidth/innerHeight, 0.1, 400);
 const camLook = new THREE.Vector3(0,0,-1.5);
+/* celular: telas estreitas ou toque em tela pequena */
+const mobileQuery = matchMedia("(max-width:700px), (pointer:coarse) and (max-width:950px)");
+const isMobile = () => mobileQuery.matches;
 function fitCamera() {
   const a = innerWidth/innerHeight;
-  const k = Math.max(1, 1.85/a);
   camera.aspect = a;
-  camera.position.set(0, 9*k, 18*k);
-  camera.lookAt(camLook);
+  // no celular, sobe o enquadramento para o tabuleiro ficar entre o topo e o painel de poderes
+  if (isMobile()) camera.setViewOffset(innerWidth, innerHeight, 0, Math.round(innerHeight*(a<1 ? .09 : .02)), innerWidth, innerHeight);
+  else camera.clearViewOffset();
   camera.updateProjectionMatrix();
   renderer.setSize(innerWidth, innerHeight);
+  document.body.classList.toggle("mobile", isMobile());
 }
 addEventListener("resize", fitCamera);
 fitCamera();
+
+/* destino da câmera: visão geral, ou (celular) só a arena do turno atual */
+const camGoalPos = new THREE.Vector3(0,9,18), camGoalLook = new THREE.Vector3().copy(camLook), camLookNow = new THREE.Vector3().copy(camLook);
+let camFocus = -1;
+function updateCameraGoal() {
+  const a = innerWidth/innerHeight;
+  if (isMobile() && (G.phase==="battle" || G.phase==="place")) {
+    const b = G.phase==="place" ? 0 : (G.turn===0 ? 1 : 0);
+    const pitch = (a<1 ? 54 : 58)*Math.PI/180, tanH = Math.tan(31*Math.PI/180);
+    const d = Math.max(7.4/(tanH*a), a<1 ? 12 : 9);
+    camGoalLook.set(BX[b], 0, .5);
+    camGoalPos.set(BX[b], d*Math.sin(pitch), .5 + d*Math.cos(pitch));
+    camFocus = b;
+  } else {
+    const k = Math.max(1, 1.85/a);
+    camGoalPos.set(0, 9*k, 18*k); camGoalLook.copy(camLook); camFocus = -1;
+  }
+}
 
 scene.add(new THREE.HemisphereLight(0xffffff, 0x556070, 0.85));
 const sun = new THREE.DirectionalLight(0xfff2d0, 0.8);
@@ -1499,6 +1548,13 @@ function ui() {
   $("sideA").textContent = `${s0.short} (você)`; $("sideA").style.background = s0.css;
   $("sideB").textContent = `${s1.short} (CPU)` + (G.phase==="battle" ? ` ⚡${G.energy[1]}` : "");  $("sideB").style.background = s1.css;
   $("sideA").style.color = s0.key==="flavio" ? "#ffdf00" : "#fff";
+  const ft = $("focusTag");
+  if (G.phase==="battle") {
+    ft.classList.remove("hidden");
+    ft.textContent = G.turn===0 ? "🎯 ARENA DO ADVERSÁRIO · toque para atacar" : "🛡️ SUA ARENA · adversário atacando";
+    ft.style.borderColor = G.turn===0 ? "#ffdf00" : "#ff5a4a";
+  } else if (G.phase==="place") { ft.classList.remove("hidden"); ft.textContent = "🧭 SUA ARENA · toque para posicionar"; ft.style.borderColor = "#4cd964"; }
+  else ft.classList.add("hidden");
   [[0,"A",s0],[1,"B",s1]].forEach(([b,k,sd]) => {
     const left = FLEET_TOTAL - G.fleets[b].reduce((n,sh) => n + sh.hits, 0), pct = Math.max(0,left/FLEET_TOTAL*100);
     $("fill"+k).style.width = pct+"%"; $("trail"+k).style.width = pct+"%";
@@ -1742,14 +1798,18 @@ function animate() {
 
   // dicas flutuantes
   const bob = Math.sin(t*4)*.12;
-  hintAttack.visible = G.phase==="battle" && G.turn===0 && !G.busy;
+  hintAttack.visible = !isMobile() && G.phase==="battle" && G.turn===0 && !G.busy;
   hintAttack.position.set(BX[1], .9+bob, 6.6);
-  hintPlace.visible = G.phase==="place" && G.fleets[0].length < FLEET.length;
+  hintPlace.visible = !isMobile() && G.phase==="place" && G.fleets[0].length < FLEET.length;
   hintPlace.position.set(BX[0], .9+bob, 6.6);
 
-  // câmera com leve balanço
-  camera.position.x = Math.sin(t*.2) * .6;
-  camera.lookAt(camLook);
+  // câmera: segue o destino (visão geral ou foco do turno no celular) com suavização
+  updateCameraGoal();
+  const kf = 1 - Math.exp(-dt*5);
+  camera.position.lerp(camGoalPos, kf);
+  camLookNow.lerp(camGoalLook, kf);
+  if (camFocus < 0) camera.position.x += Math.sin(t*.2) * .004;   // leve balanço na visão geral
+  camera.lookAt(camLookNow);
   renderer.render(scene, camera);
 }
 function makeHint(text, color) {
