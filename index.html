@@ -39,7 +39,6 @@
   #timerbar { margin:6px auto 0; width:min(320px,60%); height:6px; background:#fff3; border-radius:4px; overflow:hidden; }
   #timerfill { height:100%; width:100%; background:var(--amarelo); transition:width .2s linear; }
   #mute { pointer-events:auto; background:#0006; border:1px solid #fff4; color:#fff; border-radius:8px; padding:6px 10px; cursor:pointer; }
-  #fleetPanel { position:fixed; right:14px; top:112px; }
   #bottom { left:0; right:0; bottom:0; padding:10px 14px 14px; display:flex; gap:12px; align-items:flex-end; justify-content:center; flex-wrap:wrap; pointer-events:none; }
   .panel { background:var(--panel); border:1px solid #fff2; border-radius:14px; padding:10px 12px; pointer-events:auto; backdrop-filter:blur(6px); }
   button.btn { font:inherit; font-weight:700; color:#fff; background:#2a3342; border:1px solid #fff3; border-radius:10px; padding:9px 14px; cursor:pointer; transition:.15s; }
@@ -54,9 +53,12 @@
   .pip { width:14px; height:14px; border-radius:50%; background:#fff2; border:1px solid #fff4; }
   .pip.on { background:var(--amarelo); box-shadow:0 0 8px var(--amarelo); }
   #powers { display:flex; gap:8px; flex-wrap:wrap; }
-  #fleetinfo { font-size:12px; line-height:1.5; min-width:170px; }
-  #fleetinfo .sunk { text-decoration:line-through; opacity:.5; }
-  #log { left:14px; top:112px; width:290px; font-size:12.5px; line-height:1.35; pointer-events:none; text-shadow:0 1px 3px #000; }
+  .fleetlist { margin-top:7px; padding:6px 10px; background:var(--panel); border:1px solid #fff2; border-radius:10px; font-size:12px; line-height:1.5;
+               width:fit-content; max-width:100%; text-shadow:0 1px 2px #000; }
+  .fighter.right .fleetlist { margin-left:auto; text-align:right; }
+  .fleetlist b { display:block; margin-bottom:2px; }
+  .fleetlist .sunk { text-decoration:line-through; opacity:.5; }
+  #log { right:14px; bottom:14px; width:240px; font-size:12.5px; line-height:1.35; pointer-events:none; text-shadow:0 1px 3px #000; }
   #log div { margin-bottom:3px; animation:fade .4s; }
   @keyframes fade { from { opacity:0; transform:translateX(-8px);} }
   #toast { top:30%; left:0; right:0; text-align:center; font-size:clamp(28px,6vw,64px); font-weight:900; pointer-events:none; opacity:0; text-shadow:0 4px 16px #000; }
@@ -129,7 +131,10 @@
   .hidden { display:none !important; }
   .rules { font-size:13px; opacity:.75; max-width:640px; }
   @media (max-width:700px) {
-    #fleetPanel, #log { display:none !important; }
+    .fleetlist, #log { display:none !important; }
+  }
+  @media (max-width:1150px) {
+    #log { display:none !important; }
     #top { padding:6px 6px 12px; gap:6px; grid-template-columns:1fr auto 1fr; }
     #topBtns { grid-column:1 / -1; justify-content:flex-end; margin-top:-4px; }
     #center { min-width:100px; }
@@ -152,6 +157,7 @@
   <div class="fighter left">
     <div class="fhead"><span id="sideA" class="side"></span><span class="fhp" id="hpAtxt"></span></div>
     <div class="hp" id="hpA"><div class="trail" id="trailA"></div><div class="fill" id="fillA"></div></div>
+    <div class="fleetlist hidden" id="fleetA"></div>
   </div>
   <div id="center">
     <div id="matchClock">90</div>
@@ -160,6 +166,7 @@
   <div class="fighter right">
     <div class="fhead"><span id="sideB" class="side"></span><span class="fhp" id="hpBtxt"></span></div>
     <div class="hp" id="hpB"><div class="trail" id="trailB"></div><div class="fill" id="fillB"></div></div>
+    <div class="fleetlist hidden" id="fleetB"></div>
   </div>
   <div id="topBtns"><button id="musicBtn" title="Música">🎵</button><button id="mute" title="Som">🔊</button></div>
 </div>
@@ -184,7 +191,6 @@
     <div id="energy"></div>
     <div id="powers"></div>
   </div>
-  <div id="fleetPanel" class="panel hidden"><div id="fleetinfo"></div></div>
 </div>
 
 <div id="menu" class="overlay abs">
@@ -1471,12 +1477,13 @@ function ui() {
       b.onclick = () => selectPower(id);
       $("powers").appendChild(b);
     });
-    $("fleetPanel").classList.remove("hidden");
+    $("fleetA").classList.remove("hidden"); $("fleetB").classList.remove("hidden");
     const row = (b) => G.fleets[b].map(sh =>
       `<div class="${sh.sunk?"sunk":""}">${"●".repeat(sh.len-sh.hits)}${"○".repeat(sh.hits)} ${sh.name}</div>`).join("");
-    $("fleetinfo").innerHTML = `<b style="color:${s0.cssAlt}">Sua torcida</b>${row(0)}<div style="height:6px"></div><b style="color:${s1.cssAlt}">Adversário</b>${row(1)}`;
+    $("fleetA").innerHTML = `<b style="color:${s0.cssAlt}">Sua torcida</b>${row(0)}`;
+    $("fleetB").innerHTML = `<b style="color:${s1.cssAlt}">Torcida adversária</b>${row(1)}`;
   } else if (G.phase==="place") {
-    $("fleetPanel").classList.add("hidden");
+    $("fleetA").classList.add("hidden"); $("fleetB").classList.add("hidden");
   }
 }
 function shapeHTML(id, side) {
