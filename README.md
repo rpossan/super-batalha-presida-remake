@@ -15,7 +15,7 @@ https://rpossan.github.io/super-presida-batalha/
 - Em cada turno, arremesse um objeto de protesto (cone, tomate, bandeira, cavalete, chinelo, pedra ou ovo).
 - Energia: +1 por turno e +1 por torcedor atingido. Gaste em poderes:
   📊 Pesquisa (2) · 📣 Buzinaço/Comício (3) · 🏍️ Motociata / 🚌 Caravana (6).
-- Partida de 2 minutos (vence quem derrubar mais torcedores), turnos de 20 s, contador de rodadas e adversário controlado pelo computador.
+- Partida sem limite de tempo (para limitar, ajuste `MATCH_TIME` no `index.html`), turnos de 20 s, contador de rodadas e adversário controlado pelo computador.
 - Controles: mouse/toque · `R` gira · `1–4` poderes · `Esc` cancela.
 
 ## Cenários

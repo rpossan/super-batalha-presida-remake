@@ -186,7 +186,7 @@
     <div class="fleetlist hidden" id="fleetA"></div>
   </div>
   <div id="center">
-    <div id="matchClock">120</div>
+    <div id="matchClock">∞</div>
     <div id="turn"><div id="roundText"></div><b id="turnText"></b><div id="timerbar"><div id="timerfill"></div></div></div>
   </div>
   <div class="fighter right">
@@ -257,7 +257,7 @@
   </div>
   <div class="rules">
     Paródia bem-humorada: ninguém se machuca, quem é "atingido" só senta, cansado de tanto gritar. 🎺<br>
-    Partida de 120 s (2 min): vence quem derrubar mais torcedores · Atire com o mouse/toque · R gira a torcida · 1–4 escolhem poderes · Esc cancela
+    Sem limite de tempo: vence quem dispersar toda a torcida adversária · Atire com o mouse/toque · R gira a torcida · 1–4 escolhem poderes · Esc cancela
   </div>
 </div>
 
@@ -295,7 +295,7 @@ const SIDES = {
 const COST = { normal:0, radar:2, cross:3, ultra:6 };
 const MAX_ENERGY = 9;
 const TURN_TIME = 20;
-const MATCH_TIME = 120;
+const MATCH_TIME = Infinity;   // tempo da partida em segundos (Infinity = sem limite)
 const FLEET_TOTAL = FLEET.reduce((a,f) => a+f.len, 0);
 
 /* ================================================================
@@ -1626,7 +1626,7 @@ function shapeHTML(id, side) {
 let lastClock = -1;
 function setClock(v) {
   if (v===lastClock) return; lastClock = v;
-  const el = $("matchClock"); el.textContent = v; el.classList.toggle("low", v<=10 && G.phase==="battle");
+  const el = $("matchClock"); el.textContent = v===Infinity ? "∞" : v; el.classList.toggle("low", v<=10 && G.phase==="battle");
 }
 function selectPower(id) {
   if (G.phase!=="battle" || G.turn!==0 || G.busy) return;
