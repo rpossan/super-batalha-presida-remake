@@ -294,7 +294,7 @@ const SIDES = {
 };
 const COST = { normal:0, radar:2, cross:3, ultra:6 };
 const MAX_ENERGY = 9;
-const TURN_TIME = 20;
+const TURN_TIME = Infinity;    // segundos por jogada (Infinity = sem limite)
 const MATCH_TIME = Infinity;   // tempo da partida em segundos (Infinity = sem limite)
 const FLEET_TOTAL = FLEET.reduce((a,f) => a+f.len, 0);
 
@@ -517,6 +517,7 @@ function fitCamera() {
   camera.updateProjectionMatrix();
   renderer.setSize(innerWidth, innerHeight);
   document.body.classList.toggle("mobile", isMobile());
+  if (TURN_TIME===Infinity) { const tb = document.getElementById("timerbar"); if (tb) tb.style.display = "none"; }
 }
 addEventListener("resize", fitCamera);
 fitCamera();
@@ -1784,8 +1785,8 @@ function animate() {
     setClock(left); if (left<=0) timeUp();
   } else if (G.phase==="place" || G.phase==="menu") setClock(MATCH_TIME);
 
-  // cronômetro do turno
-  if (G.phase==="battle" && G.turn===0 && !G.busy) {
+  // cronômetro do turno (desligado quando TURN_TIME = Infinity)
+  if (TURN_TIME!==Infinity && G.phase==="battle" && G.turn===0 && !G.busy) {
     G.timeLeft -= dt;
     $("timerfill").style.width = Math.max(0,G.timeLeft/TURN_TIME*100) + "%";
     $("timerfill").style.background = G.timeLeft < 6 ? "#ff5a4a" : "#ffdf00";
