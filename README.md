@@ -31,7 +31,7 @@ https://rpossan.github.io/super-presida-batalha/
 | 1 | Av. Paulista (SP) | Boulos | Nikolas Ferreira | Fácil | — |
 | 2 | Aeroporto Salgado Filho (RS) | Gleisi Hoffmann | Tarcísio de Freitas | Médio | — |
 | 3 | Cristo Redentor (RJ) | Alexandre de Moraes | Michelle Bolsonaro | Difícil | ⚠️ bala perdida, 1 por turno |
-| 4 | Sertão Nordestino | Camilo Santana | Ciro Nogueira | Muito difícil | 🔥 fogo: 4 casas de cada arena a cada 2 turnos |
+| 4 | Sertão Nordestino | Felipe Neto | Luciano Hang | Muito difícil | 🔥 fogo: 4 casas de cada arena a cada 2 turnos |
 | 5 | Esplanada dos Ministérios (DF) | **Lula (chefão)** | **Flávio (chefão)** | Chefão | — |
 
 Na fase 3, uma bala perdida cai do céu em 1 casa aleatória da arena de quem joga a cada turno.
