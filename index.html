@@ -987,7 +987,7 @@ const SCENARIOS = [
 
   /* ---------- Rio de Janeiro: Cristo Redentor ---------- */
   { id:"rio", name:"Cristo Redentor", short:"Cristo Redentor", of:"do Cristo Redentor", emoji:"⛰️", city:"Rio de Janeiro · RJ",
-    thumb:"linear-gradient(170deg,#7fd0ff,#3d9a4d 75%)", sky:0x86cdfa, fog:[0xcfeaff,70,190], tiles:[0x5fae5f,0x3f8a3f],
+    thumb:"linear-gradient(170deg,#7fd0ff,#3d9a4d 75%)", sky:0x86cdfa, fog:[0xcfeaff,70,190], tiles:[0x2a5f35,0x214e2b],
     build() {
       groundPlane(170,80,0x8c8470,-.12,-12);                   // mirante de pedra
       const sea = new THREE.Mesh(new THREE.PlaneGeometry(900,700), LM(0x2f86c9)); sea.rotation.x = -Math.PI/2; sea.position.set(0,-5,-120); E(sea);
@@ -1590,11 +1590,11 @@ let previewed = [];
 function clearPreview() {
   previewed.forEach(m => m.material.emissive.setHex(0)); previewed = [];
 }
-function setPreview(list) {
+function setPreview(list, aim) {
   clearPreview();
   list.forEach(([b,r,c,ok]) => {
     if (!inb(r,c)) return;
-    const m = tiles[b][r][c]; m.material.emissive.setHex(ok ? 0x2d6a2d : 0x7a1f1f); previewed.push(m);
+    const m = tiles[b][r][c]; m.material.emissive.setHex(ok ? (aim ? 0xa89200 : 0x2d6a2d) : 0x7a1f1f); previewed.push(m);
   });
 }
 
@@ -3008,7 +3008,7 @@ function updateHoverPreview() {
     setPreview(cells.map(([r,c]) => [0,r,c,ok]));
   } else if (G.phase==="battle" && G.turn===0 && !G.busy && h.b===1) {
     const cells = pattern(G.power,h.r,h.c);
-    setPreview(cells.map(([r,c]) => [1,r,c, !G.boards[1][r][c].shot || G.power==="radar"]));
+    setPreview(cells.map(([r,c]) => [1,r,c, !G.boards[1][r][c].shot || G.power==="radar"]), true);
   }
 }
 const cv = renderer.domElement;
