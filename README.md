@@ -23,7 +23,7 @@
 
 > ### 🟢🟡 Jogo apartidário e imparcial
 > **Super Presida Batalha é um jogo apartidário e imparcial.** Os dois lados são tratados da mesma forma:
-> mesmas regras, mesmos poderes, mesma quantidade de fases, adversários e chefão, e um final para cada trilha.
+> mesmas regras, mesmos poderes, mesma quantidade de fases, adversários e chefão, e uma conclusão para cada trilha.
 > O jogo **não faz propaganda, não pede voto e não toma partido**. Nenhum lado é "o certo" ou "o errado":
 > é só uma brincadeira de estratégia com humor.
 
@@ -37,7 +37,7 @@ quando fazer uma pesquisa para descobrir onde o adversário se esconde e qual po
 
 - 🎯 **Cada acerto é um voto.** Encadeie acertos para ativar o **combo** (2x, 3x, 4x e **50x** no quinto seguido).
 - 🧠 **Cada fase pede uma tática nova:** perigos do cenário, adversários mais espertos e um chefão que se esconde.
-- 🏁 **Dois lados, duas histórias:** o final muda conforme a trilha que você escolheu.
+- 🏁 **Dois lados, duas histórias:** cada trilha tem o seu próprio desfecho.
 
 > Dica de campanha: errar zera o combo e dá munição ao chefão. Faça uma **pesquisa** antes de arriscar.
 
@@ -52,8 +52,7 @@ quando fazer uma pesquisa para descobrir onde o adversário se esconde e qual po
 | 🌎 **7 cenários do Brasil** | Av. Paulista, Aeroporto de Porto Alegre, Cristo Redentor, Sertão, Amazônia, Balneário Camboriú e Praça dos Três Poderes. |
 | ⚠️ **Perigos de cenário** | Bala perdida, fogo no sertão e chuva de flechas na floresta, em quantidade equilibrada ao nível. |
 | 👑 **Chefões únicos** | Sem torcida, com pontos de vida, que mudam de casa a cada acerto e reagem aos seus erros. |
-| 🛒 **Loja e skills** | Gaste seus votos em itens e desbloqueie skills permanentes: Empolgação, Super tiro, Guarda-chuva e mais. |
-| 🎒 **Itens da campanha** | Remédio (revive um torcedor), Fúria (turnos seguidos) e Reforço (invoca um torcedor). Estoque limitado para o jogo todo: acabou, já era. |
+| 🛒 **Loja, itens e skills** | Gaste seus votos em itens (Remédio, Fúria, Reforço) e desbloqueie skills permanentes (Empolgação, Super tiro, Guarda-chuva, Instituto de pesquisa, Fôlego). [Veja a seção](#-itens-e-skills). |
 | 🏆 **Votos e recorde** | Placar acumulado entre as fases, com combo e recorde pessoal. |
 | 🎵 **Trilha sonora própria** | Uma música diferente por cenário (samba, baião, milonga, tambores, marcha…), gerada por código. |
 | 📱 **Funciona no celular** | A câmera acompanha o turno: na sua vez, só a arena do adversário, para dar precisão no toque. |
@@ -106,17 +105,42 @@ O chefão é **único, sem torcida, e tem pontos de vida**. A cada acerto ele **
 
 ---
 
-## 🎬 Finais
+## 🎒 Itens e skills
 
-Zere a trilha e veja o final: tela escurece, ilustração em estilo anime, seus **votos e recorde**,
-créditos rolando e o QR code do Pix.
+Além dos poderes de energia, você tem **itens** (gastáveis, limitados) e **skills** (permanentes). Tudo se compra na
+**🛒 Loja**, com os **votos** que você ganha acertando alvos. O botão da loja fica no menu principal e ao fim de cada fase.
 
-<table>
-  <tr>
-    <td align="center"><img src="docs/img/final_lula.png" width="390"><br><b>Trilha do Lula Molusco</b></td>
-    <td align="center"><img src="docs/img/final_flavio.png" width="390"><br><b>Trilha do Flávio</b></td>
-  </tr>
-</table>
+<p align="center"><img src="docs/img/loja_skills.png" alt="Loja de skills" width="640"></p>
+
+### 🎒 Itens
+Estoque único para a campanha toda: **acabou, já era**. Usar um item **não gasta o turno**. O *game over* repõe o estoque inicial.
+
+| Item | Atalho | Efeito | Estoque inicial | Limite por fase | Preço | Máx. |
+|---|---|---|---|---|---|---|
+| 💊 **Remédio** (cruz vermelha) | `5` | revive 1 torcedor caído da sua torcida | 4 | 2 | 1.000 | 8 |
+| 🥫 **Fúria** (energético) | `6` | turnos contínuos: joga 3 turnos seguidos (o atual + 2), sem o adversário agir | 2 | 1 | 3.000 | 5 |
+| 📢 **Reforço** (alto-falante) | `7` | invoca 1 torcedor aleatório na sua arena (+1 de vida) | 3 | 1 | 1.500 | 6 |
+
+No celular os itens ficam num botão único **🎒 Itens** que abre a lista.
+
+### ⭐ Skills
+Compra única. Depois de desbloqueada, a skill vale em **todas as fases e cenários**, das duas trilhas, e fica ativa sozinha.
+Vale enquanto a aba do navegador estiver aberta (atualizar a página recomeça).
+
+| Skill | Preço | Efeito |
+|---|---|---|
+| ⚡ **Fôlego de campanha** | 3.000 | começa cada fase com 4 de energia (em vez de 1) |
+| 📊 **Instituto de pesquisa** | 4.000 | a Pesquisa custa 1 de energia (em vez de 2) |
+| ☂️ **Guarda-chuva** | 6.000 | 3 torcedores começam cada fase protegidos; o adversário gasta um tiro para quebrar a proteção |
+| 💥 **Super tiro** | 8.000 | o tiro comum atinge 4 casas (quadrado 2×2), até 3 vezes por fase |
+| 🎉 **Empolgação** | 10.000 | ao acertar um alvo, ganha um turno extra (1 por turno), até 3 vezes por fase |
+
+<p align="center"><img src="docs/img/skills_batalha.png" alt="Batalha com skills ativas" width="760"></p>
+
+### ⚖️ Equilíbrio
+Calibrado por simulação do chefão final (jogador competente): sem skills ~59% de vitória; cada skill sozinha leva a ~64–73%.
+Super tiro e Empolgação, sem limite, passavam de 88%, por isso têm 3 usos por fase. Com todas as skills a vitória iria a ~93%,
+então **o chefão ganha +1 de vida com 2 skills e +2 com 5 skills**.
 
 ---
 
@@ -125,7 +149,7 @@ créditos rolando e o QR code do Pix.
 1. Escolha o lado e a fase.
 2. **Posicione** sua torcida (5 grupos) no seu tabuleiro. `R` ou botão direito gira.
 3. Na sua vez, **clique numa casa** do tabuleiro adversário. Cada tiro arremessa um objeto de protesto.
-4. Acerte para ganhar **votos** e **energia**; gaste a energia nos poderes (`1`–`4`) e use os **itens** (`5`–`7`) com sabedoria.
+4. Acerte para ganhar **votos** e **energia**; gaste a energia nos poderes (`1`–`4`) e use os **itens** (`5`–`7`) com sabedoria. Veja [Itens e skills](#-itens-e-skills).
 5. Dispersse toda a torcida adversária (ou derrote o chefão) antes que ele faça o mesmo com a sua.
 
 | Poder | Custo | Efeito |
@@ -137,64 +161,12 @@ créditos rolando e o QR code do Pix.
 
 Energia: **+1 por turno** e **+1 por torcedor atingido**. No celular, a câmera acompanha o turno.
 
-### 🛒 Loja e skills
-
-No menu principal e na tela de fim de fase há o botão **🛒 Loja** (e **⭐ Skills**). Os votos que você ganha acertando alvos
-viram **moeda**: gaste em itens ou desbloqueie skills permanentes. O placar da jornada continua separado (game over zera o
-placar, mas **os votos da loja e as skills ficam**).
-
-<p align="center"><img src="docs/img/loja_skills.png" alt="Loja de skills" width="640"></p>
-
-**Itens** (gastam e acabam; o game over repõe o estoque inicial)
-
-| Item | Preço | Estoque máx. |
-|---|---|---|
-| 💊 Remédio | 1.000 | 8 |
-| 🥫 Fúria | 3.000 | 5 |
-| 📢 Reforço | 1.500 | 6 |
-
-**Skills** (compra única, valem para o resto da sessão)
-
-| Skill | Preço | Efeito |
-|---|---|---|
-| ⚡ Fôlego de campanha | 3.000 | começa cada fase com 4 de energia (em vez de 1) |
-| 📊 Instituto de pesquisa | 4.000 | a Pesquisa custa 1 de energia (em vez de 2) |
-| ☂️ Guarda-chuva | 6.000 | 3 torcedores começam cada fase protegidos; o adversário gasta um tiro para quebrar a proteção |
-| 💥 Super tiro | 8.000 | o tiro comum atinge 4 casas (2×2), até 3 vezes por fase |
-| 🎉 Empolgação | 10.000 | ao acertar, ganha um turno extra (1 por turno), até 3 vezes por fase |
-
-<p align="center"><img src="docs/img/skills_batalha.png" alt="Batalha com skills ativas" width="760"></p>
-
-**Equilíbrio:** calibrado por simulação do chefão final (jogador competente). Sem skills, ~59% de vitória; cada skill
-sozinha leva a ~64–73%. Super tiro e Empolgação, sem limite, passavam de 88%, por isso têm 3 usos por fase. Para o
-jogo não ficar fácil com todas as skills (~93%), **o chefão ganha +1 de vida com 2 skills e +2 com 5 skills**.
-
 ### ⏸ Pausa e modo desenvolvedor
 
 - **Pausa:** botão ⏸ no topo (ou `Esc`) congela o jogo e abre o menu com **Continuar**, **Reiniciar a fase** e
   **Sair para o menu principal**. Reiniciar ou sair desfaz os votos e itens gastos na fase em andamento.
 - **Modo desenvolvedor:** vem **ativo por padrão** e deixa todas as fases desbloqueadas. Dá para ligar/desligar pelo
   botão "🛠 Modo desenvolvedor" no menu, ou abrir o jogo com `?dev=0` (desligado) / `?dev=1` (ligado).
-
-### 🎒 Itens da campanha
-
-Além dos poderes, você carrega itens que valem para a **campanha toda**. O estoque é único e limitado:
-o que acabou, acabou, e só volta se você recomeçar a jornada (game over ou campanha zerada).
-Usar um item **não gasta o turno**.
-
-<p align="center"><img src="docs/img/itens.png" alt="Painel de itens" width="760"></p>
-
-| Item | Atalho | Efeito | Estoque na campanha | Limite por fase |
-|---|---|---|---|---|
-| 💊 **Remédio** (cruz vermelha) | `5` | revive 1 torcedor caído da sua torcida | **4** | 2 |
-| 🥫 **Fúria** (energético) | `6` | turnos contínuos: você joga **3 turnos seguidos** (o atual + 2), sem o adversário agir | **2** | 1 |
-| 📢 **Reforço** (alto-falante) | `7` | invoca 1 torcedor aleatório na sua arena (+1 de vida) | **3** | 1 |
-
-Os números foram calibrados por simulação para os itens ajudarem sem tirar o desafio: no chefão final,
-um jogador competente passa de ~60% para ~70% de vitória usando tudo o que a fase permite.
-A Fúria é o item mais forte, por isso é o mais raro. O perigo do cenário não se repete nos turnos extras.
-
----
 
 ## 🛠️ Tecnologia
 
