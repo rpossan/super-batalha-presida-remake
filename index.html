@@ -976,30 +976,96 @@ const SCENARIOS = [
       for (let i=0;i<7;i++) { const c = ball(2.2+Math.random()*2.2,0xffffff, -60+i*18+Math.random()*6, 14+Math.random()*4, -60-Math.random()*20); c.scale.y = .45; E(c); }
     } },
 
-  /* ---------- Brasília: Esplanada dos Ministérios ---------- */
-  { id:"brasilia", name:"Esplanada dos Ministérios", short:"Brasília", of:"da Esplanada dos Ministérios", emoji:"🏛️", city:"Brasília · DF",
-    thumb:"linear-gradient(170deg,#6ec0ff,#cfc8b4 70%)", sky:0x7fc4ff, fog:[0xcfe8ff,70,190], tiles:[0xb3ac97,0xa29b87],
+  /* ---------- Brasília: Praça dos Três Poderes / Esplanada ---------- */
+  { id:"brasilia", name:"Brasília · Praça dos Três Poderes", short:"Brasília", of:"da Praça dos Três Poderes", emoji:"🏛️", city:"Brasília · DF",
+    thumb:"linear-gradient(170deg,#ff9f6a,#e8d9b8 70%)", sky:0xff9f6a, fog:[0xffc79a,60,200], tiles:[0x8a836d,0x7b745f],
     build() {
-      groundPlane(320,220,0x76a95c,-.12,-20);                   // gramado da Esplanada
-      E(box(320,.05,17,0x9a9484, 0,-.1,0));                       // pavimento central
-      E(box(46,.03,7,0x4aa3df, 0,-.09,-13));                      // espelho d'água
-      const cg = new THREE.Group(), white = 0xf1eee4;            // Congresso Nacional
-      cg.add(box(54,2,12,white, 0,1,0)); cg.add(box(44,.5,9,0xe0dccf, 0,2.25,0));
-      const dome = new THREE.Mesh(new THREE.SphereGeometry(5.4,28,14,0,Math.PI*2,0,Math.PI/2), LM(0xeeeeee)); dome.position.set(-13,2.5,0); cg.add(dome);
-      const bowl = new THREE.Mesh(new THREE.SphereGeometry(5.4,28,14,0,Math.PI*2,0,Math.PI/2),
-        new THREE.MeshLambertMaterial({color:0xeeeeee, side:THREE.DoubleSide})); bowl.rotation.x = Math.PI; bowl.position.set(13,7.9,0); cg.add(bowl);
-      cg.add(box(3.4,19,5,0xe9e6dc, -2,12,0)); cg.add(box(3.4,19,5,0xe9e6dc, 2,12,0)); cg.add(box(7,1.1,2.4,0xd8d4c8, 0,17.5,0));
-      cg.position.set(0,0,-31); E(cg);
-      for (let i=0;i<6;i++) [-1,1].forEach(sx => {                // ministérios
-        const x = sx*(30+i*11);
-        E(box(10,6,5,0xf4f1e8, x,3,-26)); E(box(10.1,1.5,5.1,0x5aa0d0, x,3.8,-26));
+      const white = 0xd6d2c4, glass = 0x4f93c4;
+      groundPlane(360,260,0xb7ab60,-.12,-34);                            // cerrado seco
+      const red = new THREE.Mesh(new THREE.PlaneGeometry(360,40), LM(0xb5603a)); red.rotation.x = -Math.PI/2; red.position.set(0,-.115,-105); E(red);   // terra vermelha
+      const lake = new THREE.Mesh(new THREE.PlaneGeometry(360,34), LM(0x3f8fbf)); lake.rotation.x = -Math.PI/2; lake.position.set(0,-.09,-72); E(lake);   // Lago Paranoá
+      E(box(78,.05,40,0x9d957f, 0,-.1,-10));                             // praça de granito
+      for (let i=-3;i<=3;i++) E(box(1.6,.06,40,0x857d69, i*10,-.095,-10));
+      E(box(46,.03,6,0x3a7fb0, 0,-.08,-17));                             // espelho d'água
+      const rod = (p1,p2,r,c) => {                                       // haste entre dois pontos
+        const d = new THREE.Vector3().subVectors(p2,p1), m = new THREE.Mesh(new THREE.CylinderGeometry(r,r,d.length(),6), LM(c));
+        m.position.copy(p1).addScaledVector(d,.5); m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), d.clone().normalize()); return m;
+      };
+
+      /* Congresso Nacional: duas torres, cúpula do Senado (para cima), tigela da Câmara (para baixo) e a rampa */
+      const cg = new THREE.Group();
+      cg.add(box(46,2,13,white, 0,1,0)); cg.add(box(40,.5,10,0xe0dccf, 0,2.25,0));
+      const dome = new THREE.Mesh(new THREE.SphereGeometry(4.8,28,14,0,Math.PI*2,0,Math.PI/2), LM(0xf0eee8)); dome.position.set(-12,2.5,0); cg.add(dome);
+      const bowl = new THREE.Mesh(new THREE.SphereGeometry(4.8,28,14,0,Math.PI*2,0,Math.PI/2), new THREE.MeshLambertMaterial({color:0xf0eee8, side:THREE.DoubleSide}));
+      bowl.rotation.x = Math.PI; bowl.position.set(12,7.3,0); cg.add(bowl);
+      cg.add(box(3.2,10.5,4.6,0xe9e6dc, -1.9,7.75,0)); cg.add(box(3.2,10.5,4.6,0xe9e6dc, 1.9,7.75,0));
+      cg.add(box(7,.9,2.4,0xd8d4c8, 0,11,0));
+      [-1,1].forEach(sx => { const rp = box(8,.35,11,0xf6f3ea, sx*17,1.5,7); rp.rotation.x = -.16; cg.add(rp); });      // rampas
+      for (let i=0;i<14;i++) cg.add(cyl(.18,.18,2,0xe2ded0, -19.5+i*3,1.05,6.7,6));                                    // colunas da fachada
+      cg.position.set(0,0,-34); E(cg);
+
+      /* Palácio do Planalto: colunas de Niemeyer (largas em cima, finas embaixo) */
+      const pl = new THREE.Group();
+      pl.add(box(17,3.4,5,glass, 0,1.7,-.3)); pl.add(box(19,.7,7.4,white, 0,3.75,0));
+      for (let i=0;i<10;i++) pl.add(cyl(.5,.14,3.6,white, -8.1+i*1.8,1.8,3.1,10));
+      pl.add(box(5,.3,8,0xf6f3ea, 0,.9,6.4)).rotation.x = -.2;
+      pl.position.set(-30,0,-24); E(pl);
+      E(cyl(.07,.07,4.6,0xeeeeee, -30,6,-24,6)); E(box(1.8,1.2,.04,0x2f9a3f, -29.1,7.4,-24));                         // bandeira no teto
+
+      /* Supremo Tribunal Federal: colunas curvas e A Justiça (vendada) */
+      const st = new THREE.Group();
+      st.add(box(15,3.6,5.2,white, 0,1.8,-.2)); st.add(box(17,.55,7,0xe8e4d8, 0,3.9,0));
+      for (let i=0;i<7;i++) st.add(cyl(.62,.2,3.7,0xe2ded0, -6+i*2,1.85,3.2,12));
+      st.position.set(30,0,-24); E(st);
+      const just = new THREE.Group();
+      just.add(box(1.8,.8,1.8,0x8a8478, 0,.4,0)); just.add(cyl(.35,.5,1.4,0x9a9484, 0,1.5,0,8));
+      just.add(ball(.28,0x9a9484, 0,2.4,0)); just.add(box(.5,.1,.3,0x222222, 0,2.45,.14)); just.add(box(.12,1,.12,0x777777, .6,1.8,0));
+      just.position.set(21,0,-14); E(just);
+
+      /* Catedral Metropolitana: 16 colunas curvas em hiperboloide */
+      const cat = new THREE.Group();
+      for (let k=0;k<16;k++) {
+        const an = k/16*Math.PI*2, P = (R,y) => new THREE.Vector3(Math.cos(an)*R, y, Math.sin(an)*R);
+        cat.add(rod(P(5.2,0), P(3.0,3.6), .26, 0xe2ded0)); cat.add(rod(P(3.0,3.6), P(4.4,7.2), .26, 0xe2ded0));
+      }
+      const cone = new THREE.Mesh(new THREE.CylinderGeometry(4.2,2.9,7.2,16,1,true), new THREE.MeshLambertMaterial({color:0x7fc0e8, transparent:true, opacity:.45, side:THREE.DoubleSide}));
+      cone.position.y = 3.6; cat.add(cone); cat.add(cyl(5.8,5.8,.3,0xdcd7c8, 0,.15,0,24));
+      cat.scale.setScalar(.55); cat.position.set(-23,0,-12); E(cat);
+
+      /* Esplanada dos Ministérios */
+      for (let i=0;i<7;i++) [-1,1].forEach(sx => {
+        const x = sx*(46+i*11);
+        E(box(10,6,5,0xf4f1e8, x,3,-27)); E(box(10.1,1.5,5.1,glass, x,3.8,-27));
       });
-      const flagM = new THREE.MeshBasicMaterial({map:flagTex("flavio"), side:THREE.DoubleSide});      // bandeira do Brasil
-      [-17,17].forEach(x => {
-        E(cyl(.12,.15,12,0xeeeeee, x,6,-11,8));
-        const f = new THREE.Mesh(new THREE.PlaneGeometry(4.6,3.2), flagM); f.position.set(x+2.4,10.2,-11); E(f);
+
+      /* Bandeira nacional gigante */
+      E(cyl(.14,.18,10,0xeeeeee, 22,5,-12,8));
+      const flag = new THREE.Mesh(new THREE.PlaneGeometry(6.4,4.4), new THREE.MeshBasicMaterial({map:flagTex("flavio"), side:THREE.DoubleSide})); flag.position.set(25.3,7.4,-12); E(flag);
+
+      /* Torre de TV */
+      const tv = new THREE.Group();
+      tv.add(cyl(.28,.55,14,0xdddddd, 0,7,0,10)); tv.add(cyl(2.3,2.3,.7,0xcfcfcf, 0,8.6,0,16)); tv.add(cyl(1.7,1.7,.6,0xe8e8e8, 0,9.5,0,16)); tv.add(cyl(.05,.08,7,0xbbbbbb, 0,17.5,0,6));
+      tv.position.set(62,0,-52); E(tv);
+
+      /* Ponte JK: três arcos que se cruzam (ao longe, sobre o lago) */
+      E(box(96,.4,2.6,0x7d7d80, 0,3.4,-66));
+      [-28,0,28].forEach((x,i) => {
+        const arc = new THREE.Mesh(new THREE.TorusGeometry(7.5,.24,8,28,Math.PI), LM(0xc9ccd0));
+        arc.position.set(x,3.4,-66); arc.rotation.y = (i%2 ? -1 : 1) * .22; E(arc);
+        const arc2 = new THREE.Mesh(new THREE.TorusGeometry(7.5,.24,8,28,Math.PI), LM(0xc9ccd0));
+        arc2.position.set(x,3.4,-66); arc2.rotation.y = -(i%2 ? -1 : 1) * .22; E(arc2);
       });
-      for (let i=0;i<8;i++) { const c = ball(2.5+Math.random()*2.5,0xffffff, -55+i*15+Math.random()*6, 13+Math.random()*4, -50-Math.random()*30); c.scale.y = .45; E(c); }
+
+      /* ipês amarelos */
+      [[-14,12],[-22,13],[15,13],[23,12],[-38,6],[40,6],[-44,-6],[46,-6]].forEach(([x,z]) => {
+        E(cyl(.14,.24,2.6,0x5a4028, x,1.3,z,6));
+        for (let k=0;k<3;k++) { const cn = ball(1.1+Math.random()*.5,0xffd21a, x+(Math.random()-.5)*1.1, 3+Math.random()*.5, z+(Math.random()-.5)*1.1); cn.scale.y = .75; E(cn); }
+      });
+
+      /* pôr do sol do cerrado */
+      const sun = new THREE.Mesh(new THREE.SphereGeometry(6.5,28,18), new THREE.MeshBasicMaterial({color:0xfff0b0})); sun.position.set(-26,8,-110); E(sun);
+      [[10,.3],[16,.18],[24,.1]].forEach(([r,o]) => { const h = new THREE.Mesh(new THREE.SphereGeometry(r,20,14), new THREE.MeshBasicMaterial({color:0xff9a50, transparent:true, opacity:o, depthWrite:false})); h.position.copy(sun.position); E(h); });
+      for (let i=0;i<8;i++) { const c = ball(2.4+Math.random()*2.4,0xffd3b0, -60+i*17+Math.random()*6, 13+Math.random()*4, -80-Math.random()*20); c.scale.y = .42; E(c); }
     } },
 
   /* >>> ADICIONE NOVOS CENÁRIOS AQUI <<< */
