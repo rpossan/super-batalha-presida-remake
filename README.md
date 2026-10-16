@@ -231,7 +231,7 @@ O jogo **salva sozinho no seu navegador** (`localStorage`), mesmo hospedado no G
 Curtiu? Ajude o desenvolvedor a continuar criando fases. Dentro do jogo há o botão **"Me pague um café"**
 com a chave Pix e o QR code:
 
-**Pix:** `9a706f09-753c-4143-b055-197c082e9201`
+**Pix (chave aleatória):** `9a706f09-753c-4143-b055-197c082e9201`
 
 ---
 
