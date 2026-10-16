@@ -167,6 +167,8 @@
   .lvl.done .badge { background:#4cd964; }
   .lvl.fresh { border-color:var(--amarelo); animation:glow .9s infinite alternate; }
   .lvl.boss { border-color:#ff5a4a; }
+  .lvl.ng { border-color:#ff7a1a; box-shadow:0 0 16px #ff4a0a55; }
+  .lvl.ng .tg { color:#ff9a5a; }
   .lvl.boss .tg { color:#ff8a7a; }
   .coffee-btn { font:inherit; font-weight:800; font-size:16px; color:#2a1a00; background:linear-gradient(#ffe36a,#ffb300); border:2px solid #fff6c4;
                 border-radius:999px; padding:10px 20px; cursor:pointer; box-shadow:0 4px 14px #ffb30055; transition:.15s; }
@@ -464,6 +466,7 @@
     <div class="lbl" style="opacity:.8;margin-top:6px">Curtiu? Me pague um café</div>
     <div class="pix" id="endPix"></div>
     <div class="keyline" id="endKey"></div>
+    <div class="ok" style="color:#ff9a5a;font-weight:800;margin:4px 0">🔓 NG+ desbloqueado: Apocalipse</div>
     <div class="row">
       <button class="btn primary" id="endBack" style="font-size:17px;padding:11px 20px">← Voltar ao menu</button>
       <button class="coffee-btn" id="endCopy">Copiar chave Pix</button>
@@ -551,14 +554,20 @@ const CHARS = {
   marina:  { name:"Marina Sílvia",        short:"Sílvia",   party:"Rede",         camp:"lula",   skin:0xe0ac82, hair:0x3a2a1a, hairStyle:"bob" },
   salles:  { name:"Ricardo Venddas",      short:"Venddas",   party:"PL",           camp:"flavio", skin:0xf2c9a5, hair:0x2b1d14, hairStyle:"short" },
   anitta:  { name:"Pablo Vital",              short:"Vital",   party:"Cantora",      camp:"lula",   skin:0xe0ac82, hair:0x5a2f1c, hairStyle:"long" },
+  ditador: { name:"Generalíssimo Tirano", short:"Tirano", party:"Regime", camp:"regime", skin:0xd9b08c, hair:0x151515, hairStyle:"bald", military:true, glasses:true },
   carlos:  { name:"Carlucho",    short:"Carlucho",   party:"PL",           camp:"flavio", skin:0xf2c9a5, hair:0x2b1d14, hairStyle:"short", beard:true, beardColor:0x3a2a20 },
 };
 /* adversários por fase, conforme o lado que você escolheu (o chefão é sempre o líder do outro lado) */
 const TRACKS = {
-  flavio: ["boulos","gleisi","moraes","felipe","marina","anitta","lula"],
-  lula:   ["nikolas","tarcisio","michelle","hang","salles","carlos","flavio"],
+  flavio: ["boulos","gleisi","moraes","felipe","marina","anitta","lula","ditador"],
+  lula:   ["nikolas","tarcisio","michelle","hang","salles","carlos","flavio","ditador"],
 };
 /* fases: cenário, dificuldade, tamanho da torcida adversária (índices de FLEET) e nível da IA */
+const NG_DEFS = [
+  { name:"Horda de Zumbis",     len:5, kind:"zombie"  }, { name:"Pelotão de Soldados", len:4, kind:"soldier" },
+  { name:"Monstros Mutantes",   len:3, kind:"monster" }, { name:"Esquadrão Blindado",  len:3, kind:"soldier" },
+  { name:"Zumbis Rastejantes",  len:2, kind:"zombie"  }, { name:"Besta do Apocalipse", len:3, kind:"monster" },
+];
 const LEVELS = [
   { scn:"paulista", diff:"Fácil",   ai:1, def:[4,3,2] },
   { scn:"poa",      diff:"Médio",   ai:2, def:[1,2,3,4] },
@@ -567,10 +576,11 @@ const LEVELS = [
   { scn:"amazonia", diff:"Extremo", ai:3, def:[0,1,2,3,4], hazard:"flechas" },
   { scn:"camboriu", diff:"Pré-chefão", ai:3, def:[0,1,2,3,4], calm:true },
   { scn:"brasilia", diff:"CHEFÃO",  ai:4, def:[0,1,2,3,4], boss:true },
+  { scn:"apocalipse", diff:"NG+ · Extremo", ai:4, defs:NG_DEFS, hazard:"bombas", ng:true, cpuBonus:true },
 ];
 /* progresso só em memória: recarregar a página recomeça */
-/* modo desenvolvedor: todas as fases desbloqueadas (ligado por padrão; ?dev=0 desliga, ?dev=1 liga) */
-let DEV_MODE = (() => { try { const v = new URLSearchParams(location.search).get("dev"); return v === null ? true : v !== "0"; } catch (e) { return true; } })();
+/* modo desenvolvedor: todas as fases desbloqueadas (desligado por padrão; abra com ?dev=1 para ligar) */
+let DEV_MODE = (() => { try { const v = new URLSearchParams(location.search).get("dev"); return v === "1"; } catch (e) { return false; } })();
 const PROG = { flavio:1, lula:1 };               // fases liberadas por trilha
 const CLEARED = { flavio:[], lula:[] };          // fases já vencidas
 let menuSide = null, justUnlocked = -1;
@@ -596,6 +606,9 @@ const OWNED = new Set();                       // skills compradas (permanentes 
 const skillOn = id => OWNED.has(id);
 const bossHp = () => 2 + (OWNED.size >= 2 ? 1 : 0) + (OWNED.size >= 5 ? 1 : 0);   // o chefão acompanha o seu arsenal
 const ARROWS_PER_TURN = 4;
+const ZOMBIE_MAX = 5, ZOMBIE_BITE = 5;
+const NG_SIDE = { key:"regime", name:"Regime", short:"Tirano", party:"Regime", main:0x39402a, alt:0xc9c27a, css:"#5b6636", cssAlt:"#e0da86",
+  cross:"Bombardeio", ultra:"Blitz", ultraDesc:"linha inteira", ultraMode:"row", skin:0xd9b08c, hair:0x151515, shirts:[0x4a5230,0x39402a] };
 const COST = { normal:0, radar:2, cross:3, ultra:6 };
 const MAX_ENERGY = 9;
 const TURN_TIME = Infinity;    // segundos por jogada (Infinity = sem limite)
@@ -767,6 +780,13 @@ const SONGS = {
     bass:[1,0,0,1,0,0,2,0,1,0,0,1,0,0,2,0],
     melody: bars([74,0,71,0,74,0,79,0,76,0,74,0,71,0,69,0],[71,0,67,0,71,0,76,0,74,0,71,0,67,0,0,0],
                  [72,0,76,0,79,0,76,0,72,0,76,0,74,0,72,0],[74,0,78,0,81,0,78,0,74,0,71,0,69,0,0,0]) },
+  /* Apocalipse: marcha sombria em Ré menor, bumbo pesado e sirene */
+  apocalipse: { bpm:134, chords:[38,38,41,36], kick:{f:130,g:42,d:.26,v:1}, lead:{type:"sawtooth", filter:1300, dur:.22, vol:.13},
+    k:[1,0,0,1,1,0,0,0,1,0,0,1,1,0,1,0], s:[0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,.8], h:[.8,0,.5,.5,.8,0,.5,.5,.8,0,.5,.5,.8,0,.9,.5],
+    x:[1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0],
+    bass:[1,0,1,0,2,0,1,0,1,0,1,0,2,0,1,0],
+    melody: bars([62,0,0,65,0,0,64,0,62,0,0,0,61,0,62,0],[65,0,0,68,0,0,67,0,65,0,0,0,64,0,0,0],
+                 [62,0,0,65,0,0,69,0,68,0,0,0,65,0,62,0],[61,0,0,64,0,0,62,0,58,0,0,0,57,0,0,0]) },
   /* Brasília: marcha solene com fanfarra em Dó maior */
   brasilia: { bpm:108, chords:[48,53,55,48], kick:{f:130,g:50,d:.22,v:1}, lead:{type:"sawtooth", filter:2000, dur:.2, vol:.12},
     k:[1,0,0,0,0,0,1,0,1,0,0,0,0,0,1,0], s:[0,0,0,0,1,0,0,.5,0,0,0,0,1,0,.5,.5], h:[0,0,.7,0,0,0,.7,0,0,0,.7,0,0,0,.7,0], x:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -909,7 +929,9 @@ const ball = (r,c,x=0,y=0,z=0) => { const m = new THREE.Mesh(new THREE.SphereGeo
 function groundPlane(w,d,color,y=-.12,z=0) {
   const g = new THREE.Mesh(new THREE.PlaneGeometry(w,d), LM(color)); g.rotation.x = -Math.PI/2; g.position.set(0,y,z); return E(g);
 }
+const envTick = [];                                   // funções chamadas a cada quadro (jatos, chamas, brasas)
 function clearEnv() {
+  envTick.length = 0;
   while (envGroup.children.length) {
     const o = envGroup.children[0]; envGroup.remove(o);
     o.traverse(c => { if (c.geometry) c.geometry.dispose(); if (c.material) { c.material.map && c.material.map.dispose(); c.material.dispose(); } });
@@ -1288,6 +1310,71 @@ const SCENARIOS = [
       for (let i=0;i<8;i++) { const c = ball(2.4+Math.random()*2.4,0xffd3b0, -60+i*17+Math.random()*6, 13+Math.random()*4, -80-Math.random()*20); c.scale.y = .42; E(c); }
     } },
 
+  /* ---------- NG+: Apocalipse ---------- */
+  { id:"apocalipse", name:"Apocalipse · NG+", short:"Apocalipse", of:"do Apocalipse", emoji:"☢️", city:"NG+ · O fim da democracia",
+    thumb:"linear-gradient(170deg,#ff6a2a,#2a0d08 75%)", sky:0x3a130c, fog:[0x4a1a10,38,150], tiles:[0x4f453b,0x41382f],
+    build() {
+      groundPlane(420,320,0x2a221d,-.12,-40);                               // terra queimada
+      for (let i=0;i<46;i++) { const cr = new THREE.Mesh(new THREE.RingGeometry(.9,1.4+Math.random(),18), new THREE.MeshBasicMaterial({color:0x100b08, side:THREE.DoubleSide})); cr.rotation.x = -Math.PI/2; cr.position.set(-60+Math.random()*120,-.1,-40+Math.random()*60); cr.scale.setScalar(.8+Math.random()*1.8); E(cr); }
+      for (let i=0;i<36;i++) E(box(.6+Math.random()*1.4,.3+Math.random()*.9,.6+Math.random()*1.4,0x3a312a, -60+Math.random()*120,.15,-28+Math.random()*50)).rotation.y = Math.random()*3;   // entulho
+
+      /* cogumelo nuclear no centro */
+      const nuke = new THREE.Group();
+      const stem = new THREE.Mesh(new THREE.CylinderGeometry(3.2,6.5,34,18), new THREE.MeshLambertMaterial({color:0x7a4a32, emissive:0x3a1608})); stem.position.y = 17; nuke.add(stem);
+      [[0,32,15,.6,0x93573a],[-9,35,9,.7,0x8a4e34],[9,35,9,.7,0x8a4e34],[0,41,11,.7,0xa8633f],[-5,27,10,.6,0x7a4a32],[5,27,10,.6,0x7a4a32]].forEach(([x,y,r,sy,c]) => {
+        const b = new THREE.Mesh(new THREE.SphereGeometry(r,20,14), new THREE.MeshLambertMaterial({color:c, emissive:0x4a1a08})); b.position.set(x,y,0); b.scale.y = sy; nuke.add(b); });
+      const glow = new THREE.Mesh(new THREE.SphereGeometry(13,20,14), new THREE.MeshBasicMaterial({color:0xff8a1a, transparent:true, opacity:.45, depthWrite:false})); glow.position.y = 34; glow.scale.y = .55; nuke.add(glow);
+      const skirt = new THREE.Mesh(new THREE.TorusGeometry(13,2.4,10,36), new THREE.MeshBasicMaterial({color:0xffb04a, transparent:true, opacity:.55})); skirt.rotation.x = Math.PI/2; skirt.position.y = 6; nuke.add(skirt);
+      const base = new THREE.Mesh(new THREE.SphereGeometry(13,20,12,0,Math.PI*2,0,Math.PI/2), new THREE.MeshBasicMaterial({color:0xff5a10, transparent:true, opacity:.7})); base.scale.y = .5; nuke.add(base);
+      const wave = new THREE.Mesh(new THREE.RingGeometry(14,15.2,48), new THREE.MeshBasicMaterial({color:0xffd9a0, transparent:true, opacity:.4, side:THREE.DoubleSide, depthWrite:false})); wave.rotation.x = -Math.PI/2; wave.position.y = .2; nuke.add(wave);
+      nuke.position.set(0,0,-80); nuke.scale.setScalar(.6); E(nuke);
+      envTick.push((t) => { glow.material.opacity = .4 + Math.sin(t*2.2)*.1; base.material.opacity = .62 + Math.sin(t*3.1)*.1; skirt.rotation.z = t*.15; const w = (t*.35)%1; wave.scale.setScalar(1 + w*3.5); wave.material.opacity = .45*(1-w); });
+
+      /* prédios em ruínas (só nas laterais) */
+      for (let i=0;i<16;i++) {
+        const side = i%2 ? 1 : -1, x = side*(30+Math.random()*70), z = -22-Math.random()*40, w = 5+Math.random()*6, h = 8+Math.random()*26;
+        const bld = box(w,h,6+Math.random()*4, [0x3d3530,0x4a4038,0x332d29][i%3], x,h/2,z); bld.rotation.z = (Math.random()-.5)*.12; E(bld);
+        for (let k=0;k<Math.floor(h/5);k++) E(box(w*.7,.9,.2,0xff8a1a, x+(Math.random()-.5)*w*.4,2+k*5,z+5.1));       // janelas em chamas
+        const top = box(w*.6,2.5,6, 0x2a2420, x+(Math.random()-.5)*2,h+.8,z); top.rotation.z = (Math.random()-.5)*.6; E(top);   // topo despedaçado
+      }
+      /* fogueiras e colunas de fumaça */
+      const fires = [];
+      [[-26,-8],[27,-9],[-44,6],[45,5],[-20,-18],[22,-17],[-60,-14],[62,-12]].forEach(([x,z]) => {
+        const fl = new THREE.Mesh(new THREE.ConeGeometry(1.1,2.6,8), new THREE.MeshBasicMaterial({color:0xff7a1a})); fl.position.set(x,1.3,z); E(fl); fires.push(fl);
+        const sm = E(cyl(1.0,2.6,34,0x201a16, x,18,z-4,10)); sm.material.transparent = true; sm.material.opacity = .5;
+      });
+      envTick.push((t) => fires.forEach((f,i) => { f.scale.y = 1 + .35*Math.sin(t*14+i*2); f.scale.x = f.scale.z = 1 + .15*Math.sin(t*19+i); }));
+      /* tanques de guerra */
+      const tank = (x,z,ry,sc=1) => {
+        const g = new THREE.Group();
+        g.add(box(4.6,.7,2.6,0x2f3a24, 0,.7,0)); [-1.45,1.45].forEach(sz => { g.add(box(4.9,.9,.7,0x1c1f17, 0,.5,sz)); });
+        g.add(box(3.2,.9,2.2,0x3d4a2e, 0,1.5,0));
+        const tur = new THREE.Mesh(new THREE.CylinderGeometry(.95,1.1,.7,14), LM(0x3a4529)); tur.position.set(.2,2.2,0); g.add(tur);
+        const gun = cyl(.14,.17,3.6,0x1f2418, 2.2,2.3,0,8); gun.rotation.z = Math.PI/2 - .08; g.add(gun);
+        g.add(box(.5,.4,.5,0x555a45, -.7,2.7,.4));
+        g.position.set(x,0,z); g.rotation.y = ry; g.scale.setScalar(sc); E(g);
+      };
+      [[-30,3,.3],[31,4,Math.PI-.3],[-24,-14,.15],[26,-15,Math.PI-.2],[-48,-4,.4],[50,-3,Math.PI-.4],[-12,-22,.0,1.2],[13,-23,Math.PI,1.2]].forEach(a => tank(...a));
+      /* caças voando ao fundo */
+      const jet = (y,z,speed,off,sc) => {
+        const g = new THREE.Group(), grey = 0x8a8f94;
+        const body = cyl(.45,.3,6,grey, 0,0,0,10); body.rotation.z = Math.PI/2; g.add(body);
+        const nose = new THREE.Mesh(new THREE.ConeGeometry(.45,1.8,10), LM(0x6a6f74)); nose.rotation.z = -Math.PI/2; nose.position.x = 3.9; g.add(nose);
+        const wl = box(2.4,.12,6.4,0x6f747a, -.4,0,0); g.add(wl);
+        const tl = box(1.1,.1,2.4,0x6f747a, -2.7,.1,0); g.add(tl); g.add(box(1.1,1.2,.1,0x6f747a, -2.7,.7,0));
+        const flame = new THREE.Mesh(new THREE.ConeGeometry(.3,2.4,8), new THREE.MeshBasicMaterial({color:0xffa02a})); flame.rotation.z = Math.PI/2; flame.position.x = -4.4; g.add(flame);
+        const trail = box(40,.14,.14,0xdcdcdc, -23,0,0); trail.material = new THREE.MeshBasicMaterial({color:0xe8e0d0, transparent:true, opacity:.35}); g.add(trail);
+        g.scale.setScalar(sc); g.position.set(0,y,z); E(g);
+        envTick.push((t) => { const u = ((t*speed + off) % 280) - 140; g.position.x = u; g.position.y = y + Math.sin(t*.8+off)*1.2; flame.scale.y = .8 + Math.random()*.5; });
+      };
+      jet(24,-32,22,0,1.4); jet(31,-46,26,90,1.2); jet(19,-40,19,170,1.1); jet(36,-56,30,40,1.0); jet(27,-28,24,230,1.3);
+      /* brasas e explosões distantes */
+      let em = 0;
+      envTick.push((t, dt) => { em -= dt; if (em <= 0) { em = .16; burst(new THREE.Vector3(-40+Math.random()*80,0,-30+Math.random()*50), [0xff7a1a,0xffd23a,0x555555], 1, 1.2); } });
+      const flashes = [0,1,2].map(i => { const f = new THREE.Mesh(new THREE.SphereGeometry(4,12,8), new THREE.MeshBasicMaterial({color:0xffb347, transparent:true, opacity:0})); f.position.set(-50+i*50+Math.random()*10,6,-62-Math.random()*20); E(f); return f; });
+      envTick.push((t) => flashes.forEach((f,i) => { const k = (t*.5 + i*.37) % 1; f.material.opacity = k < .12 ? .85*(1-k/.12) : 0; f.scale.setScalar(.6 + Math.min(k,.3)*6); }));
+    } },
+
   /* >>> ADICIONE NOVOS CENÁRIOS AQUI <<< */
 ];
 const SCENARIO_SLOTS = 2;                                       // lacunas "Em breve" exibidas no menu
@@ -1314,7 +1401,11 @@ function flagTex(key) {
   if (texCache["f"+key]) return texCache["f"+key];
   const c = document.createElement("canvas"); c.width=160; c.height=110;
   const x = c.getContext("2d");
-  if (key==="flavio") {
+  if (key==="regime") {
+    x.fillStyle="#1b1b1b"; x.fillRect(0,0,160,110);
+    x.fillStyle="#9b0f0f"; x.beginPath(); x.arc(80,55,34,0,7); x.fill();
+    x.fillStyle="#1b1b1b"; x.fillRect(74,18,12,74); x.fillRect(43,49,74,12);
+  } else if (key==="flavio") {
     x.fillStyle="#009c3b"; x.fillRect(0,0,160,110);
     x.fillStyle="#ffdf00"; x.beginPath(); x.moveTo(80,10); x.lineTo(150,55); x.lineTo(80,100); x.lineTo(10,55); x.fill();
     x.fillStyle="#1d3b8f"; x.beginPath(); x.arc(80,55,24,0,7); x.fill();
@@ -1364,8 +1455,34 @@ function makeFan(sideKey) {
   return g;
 }
 
+function makeUnit(kind) {
+  const g = new THREE.Group();
+  const zomb = kind === "zombie", mons = kind === "monster";
+  const skin = zomb ? 0x8fb87a : mons ? 0x7a4a9e : 0xd2a47c, cloth = zomb ? 0x4a5a3c : mons ? 0x3a1e52 : 0x4b5a2c;
+  g.add(box(.3,.2,.16,0x1c1c20, 0,.1,0));
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(.18,.22,.5,10), mat(cloth)); body.position.y = .45; g.add(body);
+  const head = new THREE.Mesh(new THREE.SphereGeometry(mons ? .19 : .15,12,10), mat(skin)); head.position.y = .85; g.add(head);
+  [-.06,.06].forEach(x => { const e = new THREE.Mesh(new THREE.SphereGeometry(.03,6,6), new THREE.MeshBasicMaterial({color: zomb||mons ? 0xff2a2a : 0x111111})); e.position.set(x,.87,.13); g.add(e); });
+  if (kind === "soldier") {
+    const helm = new THREE.Mesh(new THREE.SphereGeometry(.17,10,6,0,Math.PI*2,0,Math.PI/2), mat(0x2f3a1f)); helm.position.y = .88; g.add(helm);
+    g.add(box(.36,.04,.2,0x2f3a1f, 0,.88,.04));
+  }
+  if (mons) {
+    [-1,1].forEach(sx => { const h = new THREE.Mesh(new THREE.ConeGeometry(.05,.22,6), mat(0xe8dcc0)); h.position.set(sx*.12,1.05,0); h.rotation.z = -sx*.4; g.add(h); });
+    g.scale.setScalar(1.3);
+  }
+  if (zomb) { [-1,1].forEach(sx => { const a = new THREE.Mesh(new THREE.CylinderGeometry(.04,.04,.4,6), mat(skin)); a.rotation.x = Math.PI/2.2; a.position.set(sx*.22,.58,.2); g.add(a); }); }
+  const arm = new THREE.Group(); arm.position.set(.2,.6,0);
+  if (kind === "soldier") { arm.add(box(.05,.05,.5,0x222222, 0,.1,.18)); }
+  else { const c = new THREE.Mesh(new THREE.CylinderGeometry(.04,.04,.3,6), mat(skin)); c.position.y = .15; arm.add(c); }
+  g.add(arm);
+  const flag = new THREE.Mesh(new THREE.PlaneGeometry(.01,.01), new THREE.MeshBasicMaterial({visible:false})); g.add(flag);
+  g.userData = { arm, flag, phase:Math.random()*6, fall:-1, dir:Math.random()<.5?1:-1 };
+  return g;
+}
 function makeCaptain(sideKey, chr) {
-  const s = SIDES[sideKey], g = new THREE.Group(), ch = chr || CHARS[sideKey], hs = ch.hairStyle || "short";
+  const ch = chr || CHARS[sideKey], s = ch.military ? NG_SIDE : SIDES[sideKey], g = new THREE.Group(), hs = ch.hairStyle || "short";
+  if (ch.military) sideKey = "regime";
   // capa real
   const cape = new THREE.Mesh(new THREE.PlaneGeometry(1.2,1.5), new THREE.MeshLambertMaterial({color:s.main,side:THREE.DoubleSide}));
   cape.position.set(0,1.15,-.38); g.add(cape);
@@ -1404,7 +1521,14 @@ function makeCaptain(sideKey, chr) {
     const t = new THREE.Mesh(new THREE.ConeGeometry(.07,.2,6), new THREE.MeshLambertMaterial({color:0xffd23a, emissive:0x664400}));
     const a = i/5*Math.PI*2; t.position.set(Math.cos(a)*.25,.16,Math.sin(a)*.25); crown.add(t);
   }
-  g.add(crown);
+  if (!ch.military) g.add(crown);
+  else {                                                              // quepe e medalhas
+    const cap = new THREE.Mesh(new THREE.CylinderGeometry(.36,.4,.26,16), mat(0x2b2f1f)); cap.position.set(0,2.0,0); g.add(cap);
+    const top = new THREE.Mesh(new THREE.CylinderGeometry(.42,.38,.1,16), mat(0x3a4026)); top.position.set(0,2.16,0); g.add(top);
+    const brim = box(.5,.05,.3,0x15160f, 0,1.94,.34); g.add(brim);
+    const badge = new THREE.Mesh(new THREE.SphereGeometry(.07,8,6), mat(0xffd23a)); badge.position.set(0,2.02,.4); g.add(badge);
+    for (let i=0;i<4;i++) { const md = new THREE.Mesh(new THREE.SphereGeometry(.06,8,6), mat(i%2?0xffd23a:0xd7191c)); md.position.set(.12+i*.07,1.08-i*.01,.42); g.add(md); }
+  }
   // braço com bandeira
   const arm = new THREE.Group(); arm.position.set(.5,1.2,0);
   const ab = new THREE.Mesh(new THREE.CylinderGeometry(.09,.09,.6,8), mat(s.main)); ab.position.y = .3; arm.add(ab);
@@ -1413,7 +1537,7 @@ function makeCaptain(sideKey, chr) {
   flag.position.set(.46,1.35,0); arm.add(flag);
   g.add(arm);
   const label = labelSprite(ch.short+" · "+ch.party, s.css); label.position.set(0,2.75,0); g.add(label);
-  g.scale.setScalar(ch.boss ? 2.05 : 1.7);
+  g.scale.setScalar(ch.boss || ch.military ? 2.05 : 1.7);
   g.userData = { arm, jump:0, shake:0, base:null };
   return g;
 }
@@ -1467,8 +1591,8 @@ function setPreview(list) {
   });
 }
 
-function addFan(b,r,c) {
-  const f = makeFan(G.side[b]);
+function addFan(b,r,c,kind) {
+  const f = (G.ng && b===1) ? makeUnit(kind || "zombie") : makeFan(G.side[b]);
   const p = tilePos(b,r,c); f.position.set(p.x+(Math.random()-.5)*.12, 0, p.z+(Math.random()-.5)*.12);
   f.rotation.y = (Math.random()-.5)*.6;
   f.visible = b===0;
@@ -1796,7 +1920,7 @@ function canPlace(b, cells) {
 function placeShip(b, idx, cells) {
   const ship = { ...G.defs[b][idx], idx, cells, hits:0, sunk:false };
   G.fleets[b].push(ship);
-  cells.forEach(([r,c]) => { G.boards[b][r][c].ship = G.fleets[b].length-1; addFan(b,r,c); });
+  cells.forEach(([r,c]) => { G.boards[b][r][c].ship = G.fleets[b].length-1; addFan(b,r,c,ship.kind); });
   return ship;
 }
 function resetFleet(b) {
@@ -1867,6 +1991,7 @@ function captainReact(b, kind) {
 function applyShot(b, r, c, noCone) {
   const cell = G.boards[b][r][c];
   if (b === 0 && cell.umbrella && !cell.shot) { cell.umbrella = false; breakUmbrella(r, c); return "block"; }
+  if (G.ng && b === 1 && cell.minion) { removeMinion(r, c, true); sfx.hit(); return "hit"; }   // acertou um zumbi
   if (G.boss && b === 1) {                                           // arena do chefão: sem torcida
     if (cell.minion) { removeMinion(r, c, true); sfx.hit(); return "hit"; }
     if (cell.boss) {
@@ -1937,23 +2062,29 @@ function bossFlash(r, c) {                                           // o chefã
   burst(p, [s.main, s.alt, 0xffffff], 34, 5);
   addFx(.9, (t) => { f.position.y = Math.abs(Math.sin(t*9))*.7; f.userData.fall = -1; }, () => fanGroups[1].remove(f));
 }
+const msets = () => (G.boss || G.ngz).minions;
 function spawnMinion(r, c) {
   const cell = G.boards[1][r][c]; if (cell.minion) return;
-  const key = r+","+c, p = tilePos(1, r, c), f = makeFan(G.side[1]);
-  cell.minion = true; cell.shot = false; G.boss.minions.add(key);
+  const key = r+","+c, p = tilePos(1, r, c), f = G.ng ? makeUnit("zombie") : makeFan(G.side[1]);
+  cell.minion = true; cell.shot = false; msets().add(key);
   f.position.set(p.x, 0, p.z); f.scale.setScalar(1.25); fanGroups[1].add(f); G.fans[1][key] = f;
   refreshTile(1, r, c);
-  burst(p, [SIDES[G.side[1]].main, SIDES[G.side[1]].alt, 0xffffff], 14, 3);
-  const n = G.boss.minions.size;
-  log(`👤 Surgiu um ${minionName()} em ${r+1}·${c+1}! (${n}/${BOSS_MINIONS})`);
-  toast(`SURGIU UM ${minionName().toUpperCase()}! ${n}/${BOSS_MINIONS}`, SIDES[G.side[1]].cssAlt);
+  burst(p, G.ng ? [0x6fa05a, 0x2b3a22, 0xb02020] : [SIDES[G.side[1]].main, SIDES[G.side[1]].alt, 0xffffff], 14, 3);
+  const n = msets().size, nm = G.ng ? "zumbi" : minionName(), mx = G.ng ? ZOMBIE_MAX : BOSS_MINIONS;
+  log(`${G.ng ? "🧟" : "👤"} Surgiu um ${nm} em ${r+1}·${c+1}! (${n}/${mx})`);
+  toast(`SURGIU UM ${nm.toUpperCase()}! ${n}/${mx}`, G.ng ? "#8fd16a" : SIDES[G.side[1]].cssAlt);
 }
 function removeMinion(r, c, burstIt) {
   const key = r+","+c, cell = G.boards[1][r][c], f = G.fans[1][key];
   if (f) { fanGroups[1].remove(f); delete G.fans[1][key]; }
-  cell.minion = false; cell.shot = true; G.boss.minions.delete(key);
-  if (burstIt) { const s = SIDES[G.side[1]]; burst(tilePos(1, r, c), [s.main, s.alt, 0xffffff], 22, 4); }
+  cell.minion = false; cell.shot = true; msets().delete(key);
+  if (burstIt) { const s = SIDES[G.side[1]]; burst(tilePos(1, r, c), G.ng ? [0x6fa05a, 0xb02020, 0x2b3a22] : [s.main, s.alt, 0xffffff], 22, 4); }
   refreshTile(1, r, c);
+}
+function zombieHorde(done) {
+  [...G.ngz.minions].forEach(k => { const [r,c] = k.split(",").map(Number); burst(tilePos(1,r,c), [0x6fa05a, 0xb02020], 24, 5); removeMinion(r, c, false); });
+  tone(120,.6,"sawtooth",.1,-60);
+  bossBlast(done, { n:ZOMBIE_BITE, title:"🧟 A HORDA DE ZUMBIS INVADIU!", log:n => `🧟 ${ZOMBIE_MAX} zumbis reunidos: a horda invade e morde ${n} casas da sua arena!` });
 }
 function bossPower(done) {
   const keys = [...G.boss.minions].map(k => k.split(",").map(Number));
@@ -1970,13 +2101,13 @@ function bossPower(done) {
   keys.forEach(([r,c]) => { burst(tilePos(1,r,c), [0xd7191c, 0xffdf00, 0xffffff], 24, 5); removeMinion(r, c, false); });   // Lula: eles explodem
   bossBlast(done);
 }
-function bossBlast(done) {
+function bossBlast(done, cfg = { n:BOSS_BLAST, title:"💥 OS PETISTAS EXPLODIRAM!", log:n => `💥 ${BOSS_MINIONS} petistas reunidos: eles explodem ${n} casas da sua arena!` }) {
   const B0 = G.boards[0], free = [];
   for (let r=0;r<N;r++) for (let c=0;c<N;c++) if (!B0[r][c].shot) free.push([r,c]);
   const picks = [];
-  while (picks.length < BOSS_BLAST && free.length) picks.push(free.splice(rand(free.length),1)[0]);
-  setAction("💥 OS PETISTAS EXPLODIRAM!", "#ff5a4a", `${picks.length} casas da sua arena vão pelos ares…`);
-  log(`💥 ${BOSS_MINIONS} petistas reunidos: eles explodem ${picks.length} casas da sua arena!`);
+  while (picks.length < cfg.n && free.length) picks.push(free.splice(rand(free.length),1)[0]);
+  setAction(cfg.title, "#ff5a4a", `${picks.length} casas da sua arena vão ser atingidas…`);
+  log(cfg.log(picks.length));
   const root = new THREE.Group(); scene.add(root);
   const rings = picks.map(([r,c]) => {
     const p = tilePos(0,r,c), ring = makeRing(0xff3b30); ring.position.set(p.x,.09,p.z); ring.scale.setScalar(.55); root.add(ring); return ring;
@@ -2047,14 +2178,16 @@ function resolveShots(targetB, cells, who, powerLabel, opts = {}) {
       toast(pickPhrase(SUNK_PHRASES), "#ffdf00");
       setAction(`🎺 ${n} de ${target} se dispersou!`, "#ffdf00", "Grupo inteiro fora de combate");
     });
-    if (G.boss && who === 0 && targetB === 1 && hits === 0 && cells.length) {          // errou: surge um seguidor do chefão na casa
+    if ((G.boss || G.ng) && who === 0 && targetB === 1 && hits === 0 && cells.length) {          // errou: surge um seguidor do chefão na casa
       const [mr, mc] = cells[rand(cells.length)]; spawnMinion(mr, mc);
     }
     ui();
     if (allSunk(targetB)) return finish(who);
     if (who === 0 && hits > 0 && skillOn("empolgacao") && G.empoLeft > 0 && !G.empoBonus) { G.empoLeft--; G.bonusPending = true; }
     const proceed = () => setTimeout(nextTurn, 900);
-    if (G.boss && who === 0 && G.boss.minions.size >= BOSS_MINIONS) bossPower(proceed); else proceed();
+    if (G.boss && who === 0 && G.boss.minions.size >= BOSS_MINIONS) bossPower(proceed);
+    else if (G.ng && who === 0 && G.ngz.minions.size >= ZOMBIE_MAX) zombieHorde(proceed);
+    else proceed();
   }, total);
 }
 
@@ -2088,13 +2221,15 @@ function startBattle() {
   if (G.runOver) { G.votes = 0; G.runOver = false; }       // nova jornada: o placar recomeça (itens já foram repostos no fim da anterior)
   G.combo = 0; G.levelStartVotes = G.votes; shownVotes = G.votes;
   $("votesNum").textContent = fmtVotes(G.votes); renderCombo();
-  G.energy = [1, 1]; lastEnergy = 1; $("log").innerHTML = ""; setupSkills();
+  G.energy = [1, LEVELS[G.levelIdx].cpuBonus ? 3 : 1]; lastEnergy = 1; $("log").innerHTML = ""; setupSkills();
   G.walletSnap = WALLET;
   log(`⚔️ Fase ${G.level}: <b>${sname(0)}</b> contra <b>${G.enemy.name}</b> (${LEVELS[G.levelIdx].diff}).`);
   if (LEVELS[G.levelIdx].boss) setTimeout(() => toast(`CHEFÃO: ${G.enemy.short.toUpperCase()}!`, "#ff5a4a"), 300);
   if (G.boss) log(`👑 ${G.enemy.short} é único, com ${G.boss.max} pontos de vida. A cada acerto ele muda de casa, escondido. Cada erro seu faz surgir um ${minionName()}; com ${BOSS_MINIONS}, ${G.boss.kind==="lula" ? `eles explodem ${BOSS_BLAST} casas suas` : "ele recarrega a vida toda"}. Acerte os seguidores para eliminá-los!`);
   if (LEVELS[G.levelIdx].hazard === "bala") log("⚠️ Perigo do cenário: uma bala perdida cai do céu a cada turno: antes do seu ataque, na arena do adversário; antes do ataque dele, na sua.");
   if (LEVELS[G.levelIdx].hazard === "fogo") log("🔥 Perigo do cenário: a cada 2 turnos o sol escaldante incendeia 4 casas de cada arena.");
+  if (LEVELS[G.levelIdx].hazard === "bombas") log("☢️ APOCALIPSE: bombas caem a cada turno (mais a cada 3 rodadas) e cada erro seu invoca um zumbi. Com 5 zumbis a horda invade e morde 5 casas suas!");
+  if (LEVELS[G.levelIdx].ng) setTimeout(() => toast("NG+ · APOCALIPSE!", "#ff5a4a"), 300);
   if (LEVELS[G.levelIdx].hazard === "flechas") log(`🏹 Perigo do cenário: ${ARROWS_PER_TURN} flechas caem da floresta a cada turno: antes do seu ataque, no adversário; antes do ataque dele, em você.`);
   $("placePanel").classList.add("hidden");
   $("battlePanel").classList.remove("hidden");
@@ -2102,7 +2237,7 @@ function startBattle() {
 }
 function startTurn(repeat) {
   if (!repeat) G.empoBonus = false;
-  if (!G.firstTurn) G.energy[G.turn] = Math.min(MAX_ENERGY, G.energy[G.turn] + 1);
+  if (!G.firstTurn) G.energy[G.turn] = Math.min(MAX_ENERGY, G.energy[G.turn] + 1 + (G.turn===1 && LEVELS[G.levelIdx].cpuBonus ? 1 : 0));
   G.firstTurn = false;
   G.timeLeft = TURN_TIME; G.power = "normal"; G.panelOpen = false;
   const begin = () => {
@@ -2142,6 +2277,9 @@ function startTurn(repeat) {
   } else if (hz === "flechas") {                         // Amazônia: chuva de flechas na arena de quem vai jogar
     G.busy = true; ui();
     arrowRain(G.turn === 0 ? 1 : 0, begin);
+  } else if (hz === "bombas") {                          // Apocalipse: bombas na arena de quem será atacado
+    G.busy = true; ui();
+    bombRain(G.turn === 0 ? 1 : 0, begin);
   } else begin();
 }
 
@@ -2239,6 +2377,68 @@ function arrowRain(b, done) {
       setAction("🏹 As flechas só pegaram o chão", "#cfd8e3", "Nenhum torcedor atingido");
     }
     if (hits.sunk) { sfx.sunk(); log(`🎺 Um grupo ${who} se dispersou!`); }
+    ui();
+    if (allSunk(b)) { finish(1 - b); return; }
+    setTimeout(done, 350);
+  });
+}
+
+/* Apocalipse: bombas (cruz de 5 casas) caem a cada turno; quanto mais rodadas, mais bombas (até 3) */
+function makeBomb() {
+  const g = new THREE.Group();
+  g.add(cyl(.17,.17,.8,0x2a2d2a, 0,0,0,10));
+  const nose = new THREE.Mesh(new THREE.ConeGeometry(.17,.34,10), LM(0x2a2d2a)); nose.position.y = -.57; nose.rotation.x = Math.PI; g.add(nose);
+  [0,1.57].forEach(r => { const f = box(.5,.2,.03,0x555a55, 0,.4,0); f.rotation.y = r; g.add(f); });
+  g.add(cyl(.18,.18,.08,0xd7191c, 0,.1,0,10));
+  return g;
+}
+function bombRain(b, done) {
+  const n = Math.min(3, 1 + Math.floor((G.round - 1) / 3));
+  const owner = b===0 ? "a sua arena" : `a arena de ${sname(1)}`;
+  setAction(`☢️ ${n} BOMBA${n>1?"S":""} CAINDO!`, "#ff5a4a", `Cada bomba atinge uma cruz de 5 casas em ${owner}…`);
+  log(`☢️ ${n} bomba${n>1?"s":""} a caminho: ${owner}.`);
+  tone(180,.5,"sawtooth",.09,420); tone(180,.5,"sawtooth",.09,420,0,.55);
+  const root = new THREE.Group(); scene.add(root);
+  const hits = { n:0, sunk:0 };
+  const list = [];
+  for (let i=0;i<n;i++) {
+    const r = 1 + rand(N-2), c = 1 + rand(N-2), cells = [[0,0],[1,0],[-1,0],[0,1],[0,-1]].map(([a,d]) => [r+a, c+d]);
+    const p = tilePos(b,r,c), rings = cells.map(([rr,cc], k) => { const q = tilePos(b,rr,cc), ring = makeRing(0xff3b30); ring.position.set(q.x,.09,q.z); ring.scale.setScalar(k ? .4 : .6); root.add(ring); return ring; });
+    const bomb = makeBomb(); bomb.visible = false; scene.add(bomb);
+    const fire = new THREE.Mesh(new THREE.SphereGeometry(1,14,10), new THREE.MeshBasicMaterial({color:0xff8a1a, transparent:true, opacity:0})); fire.position.set(p.x,.4,p.z); root.add(fire);
+    list.push({ r, c, cells, p, rings, bomb, fire, t0:.9 + i*.3, done:false });
+  }
+  const total = .9 + n*.3 + .9;
+  addFx(total + .4, (t) => {
+    list.forEach((o,i) => {
+      if (t < o.t0) { o.rings.forEach(rg => { rg.material.opacity = .5 + Math.abs(Math.sin(t*16 + i))*.45; }); return; }
+      const k = (t - o.t0) / .35;
+      if (k < 1) { if (!o.bomb.visible) { o.bomb.visible = true; tone(2400,.35,"sine",.05,-1900); } o.bomb.position.set(o.p.x, 16 - 15.6*k*k, o.p.z); }
+      else if (!o.done) {
+        o.done = true; scene.remove(o.bomb); o.rings.forEach(rg => rg.material.opacity = 0);
+        tone(60,.6,"sawtooth",.16,-25); tone(140,.35,"square",.1,-110);
+        o.cells.forEach(([rr,cc]) => {
+          if (!inb(rr,cc)) return;
+          const cell = G.boards[b][rr][cc], q = tilePos(b,rr,cc);
+          if (b === 1 && G.ng && cell.minion) removeMinion(rr, cc, false);
+          else if (cell.ship >= 0 && !cell.shot) { const res = applyShot(b, rr, cc, true); if (res !== "block") hits.n++; if (res === "sunk") hits.sunk++; }
+          else if (!cell.shot && !cell.minion) { cell.shot = true; refreshTile(b, rr, cc); }
+          addDecal(q.x, q.z, 0x120c08, .36, .03);
+          burst(q, [0xff8a1a, 0xffd23a, 0x444444], 14, 5);
+        });
+      }
+      if (k >= 1) { const kk = Math.min(1, (t - o.t0 - .35) / .5); o.fire.material.opacity = (1 - kk) * .85; o.fire.scale.setScalar(.6 + kk * 1.9); }
+    });
+  }, () => {
+    scene.remove(root);
+    if (G.phase !== "battle") return;
+    if (hits.n > 0) {
+      captainReact(b, "shake");
+      log(`☢️ As bombas derrubaram ${hits.n} ${b===0 ? "torcedor" + (hits.n>1?"es seus":" seu") : "soldado" + (hits.n>1?"s":"") + " de " + sname(1)}.`);
+      toast(`☢️ BOMBAS: ${hits.n} BAIXA${hits.n>1?"S":""}!`, "#ff5a4a");
+      setAction(`☢️ ${hits.n} baixa${hits.n>1?"s":""} causada${hits.n>1?"s":""} pelas bombas`, "#ff5a4a", b===0 ? "Foi na SUA torcida" : `Foi no exército de ${sname(1)}`);
+    } else { log("☢️ As bombas só abriram crateras."); setAction("☢️ As bombas só abriram crateras", "#cfd8e3", "Nenhuma baixa"); }
+    if (hits.sunk) { sfx.sunk(); log("🎺 Uma unidade inteira foi dizimada!"); }
     ui();
     if (allSunk(b)) { finish(1 - b); return; }
     setTimeout(done, 350);
@@ -2368,7 +2568,7 @@ function playerFire(r,c) {
 /* ---- IA do computador: caça em paridade + perseguição de acertos + poderes ---- */
 function cpuPlay() {
   if (G.phase!=="battle") return;
-  const B = G.boards[0], me = SIDES[G.side[1]];
+  const B = G.boards[0], me = G.ng ? { ...SIDES[G.side[1]], cross:NG_SIDE.cross, ultra:NG_SIDE.ultra } : SIDES[G.side[1]];
   const lvl = LEVELS[G.levelIdx].ai || 3, eName = G.enemy ? G.enemy.short : me.short;
   const unshot = [];
   for (let r=0;r<N;r++) for (let c=0;c<N;c++) if (!B[r][c].shot) unshot.push([r,c]);
@@ -2471,12 +2671,16 @@ function finish(winner, reason) {
     captainReact(winner,"jump");
   }
   const rounds = `${G.round} rodada${G.round>1?"s":""}`;
-  const side = G.side[0], last = LEVELS.length-1;
+  const side = G.side[0], last = LEVELS.length-1, bossIdx = LEVELS.findIndex(l => l.boss);
   let title, text, btn;
   if (youWin) {
     CLEARED[side][G.levelIdx] = true;
     if (G.levelIdx < last && PROG[side] === G.levelIdx+1) { PROG[side]++; justUnlocked = G.levelIdx+1; }
     if (G.levelIdx === last) {
+      title = "SOBREVIVENTE DO APOCALIPSE!";
+      text = `${G.enemy.name} caiu e a democracia sobreviveu! Você zerou o NG+ em ${rounds}. ☢️🏆`;
+      btn = "Voltar ao menu";
+    } else if (G.levelIdx === bossIdx) {
       title = "CAMPEÃO!";
       text = `${G.enemy.name} foi derrotado ${G.scn.of}! Você zerou a trilha de ${CHARS[side].name} em ${rounds} na última fase. 🏆`;
       btn = "Voltar ao menu";
@@ -2496,8 +2700,10 @@ function finish(winner, reason) {
   if (!youWin) {
     text += ` Total da jornada: ${fmtVotes(G.votes)} votos. O placar recomeça; os votos da loja e suas skills ficam.`;
     G.runOver = true; resetItems();
+  } else if (G.levelIdx === bossIdx) {
+    text += ` Votos nesta fase: ${fmtVotes(levelVotes)}. TOTAL DA CAMPANHA: ${fmtVotes(G.votes)} votos! O NG+ foi desbloqueado.`;
   } else if (G.levelIdx === last) {
-    text += ` Votos nesta fase: ${fmtVotes(levelVotes)}. TOTAL DA CAMPANHA: ${fmtVotes(G.votes)} votos!`;
+    text += ` Votos nesta fase: ${fmtVotes(levelVotes)}. TOTAL FINAL: ${fmtVotes(G.votes)} votos!`;
     G.runOver = true; resetItems();
   } else {
     text += ` Votos nesta fase: ${fmtVotes(levelVotes)} · Total acumulado: ${fmtVotes(G.votes)}.`;
@@ -2506,7 +2712,7 @@ function finish(winner, reason) {
   $("coffeeNudge").classList.toggle("hidden", !youWin);
   setTimeout(() => {
     $("endTitle").textContent = title; $("endText").textContent = text; $("btnAgain").textContent = btn;
-    if (youWin && G.levelIdx === last) startEnding(side);         // chefão vencido: final da trilha
+    if (youWin && G.levelIdx === bossIdx) startEnding(side);         // chefão vencido: final da trilha
     else $("endscreen").classList.remove("hidden");
   }, 2600);
 }
@@ -2515,7 +2721,7 @@ function finish(winner, reason) {
    UI
    ================================================================ */
 function ui() {
-  const s0 = SIDES[G.side[0]], s1 = SIDES[G.side[1]];
+  const s0 = SIDES[G.side[0]], s1 = G.ng ? NG_SIDE : SIDES[G.side[1]];
   if (!s0) return;
   $("roundText").innerHTML = (G.scn ? `<span class="scn-name">📍 ${G.scn.short}</span>` : "") +
     (G.phase==="battle" || G.phase==="over" ? ` · Rodada <b>${G.round}</b>` : "");
@@ -2601,7 +2807,7 @@ function ui() {
     $("fleetA").innerHTML = `<b style="color:${s0.cssAlt}">Sua torcida</b>${row(0)}`;
     $("fleetB").innerHTML = G.boss
       ? `<b style="color:${s1.cssAlt}">👑 Chefão ${G.enemy.short}</b>❤ Vida: ${G.boss.hp}/${G.boss.max}<br>👤 ${G.boss.kind==="lula" ? "Petistas" : "Bolsonaristas"}: ${G.boss.minions.size}/${BOSS_MINIONS}<br><span style="opacity:.8">${G.boss.kind==="lula" ? `com ${BOSS_MINIONS}: explodem ${BOSS_BLAST} casas suas` : `com ${BOSS_MINIONS}: recarrega a vida`}</span>`
-      : `<b style="color:${s1.cssAlt}">Torcida de ${G.enemy ? G.enemy.short : s1.short}</b>${row(1)}`;
+      : `<b style="color:${s1.cssAlt}">${G.ng ? "Exército de " : "Torcida de "}${G.enemy ? G.enemy.short : s1.short}</b>${row(1)}${G.ng ? `<div style="margin-top:4px">🧟 Zumbis: ${G.ngz.minions.size}/${ZOMBIE_MAX}</div>` : ""}`;
   } else if (G.phase==="place") {
     $("fleetA").classList.add("hidden"); $("fleetB").classList.add("hidden");
   }
@@ -3011,6 +3217,7 @@ function startEnding(side) {
     <div class="name" style="font-size:1em">${["boulos","gleisi","moraes","felipe","marina","anitta","lula"].map(k => CHARS[k].name).join(" · ")}</div>
     <div class="name" style="font-size:1em">${["nikolas","tarcisio","michelle","hang","salles","carlos","flavio"].map(k => CHARS[k].name).join(" · ")}</div>
     <div class="dim">Jogo apartidário e imparcial. Paródia bem-humorada: os personagens são inspirados em figuras públicas, sem nenhuma intenção de ofender ninguém.</div>
+    <div class="dim" style="margin-top:34px;color:#ff9a5a;opacity:1">☢️ Mas a paz não durou... um ditador surge das cinzas. O modo <b>NG+: Apocalipse</b> foi desbloqueado no menu.</div>
     <h3>OBRIGADO POR JOGAR!</h3>
     <div class="name">rpossan</div>
     <div class="dim">github.com/rpossan/super-presida-batalha</div>
@@ -3133,6 +3340,7 @@ $("pResume").onclick = resumeGame;
 $("pReset").onclick = () => { const i = G.levelIdx; resumeGame(); restoreLevelStart(); startLevel(i); };
 $("pExit").onclick = () => { resumeGame(); restoreLevelStart(); showMenu(); };
 function refreshDevBtn() {
+  $("devBtn").classList.toggle("hidden", new URLSearchParams(location.search).get("dev") === null);   // botão só aparece com ?dev= na URL
   $("devBtn").textContent = DEV_MODE ? "🛠 Modo desenvolvedor: ATIVO (todas as fases liberadas)" : "🛠 Modo desenvolvedor: desligado";
 }
 $("devBtn").onclick = () => { DEV_MODE = !DEV_MODE; if (DEV_MODE) WALLET = Math.max(WALLET, 99999); refreshDevBtn(); buildMenu(); refreshShopButtons(); };
@@ -3141,7 +3349,7 @@ refreshDevBtn();
 const hexCss = n => "#" + n.toString(16).padStart(6,"0");
 /* rosto estilizado do personagem para os cartões de fase */
 function faceSVG(ch, size, boss) {
-  const camp = SIDES[ch.camp], hs = ch.hairStyle || "short", hair = hexCss(ch.hair), skin = hexCss(ch.skin);
+  const camp = SIDES[ch.camp] || NG_SIDE, hs = ch.hairStyle || "short", hair = hexCss(ch.hair), skin = hexCss(ch.skin);
   let h = `<svg viewBox="0 0 64 64" width="${size}" height="${size}"><circle cx="32" cy="32" r="30" fill="${camp.css}" stroke="${camp.cssAlt}" stroke-width="3"/>`;
   if (hs==="long" || hs==="bob") h += `<rect x="14" y="20" width="36" height="${hs==="long"?36:26}" rx="12" fill="${hair}"/>`;
   h += `<ellipse cx="32" cy="36" rx="15" ry="17" fill="${skin}"/>`;
@@ -3166,17 +3374,17 @@ function buildMenu() {
   grid.innerHTML = "";
   LEVELS.forEach((L, i) => {
     const sc = SCENARIOS.find(x => x.id === L.scn), en = CHARS[TRACKS[menuSide][i]];
-    const total = L.def.reduce((a,idx) => a + FLEET[idx].len, 0);
+    const total = L.defs ? L.defs.reduce((a,d) => a + d.len, 0) : L.def.reduce((a,idx) => a + FLEET[idx].len, 0);
     const locked = !DEV_MODE && i >= PROG[menuSide], cleared = CLEARED[menuSide][i], fresh = i === justUnlocked;
     const d = document.createElement("div");
-    d.className = "lvl" + (locked ? " locked" : "") + (cleared ? " done" : "") + (fresh ? " fresh" : "") + (L.boss ? " boss" : "");
+    d.className = "lvl" + (locked ? " locked" : "") + (cleared ? " done" : "") + (fresh ? " fresh" : "") + (L.boss ? " boss" : "") + (L.ng ? " ng" : "");
     d.style.backgroundImage = sc.thumb;
     d.innerHTML = locked
       ? `<span class="face">${faceSVG({camp:en.camp, hair:0x333333, skin:0x555555, hairStyle:"bald"}, 54, false)}</span>
-         <span class="info"><span class="tg">FASE ${i+1} · ${L.diff.toUpperCase()}</span><b>🔒 ???</b><small>Vença a fase ${i} para liberar</small></span>`
+         <span class="info"><span class="tg">FASE ${i+1} · ${L.diff.toUpperCase()}</span><b>🔒 ???</b><small>${L.ng ? "Zere a campanha (após os créditos) para liberar" : `Vença a fase ${i} para liberar`}</small></span>`
       : `<span class="face">${faceSVG(en, 54, L.boss)}</span>
          <span class="info"><span class="tg">FASE ${i+1} · ${L.diff.toUpperCase()}</span><b>${en.name}</b>
-         <small>${en.party} · ${sc.name}<br>${L.boss ? `❤ Chefão único: ${bossHp()} pontos de vida · sem torcida` : `👥 ${total} torcedores para dispersar`}${L.hazard === "bala" ? "<br>⚠️ Bala perdida a cada turno" : L.hazard === "fogo" ? "<br>🔥 Fogo queima 4 casas de cada arena a cada 2 turnos" : L.hazard === "flechas" ? `<br>🏹 ${ARROWS_PER_TURN} flechas por turno` : L.calm ? "<br>🏖️ Cenário sem danos" : ""}</small></span>
+         <small>${en.party} · ${sc.name}<br>${L.boss ? `❤ Chefão único: ${bossHp()} pontos de vida · sem torcida` : `👥 ${total} torcedores para dispersar`}${L.hazard === "bala" ? "<br>⚠️ Bala perdida a cada turno" : L.hazard === "fogo" ? "<br>🔥 Fogo queima 4 casas de cada arena a cada 2 turnos" : L.hazard === "flechas" ? `<br>🏹 ${ARROWS_PER_TURN} flechas por turno` : L.hazard === "bombas" ? "<br>☢️ Bombas a cada turno · 🧟 erros invocam zumbis" : L.calm ? "<br>🏖️ Cenário sem danos" : ""}</small></span>
          ${fresh ? '<span class="badge">NOVA!</span>' : cleared ? '<span class="badge">✔ VENCIDA</span>' : ""}`;
     if (!locked) d.onclick = () => startLevel(i);
     grid.appendChild(d);
@@ -3227,7 +3435,8 @@ function newGame(playerKey, levelIdx = 0) {
   if (G.runOver) { G.votes = 0; G.runOver = false; }          // game over / campanha zerada: nova jornada
   G.combo = 0; shownVotes = G.votes; $("votesNum").textContent = fmtVotes(G.votes); renderCombo();
   G.enemy = { ...CHARS[TRACKS[playerKey][levelIdx]], boss: !!L.boss };
-  G.defs = [FLEET, L.def.map(i => FLEET[i])];
+  G.ng = !!L.ng; G.ngz = L.ng ? { minions:new Set() } : null;
+  G.defs = [FLEET, L.defs ? L.defs.map(d => ({...d})) : L.def.map(i => FLEET[i])];
   G.boss = L.boss ? { hp:bossHp(), max:bossHp(), r:0, c:0, minions:new Set(), kind: G.enemy.camp === "lula" ? "lula" : "flavio" } : null;
   if (G.boss) G.defs[1] = [];                                      // chefão: sem torcida
   G.phase = "place"; G.turn = 0; G.busy = false; G.horiz = true; G.power = "normal";
@@ -3237,7 +3446,7 @@ function newGame(playerKey, levelIdx = 0) {
   $("action").classList.add("hidden"); clearMarkers(); clearUmbrellas(); resetFleet(0); resetFleet(1); randomFleet(1);
   if (G.boss) placeBoss();
   for (let b=0;b<2;b++) {
-    frames[b].material.color.setHex(SIDES[G.side[b]].main);
+    frames[b].material.color.setHex(b===1 && G.ng ? NG_SIDE.main : SIDES[G.side[b]].main);
     if (G.captains[b]) scene.remove(G.captains[b]);
     const cp = makeCaptain(G.side[b], b===0 ? CHARS[G.side[0]] : G.enemy);
     cp.position.set(BX[b], 0, -7.7); cp.rotation.y = b===0 ? .25 : -.25;
@@ -3261,6 +3470,7 @@ function animate() {
   requestAnimationFrame(animate);
   const dt = G.paused ? 0 : Math.min(clock.getDelta(), .05), t = clock.elapsedTime;
 
+  envTick.forEach(f => f(t, dt));
   umbGroup.children.forEach((u,i) => { u.position.y = Math.sin(t*3+i*2)*.05; });
   // torcedores
   for (let b=0;b<2;b++) fanGroups[b].children.forEach(f => {

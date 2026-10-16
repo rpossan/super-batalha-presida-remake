@@ -6,7 +6,7 @@
 
 <p align="center">
   Batalha naval das <b>eleições 2026</b>, em 3D, direto no navegador.<br>
-  Uma campanha em 7 fases, 2 trilhas, 7 cenários do Brasil e um chefão final.
+  Uma campanha em 7 fases, 2 trilhas, 7 cenários do Brasil, um chefão final e um modo NG+ apocalíptico.
 </p>
 
 <p align="center">
@@ -72,6 +72,7 @@ Escolha o lado e vença uma fase por vez. Cada vitória libera a próxima e a di
 | 5 | Floresta Amazônica | Marina Sílvia | Ricardo Venddas | Extremo | 🏹 flechas |
 | 6 | Balneário Camboriú (SC) | Pablo Vital | Carlucho | Pré-chefão | 🏖️ sem danos |
 | 7 | Praça dos Três Poderes (DF) | **Lula Molusco (chefão)** | **Flávio (chefão)** | Chefão | 👑 luta final |
+| 8 | Apocalipse (NG+) | **Generalíssimo Tirano** | **Generalíssimo Tirano** | NG+ extremo | ☢️ bombas + 🧟 zumbis |
 
 ### Cenários
 
@@ -102,6 +103,26 @@ O chefão é **único, sem torcida, e tem pontos de vida**. A cada acerto ele **
 - 💥 **Lula Molusco:** com 6 petistas reunidos, eles **explodem 4 casas** da sua arena.
 - 💚 **Flávio:** com 6 bolsonaristas reunidos, ele **recarrega a vida toda**.
 - 📊 Use a **pesquisa** para descobrir em que área ele está.
+
+---
+
+## ☢️ NG+: Apocalipse
+
+Zerou a campanha e viu os créditos? Um ditador surge das cinzas. **O NG+ é desbloqueado depois dos créditos** e é a fase mais difícil do jogo.
+
+<p align="center"><img src="docs/img/ng_cenario.png" alt="Cenário do Apocalipse" width="760"></p>
+
+- **Cenário:** terra arrasada, prédios em chamas, **tanques de guerra**, **caças voando** ao fundo e um **cogumelo nuclear** no centro.
+- **Inimigo:** o **Generalíssimo Tirano**, um ditador que é contra a democracia (personagem fictício). É o mesmo adversário nas duas trilhas.
+- **Exército:** zumbis, soldados e monstros (20 unidades, contra as 17 da sua torcida).
+- **☢️ Bombas:** caem a cada turno e atingem uma cruz de 5 casas: antes do seu ataque no inimigo, antes do ataque dele em você.
+  A cada 3 rodadas cai uma bomba a mais (até 3).
+- **🧟 Zumbis:** cada vez que você erra, surge um zumbi visível na casa. Acerte-o para eliminá-lo. Com **5 zumbis**, a horda invade e morde 5 casas da sua arena.
+- **Dificuldade extrema:** o Tirano começa com mais energia e ganha energia extra a cada turno.
+
+<p align="center"><img src="docs/img/ng_batalha.png" alt="Batalha do NG+" width="760"></p>
+
+> Calibrado por simulação: um jogador competente **sem skills** vence em torno de 27% das vezes; **com skills**, perto de 59%.
 
 ---
 
@@ -165,8 +186,8 @@ Energia: **+1 por turno** e **+1 por torcedor atingido**. No celular, a câmera 
 
 - **Pausa:** botão ⏸ no topo (ou `Esc`) congela o jogo e abre o menu com **Continuar**, **Reiniciar a fase** e
   **Sair para o menu principal**. Reiniciar ou sair desfaz os votos e itens gastos na fase em andamento.
-- **Modo desenvolvedor:** vem **ativo por padrão** e deixa todas as fases desbloqueadas. Dá para ligar/desligar pelo
-  botão "🛠 Modo desenvolvedor" no menu, ou abrir o jogo com `?dev=0` (desligado) / `?dev=1` (ligado).
+- **Modo desenvolvedor:** vem **desligado**. Abra o jogo com `?dev=1` na URL para liberar todas as fases (e um saldo de testes na loja).
+  Com `?dev=` na URL aparece o botão "🛠 Modo desenvolvedor" no menu para ligar e desligar.
 
 ## 🛠️ Tecnologia
 
