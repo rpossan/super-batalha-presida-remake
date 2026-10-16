@@ -594,7 +594,7 @@ const resetItems = () => Object.assign(ITEMS, ITEM_START);
 
 /* ---- loja: votos viram moeda. Itens e skills ficam na memória da aba ---- */
 const ITEM_PRICE = { revive:1000, furia:3000, reforco:1500 };
-const ITEM_MAX   = { revive:8, furia:5, reforco:6 };
+const ITEM_MAX   = { revive:9, furia:9, reforco:9 };
 const SKILLS = [
   { id:"folego",      icon:"⚡", name:"Fôlego de campanha",   price:3000,  desc:"Você começa cada fase com 4 de energia (em vez de 1)." },
   { id:"instituto",   icon:"📊", name:"Instituto de pesquisa", price:4000,  desc:"A Pesquisa custa só 1 de energia (em vez de 2)." },
@@ -1579,7 +1579,7 @@ function refreshTile(b,r,c) {
   let col = tileBase(r,c);
   if (cell.minion) col = 0xd4a017;                                   // seguidor do chefão (visível): alvo
   else if (cell.shot) col = (cell.ship>=0 || cell.bossHit) ? 0xb3261e : 0x7d8a99;
-  else if (cell.scanned) col = (cell.ship>=0 || cell.boss) ? 0xe0b800 : 0x2f6fb5;
+  else if (cell.scanned) col = (cell.ship>=0 || cell.boss) ? 0xe0b800 : 0x6a52a8;
   else if (b===0 && cell.ship>=0) col = new THREE.Color(SIDES[G.side[0]].main).multiplyScalar(.75).getHex();
   m.material.color.setHex(col);
 }
@@ -1594,7 +1594,7 @@ function setPreview(list, aim) {
   clearPreview();
   list.forEach(([b,r,c,ok]) => {
     if (!inb(r,c)) return;
-    const m = tiles[b][r][c]; m.material.emissive.setHex(ok ? (aim ? 0xa89200 : 0x2d6a2d) : 0x7a1f1f); previewed.push(m);
+    const m = tiles[b][r][c]; m.material.emissive.setHex(ok ? (aim ? 0x1c6dff : 0x2d6a2d) : 0x7a1f1f); previewed.push(m);
   });
 }
 
@@ -2217,7 +2217,7 @@ function doRadar(targetB, r, c, who, cb) {
     const bm = G.boss && targetB === 1;
     log(bm ? `📊 Pesquisa: ${found ? "o CHEFÃO está nessa área!" : "o chefão não está nessa área."}` : `📊 ${sname(who)} encomendou uma <b>pesquisa</b>: ${found} torcedor${found===1?"":"es"} na área.`);
     toast(bm ? (found ? "O CHEFÃO ESTÁ AQUI!" : "NADA POR AQUI") : (found ? `PESQUISA: ${found} NA ÁREA` : "PESQUISA: NADA POR AQUI"), "#8cc4ff");
-    setAction(`📊 Pesquisa: ${bm ? (found ? "o chefão está nessa área!" : "nada por aqui") : (found ? found+" torcedor"+(found>1?"es":"")+" na área" : "nada por aqui")}`, "#8cc4ff", bm ? "Casa amarela = onde o chefão está agora" : "Casas amarelas = tem torcida · azuis = vazio");
+    setAction(`📊 Pesquisa: ${bm ? (found ? "o chefão está nessa área!" : "nada por aqui") : (found ? found+" torcedor"+(found>1?"es":"")+" na área" : "nada por aqui")}`, "#8cc4ff", bm ? "Casa amarela = onde o chefão está agora" : "Casas amarelas = tem torcida · roxas = vazio");
     setTimeout(() => { if (cb) cb(); else { G.busy = G.turn!==0; ui(); } }, 900);
   }, 1000);
 }

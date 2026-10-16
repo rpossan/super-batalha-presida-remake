@@ -138,9 +138,9 @@ Estoque único para a campanha toda: **acabou, já era**. Usar um item **não ga
 
 | Item | Atalho | Efeito | Estoque inicial | Limite por fase | Preço | Máx. |
 |---|---|---|---|---|---|---|
-| 💊 **Remédio** (cruz vermelha) | `5` | revive 1 torcedor caído da sua torcida | 4 | 2 | 1.000 | 8 |
-| 🥫 **Fúria** (energético) | `6` | turnos contínuos: joga 3 turnos seguidos (o atual + 2), sem o adversário agir | 2 | 1 | 3.000 | 5 |
-| 📢 **Reforço** (alto-falante) | `7` | invoca 1 torcedor aleatório na sua arena (+1 de vida) | 3 | 1 | 1.500 | 6 |
+| 💊 **Remédio** (cruz vermelha) | `5` | revive 1 torcedor caído da sua torcida | 4 | 2 | 1.000 | 9 |
+| 🥫 **Fúria** (energético) | `6` | turnos contínuos: joga 3 turnos seguidos (o atual + 2), sem o adversário agir | 2 | 1 | 3.000 | 9 |
+| 📢 **Reforço** (alto-falante) | `7` | invoca 1 torcedor aleatório na sua arena (+1 de vida) | 3 | 1 | 1.500 | 9 |
 
 No celular os itens ficam num botão único **🎒 Itens** que abre a lista.
 
