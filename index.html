@@ -567,7 +567,7 @@ const TRACKS = {
 const NG_DEFS = [
   { name:"Horda de Zumbis",     len:5, kind:"zombie"  }, { name:"Pelotão de Soldados", len:4, kind:"soldier" },
   { name:"Monstros Mutantes",   len:3, kind:"monster" }, { name:"Esquadrão Blindado",  len:3, kind:"soldier" },
-  { name:"Zumbis Rastejantes",  len:2, kind:"zombie"  }, { name:"Besta do Apocalipse", len:3, kind:"monster" },
+  { name:"Zumbis Rastejantes",  len:2, kind:"zombie"  }, { name:"Besta do Apocalipse", len:3, kind:"monster" }, { name:"Legião Blindada", len:2, kind:"soldier" },
 ];
 const LEVELS = [
   { scn:"paulista", diff:"Fácil",   ai:1, def:[4,3,2] },
@@ -605,9 +605,15 @@ const SKILLS = [
 let WALLET = DEV_MODE ? 99999 : 0;            // votos gastáveis (os votos do placar continuam separados)
 const OWNED = new Set();                       // skills compradas (permanentes na sessão)
 const skillOn = id => OWNED.has(id);
-const bossHp = () => 2 + (OWNED.size >= 2 ? 1 : 0) + (OWNED.size >= 5 ? 1 : 0);   // o chefão acompanha o seu arsenal
+/* AMEAÇA: quanto mais votos você investe em skills, mais forte o inimigo fica (valores calibrados por simulação) */
+const threat = () => SKILLS.reduce((a,k) => a + (skillOn(k.id) ? k.price/1000 : 0), 0);        // 0 a 31
+const THREAT_TIERS = [[28,"Extrema"],[21,"Crítica"],[14,"Alta"],[7,"Elevada"],[1,"Moderada"],[0,"Calma"]];
+const threatName = () => (THREAT_TIERS.find(([min]) => threat() >= min) || [0,"Calma"])[1];
+const bossHp = () => 3 + Math.round(threat()/10);                                    // chefão: 3 a 6 de vida
+const extraGroups = div => [2,3,2].slice(0, Math.min(3, Math.floor(threat()/div)));   // reforços inimigos (tamanho dos grupos)
+const cpuExtraEnergy = () => { const L = LEVELS[G.levelIdx]; return (L.cpuBonus ? 1 : 0) + (threat() >= (L.ng ? 20 : 16) ? 1 : 0); };
 const ARROWS_PER_TURN = 4;
-const ZOMBIE_MAX = 5, ZOMBIE_BITE = 5;
+const zombieMax = () => threat() >= 20 ? 4 : 5, zombieBite = () => 5 + Math.floor(threat()/10);
 const NG_SIDE = { key:"regime", name:"Regime", short:"Tirano", party:"Regime", main:0x39402a, alt:0xc9c27a, css:"#5b6636", cssAlt:"#e0da86",
   cross:"Bombardeio", ultra:"Blitz", ultraDesc:"linha inteira", ultraMode:"row", skin:0xd9b08c, hair:0x151515, shirts:[0x4a5230,0x39402a] };
 const COST = { normal:0, radar:2, cross:3, ultra:6 };
@@ -2041,7 +2047,7 @@ function allSunk(b) {
    - Flávio: com 5 seguidores, ele recarrega a vida toda
    ================================================================ */
 /* equilíbrio definido por simulação (jogador competente x IA): ~60% de vitória, lutas de ~26 turnos */
-const BOSS_MINIONS = 6, BOSS_BLAST = 4, BOSS_REST = .25;
+const bossMin = () => Math.max(4, 6 - Math.floor(threat()/14)), bossBl = () => 4 + Math.floor(threat()/9), bossRest = () => Math.max(0, .2 - threat()*.006);
 const minionName = () => G.boss.kind === "lula" ? "petista" : "bolsonarista";
 function placeBoss() {
   const B = G.boards[1], free = () => {
@@ -2075,7 +2081,7 @@ function spawnMinion(r, c) {
   f.position.set(p.x, 0, p.z); f.scale.setScalar(1.25); fanGroups[1].add(f); G.fans[1][key] = f;
   refreshTile(1, r, c);
   burst(p, G.ng ? [0x6fa05a, 0x2b3a22, 0xb02020] : [SIDES[G.side[1]].main, SIDES[G.side[1]].alt, 0xffffff], 14, 3);
-  const n = msets().size, nm = G.ng ? "zumbi" : minionName(), mx = G.ng ? ZOMBIE_MAX : BOSS_MINIONS;
+  const n = msets().size, nm = G.ng ? "zumbi" : minionName(), mx = G.ng ? zombieMax() : bossMin();
   log(`${G.ng ? "🧟" : "👤"} Surgiu um ${nm} em ${r+1}·${c+1}! (${n}/${mx})`);
   toast(`SURGIU UM ${nm.toUpperCase()}! ${n}/${mx}`, G.ng ? "#8fd16a" : SIDES[G.side[1]].cssAlt);
 }
@@ -2089,7 +2095,7 @@ function removeMinion(r, c, burstIt) {
 function zombieHorde(done) {
   [...G.ngz.minions].forEach(k => { const [r,c] = k.split(",").map(Number); burst(tilePos(1,r,c), [0x6fa05a, 0xb02020], 24, 5); removeMinion(r, c, false); });
   tone(120,.6,"sawtooth",.1,-60);
-  bossBlast(done, { n:ZOMBIE_BITE, title:"🧟 A HORDA DE ZUMBIS INVADIU!", log:n => `🧟 ${ZOMBIE_MAX} zumbis reunidos: a horda invade e morde ${n} casas da sua arena!` });
+  bossBlast(done, { n:zombieBite(), title:"🧟 A HORDA DE ZUMBIS INVADIU!", log:n => `🧟 ${zombieMax()} zumbis reunidos: a horda invade e morde ${n} casas da sua arena!` });
 }
 function bossPower(done) {
   const keys = [...G.boss.minions].map(k => k.split(",").map(Number));
@@ -2097,8 +2103,8 @@ function bossPower(done) {
     keys.forEach(([r,c]) => { const p = tilePos(1,r,c); burst(p, [0x2f9a3f, 0xffd23a, 0xffffff], 20, 5); removeMinion(r, c, false); });
     G.boss.hp = G.boss.max;
     toast(`${G.enemy.short.toUpperCase()} RECARREGOU A VIDA!`, "#ffdf00");
-    setAction(`💚 ${G.enemy.short} recarregou a vida toda!`, "#ffdf00", `${BOSS_MINIONS} bolsonaristas reunidos · vida ${G.boss.hp}/${G.boss.max}`);
-    log(`💚 ${BOSS_MINIONS} bolsonaristas reunidos: ${G.enemy.short} recarregou a vida (${G.boss.hp}/${G.boss.max}).`);
+    setAction(`💚 ${G.enemy.short} recarregou a vida toda!`, "#ffdf00", `${bossMin()} bolsonaristas reunidos · vida ${G.boss.hp}/${G.boss.max}`);
+    log(`💚 ${bossMin()} bolsonaristas reunidos: ${G.enemy.short} recarregou a vida (${G.boss.hp}/${G.boss.max}).`);
     [523,659,784,1047].forEach((f,i) => tone(f,.2,"square",.08,0,i*.1));
     ui(); setTimeout(done, 1100);
     return;
@@ -2106,7 +2112,7 @@ function bossPower(done) {
   keys.forEach(([r,c]) => { burst(tilePos(1,r,c), [0xd7191c, 0xffdf00, 0xffffff], 24, 5); removeMinion(r, c, false); });   // Lula: eles explodem
   bossBlast(done);
 }
-function bossBlast(done, cfg = { n:BOSS_BLAST, title:"💥 OS PETISTAS EXPLODIRAM!", log:n => `💥 ${BOSS_MINIONS} petistas reunidos: eles explodem ${n} casas da sua arena!` }) {
+function bossBlast(done, cfg = { n:bossBl(), title:"💥 OS PETISTAS EXPLODIRAM!", log:n => `💥 ${bossMin()} petistas reunidos: eles explodem ${n} casas da sua arena!` }) {
   const B0 = G.boards[0], free = [];
   for (let r=0;r<N;r++) for (let c=0;c<N;c++) if (!B0[r][c].shot) free.push([r,c]);
   const picks = [];
@@ -2190,8 +2196,8 @@ function resolveShots(targetB, cells, who, powerLabel, opts = {}) {
     if (allSunk(targetB)) return finish(who);
     if (who === 0 && hits > 0 && skillOn("empolgacao") && G.empoLeft > 0 && !G.empoBonus) { G.empoLeft--; G.bonusPending = true; }
     const proceed = () => setTimeout(nextTurn, 900);
-    if (G.boss && who === 0 && G.boss.minions.size >= BOSS_MINIONS) bossPower(proceed);
-    else if (G.ng && who === 0 && G.ngz.minions.size >= ZOMBIE_MAX) zombieHorde(proceed);
+    if (G.boss && who === 0 && G.boss.minions.size >= bossMin()) bossPower(proceed);
+    else if (G.ng && who === 0 && G.ngz.minions.size >= zombieMax()) zombieHorde(proceed);
     else proceed();
   }, total);
 }
@@ -2226,14 +2232,15 @@ function startBattle() {
   if (G.runOver) { G.votes = 0; G.runOver = false; }       // nova jornada: o placar recomeça (itens já foram repostos no fim da anterior)
   G.combo = 0; G.levelStartVotes = G.votes; shownVotes = G.votes;
   $("votesNum").textContent = fmtVotes(G.votes); renderCombo();
-  G.energy = [1, LEVELS[G.levelIdx].cpuBonus ? 3 : 1]; lastEnergy = 1; $("log").innerHTML = ""; setupSkills();
+  G.energy = [1, LEVELS[G.levelIdx].cpuBonus ? (LEVELS[G.levelIdx].ng ? 4 : 3) : 1]; lastEnergy = 1; $("log").innerHTML = ""; setupSkills();
   G.walletSnap = WALLET;
   log(`⚔️ Fase ${G.level}: <b>${sname(0)}</b> contra <b>${G.enemy.name}</b> (${LEVELS[G.levelIdx].diff}).`);
   if (LEVELS[G.levelIdx].boss) setTimeout(() => toast(`CHEFÃO: ${G.enemy.short.toUpperCase()}!`, "#ff5a4a"), 300);
-  if (G.boss) log(`👑 ${G.enemy.short} é único, com ${G.boss.max} pontos de vida. A cada acerto ele muda de casa, escondido. Cada erro seu faz surgir um ${minionName()}; com ${BOSS_MINIONS}, ${G.boss.kind==="lula" ? `eles explodem ${BOSS_BLAST} casas suas` : "ele recarrega a vida toda"}. Acerte os seguidores para eliminá-los!`);
+  if (G.boss) log(`👑 ${G.enemy.short} é único, com ${G.boss.max} pontos de vida. A cada acerto ele muda de casa, escondido. Cada erro seu faz surgir um ${minionName()}; com ${bossMin()}, ${G.boss.kind==="lula" ? `eles explodem ${bossBl()} casas suas` : "ele recarrega a vida toda"}. Acerte os seguidores para eliminá-los!`);
   if (LEVELS[G.levelIdx].hazard === "bala") log("⚠️ Perigo do cenário: uma bala perdida cai do céu a cada turno: antes do seu ataque, na arena do adversário; antes do ataque dele, na sua.");
   if (LEVELS[G.levelIdx].hazard === "fogo") log("🔥 Perigo do cenário: a cada 2 turnos o sol escaldante incendeia 4 casas de cada arena.");
   if (LEVELS[G.levelIdx].hazard === "bombas") log("☢️ APOCALIPSE: bombas caem a cada turno (mais a cada 3 rodadas) e cada erro seu invoca um zumbi. Com 5 zumbis a horda invade e morde 5 casas suas!");
+  if (threat() > 0) log(`🎯 Ameaça do inimigo: <b>${threatName()}</b> (cresce com os votos que você investe em skills).`);
   if (LEVELS[G.levelIdx].ng) setTimeout(() => toast("NG+ · APOCALIPSE!", "#ff5a4a"), 300);
   if (LEVELS[G.levelIdx].hazard === "flechas") log(`🏹 Perigo do cenário: ${ARROWS_PER_TURN} flechas caem da floresta a cada turno: antes do seu ataque, no adversário; antes do ataque dele, em você.`);
   $("placePanel").classList.add("hidden");
@@ -2242,7 +2249,7 @@ function startBattle() {
 }
 function startTurn(repeat) {
   if (!repeat) G.empoBonus = false;
-  if (!G.firstTurn) G.energy[G.turn] = Math.min(MAX_ENERGY, G.energy[G.turn] + 1 + (G.turn===1 && LEVELS[G.levelIdx].cpuBonus ? 1 : 0));
+  if (!G.firstTurn) G.energy[G.turn] = Math.min(MAX_ENERGY, G.energy[G.turn] + 1 + (G.turn===1 ? cpuExtraEnergy() : 0));
   G.firstTurn = false;
   G.timeLeft = TURN_TIME; G.power = "normal"; G.panelOpen = false;
   const begin = () => {
@@ -2261,7 +2268,7 @@ function startTurn(repeat) {
       }
     } else {
       G.busy = true;
-      if (G.boss && Math.random() < BOSS_REST) {                       // o chefão descansa: não ataca neste turno
+      if (G.boss && Math.random() < bossRest()) {                       // o chefão descansa: não ataca neste turno
         setAction(`😮‍💨 ${sname(1)} descansou`, "#9aa7b5", "O chefão perdeu o fôlego e não atacou neste turno");
         log(`😮‍💨 ${sname(1)} descansou e não atacou.`);
         setTimeout(() => { if (G.phase === "battle") nextTurn(); }, 1400);
@@ -2398,7 +2405,7 @@ function makeBomb() {
   return g;
 }
 function bombRain(b, done) {
-  const n = Math.min(3, 1 + Math.floor((G.round - 1) / 3));
+  const n = Math.min(3, 1 + Math.floor((G.round - 1) / (threat() >= 14 ? 2 : 3)));
   const owner = b===0 ? "a sua arena" : `a arena de ${sname(1)}`;
   setAction(`☢️ ${n} BOMBA${n>1?"S":""} CAINDO!`, "#ff5a4a", `Cada bomba atinge uma cruz de 5 casas em ${owner}…`);
   log(`☢️ ${n} bomba${n>1?"s":""} a caminho: ${owner}.`);
@@ -2812,8 +2819,8 @@ function ui() {
       `<div class="${sh.sunk?"sunk":""}">${"●".repeat(sh.len-sh.hits)}${"○".repeat(sh.hits)} ${sh.name}</div>`).join("");
     $("fleetA").innerHTML = `<b style="color:${s0.cssAlt}">Sua torcida</b>${row(0)}`;
     $("fleetB").innerHTML = G.boss
-      ? `<b style="color:${s1.cssAlt}">👑 Chefão ${G.enemy.short}</b>❤ Vida: ${G.boss.hp}/${G.boss.max}<br>👤 ${G.boss.kind==="lula" ? "Petistas" : "Bolsonaristas"}: ${G.boss.minions.size}/${BOSS_MINIONS}<br><span style="opacity:.8">${G.boss.kind==="lula" ? `com ${BOSS_MINIONS}: explodem ${BOSS_BLAST} casas suas` : `com ${BOSS_MINIONS}: recarrega a vida`}</span>`
-      : `<b style="color:${s1.cssAlt}">${G.ng ? "Exército de " : "Torcida de "}${G.enemy ? G.enemy.short : s1.short}</b>${row(1)}${G.ng ? `<div style="margin-top:4px">🧟 Zumbis: ${G.ngz.minions.size}/${ZOMBIE_MAX}</div>` : ""}`;
+      ? `<b style="color:${s1.cssAlt}">👑 Chefão ${G.enemy.short}</b>❤ Vida: ${G.boss.hp}/${G.boss.max}<br>👤 ${G.boss.kind==="lula" ? "Petistas" : "Bolsonaristas"}: ${G.boss.minions.size}/${bossMin()}<br><span style="opacity:.8">${G.boss.kind==="lula" ? `com ${bossMin()}: explodem ${bossBl()} casas suas` : `com ${bossMin()}: recarrega a vida`}</span>`
+      : `<b style="color:${s1.cssAlt}">${G.ng ? "Exército de " : "Torcida de "}${G.enemy ? G.enemy.short : s1.short}</b>${row(1)}${G.ng ? `<div style="margin-top:4px">🧟 Zumbis: ${G.ngz.minions.size}/${zombieMax()}</div>` : ""}`;
   } else if (G.phase==="place") {
     $("fleetA").classList.add("hidden"); $("fleetB").classList.add("hidden");
   }
@@ -3296,7 +3303,7 @@ function renderShop(msg, ok) {
         <button class="btn primary" data-buy="skill:${k.id}" ${own || WALLET < k.price ? "disabled" : ""}>${own ? "Ativa" : WALLET < k.price ? "Votos insuficientes" : "Desbloquear"}</button></div>`;
     });
   }
-  $("shopBody").innerHTML = h + "</div>" + (shopTab === "skills" ? '<div class="note">Dica: quanto mais skills você tem, mais vida o chefão final ganha (2 skills: +1, 5 skills: +2).</div>' : "");
+  $("shopBody").innerHTML = h + "</div>" + (shopTab === "skills" ? '<div class="note">Atenção: quanto mais votos você investe em skills, mais forte o inimigo fica (mais vida no chefão, reforços e bombas). Ameaça atual: <b>' + threatName() + '</b>.</div>' : "");
   const m = $("shopMsg"); m.textContent = msg || ""; m.style.color = ok === false ? "#ff8a7a" : "#4cd964";
 }
 function openShop(tab) { shopTab = tab || shopTab; renderShop(); $("shop").classList.remove("hidden"); }
@@ -3503,6 +3510,7 @@ function newGame(playerKey, levelIdx = 0) {
   G.enemy = { ...CHARS[TRACKS[playerKey][levelIdx]], boss: !!L.boss };
   G.ng = !!L.ng; G.ngz = L.ng ? { minions:new Set() } : null;
   G.defs = [FLEET, L.defs ? L.defs.map(d => ({...d})) : L.def.map(i => FLEET[i])];
+  if (!L.boss) extraGroups(L.ng ? 6 : 8).forEach(len => G.defs[1].push({ name: L.ng ? "Tropa de reforço" : "Reforço adversário", len, kind: ["zombie","soldier","monster"][len % 3] }));
   G.boss = L.boss ? { hp:bossHp(), max:bossHp(), r:0, c:0, minions:new Set(), kind: G.enemy.camp === "lula" ? "lula" : "flavio" } : null;
   if (G.boss) G.defs[1] = [];                                      // chefão: sem torcida
   G.phase = "place"; G.turn = 0; G.busy = false; G.horiz = true; G.power = "normal";

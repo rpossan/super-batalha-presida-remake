@@ -122,7 +122,7 @@ Zerou a campanha e viu os créditos? Um ditador surge das cinzas. **O NG+ é des
 
 <p align="center"><img src="docs/img/ng_batalha.png" alt="Batalha do NG+" width="760"></p>
 
-> Calibrado por simulação: um jogador competente **sem skills** vence em torno de 27% das vezes; **com skills**, perto de 59%.
+> A dificuldade acompanha a **ameaça** (veja [Ameaça e equilíbrio](#️-ameaça-e-equilíbrio)): quanto mais você investe em skills, mais exércitos, bombas e zumbis o Tirano manda.
 
 ---
 
@@ -158,10 +158,23 @@ Ficam salvas no navegador (veja [Salvamento](#-salvamento-local)).
 
 <p align="center"><img src="docs/img/skills_batalha.png" alt="Batalha com skills ativas" width="760"></p>
 
-### ⚖️ Equilíbrio
-Calibrado por simulação do chefão final (jogador competente): sem skills ~59% de vitória; cada skill sozinha leva a ~64–73%.
-Super tiro e Empolgação, sem limite, passavam de 88%, por isso têm 3 usos por fase. Com todas as skills a vitória iria a ~93%,
-então **o chefão ganha +1 de vida com 2 skills e +2 com 5 skills**.
+### ⚖️ Ameaça e equilíbrio
+As skills ajudam, mas **quanto mais votos você investe nelas, mais forte o inimigo fica**. A *ameaça* é o total gasto em skills
+(em milhares de votos, de 0 a 31) e muda de nível: **Calma → Moderada → Elevada → Alta → Crítica → Extrema**.
+O jogo avisa o nível no começo de cada fase e na aba de skills da loja.
+
+| Ameaça (votos gastos) | Fases comuns | Chefão final (Lula Molusco / Flávio) | Apocalipse (NG+) |
+|---|---|---|---|
+| 0 (nenhuma skill) | base | 3 de vida, descansa em 20% dos turnos, 6 seguidores, explosão de 4 casas | base: 22 unidades, bombas a cada 3 rodadas |
+| 7 | base | 4 de vida | +1 grupo de reforço |
+| 14 | +1 grupo de reforço, inimigo ganha energia extra | explosão de 5 casas | +2 grupos, bombas escalam a cada 2 rodadas |
+| 21 | +2 grupos | 5 de vida, 5 seguidores, explosão de 6 | +3 grupos, zumbis em 4 (e não 5), mordida de 7, energia extra |
+| 31 (todas) | +3 grupos | 6 de vida, 4 seguidores, explosão de 7, quase não descansa | máximo de tudo |
+
+**Como foi calibrado:** simulação do chefão e do Apocalipse com um jogador competente **usando skills e itens**. Os itens
+pesam bastante: sem considerá-los o chefão parecia equilibrado, mas na prática dava cerca de 79% de vitória. Agora o chefão
+fica em torno de **50% sem skills e ~25% com todas**, e o Apocalipse em torno de **30%**, em qualquer nível de investimento.
+Jogadores humanos tendem a ir melhor que o simulador, então a sensação real deve ser um pouco mais confortável.
 
 ---
 
