@@ -62,15 +62,15 @@ quando fazer uma pesquisa para descobrir onde o adversário se esconde e qual po
 
 Escolha o lado e vença uma fase por vez. Cada vitória libera a próxima e a dificuldade cresce.
 
-| Fase | Cenário | Contra o **Flávio** (PL) | Contra o **Lula** (PT) | Nível | Perigo |
+| Fase | Cenário | Contra o **Flávio** (PL) | Contra o **Lula Molusco** (PT) | Nível | Perigo |
 |---|---|---|---|---|---|
-| 1 | Av. Paulista (SP) | Guilherme Boulos | Nikolas Ferreira | Fácil | — |
-| 2 | Aeroporto Salgado Filho (RS) | Gleisi Hoffmann | Tarcísio de Freitas | Médio | — |
-| 3 | Cristo Redentor (RJ) | Alexandre de Moraes | Michelle Bolsonaro | Difícil | ⚠️ bala perdida |
-| 4 | Sertão Nordestino | Felipe Neto | Luciano Hang | Muito difícil | 🔥 fogo |
-| 5 | Floresta Amazônica | Marina Silva | Ricardo Salles | Extremo | 🏹 flechas |
-| 6 | Balneário Camboriú (SC) | Anitta | Carlos Bolsonaro | Pré-chefão | 🏖️ sem danos |
-| 7 | Praça dos Três Poderes (DF) | **Lula (chefão)** | **Flávio (chefão)** | Chefão | 👑 luta final |
+| 1 | Av. Paulista (SP) | Guilherme Bolos | Niko Ferrado | Fácil | — |
+| 2 | Aeroporto Salgado Filho (RS) | G. Rofman | Tarcizinho | Médio | — |
+| 3 | Cristo Redentor (RJ) | Alexandre sem Moral | Michela | Difícil | ⚠️ bala perdida |
+| 4 | Sertão Nordestino | Felipe Feto | Véio da Avon | Muito difícil | 🔥 fogo |
+| 5 | Floresta Amazônica | Marina Sílvia | Ricardo Venddas | Extremo | 🏹 flechas |
+| 6 | Balneário Camboriú (SC) | Pablo Vital | Carlucho | Pré-chefão | 🏖️ sem danos |
+| 7 | Praça dos Três Poderes (DF) | **Lula Molusco (chefão)** | **Flávio (chefão)** | Chefão | 👑 luta final |
 
 ### Cenários
 
@@ -98,7 +98,7 @@ Escolha o lado e vença uma fase por vez. Cada vitória libera a próxima e a di
 O chefão é **único, sem torcida, e tem pontos de vida**. A cada acerto ele **muda de casa, escondido**.
 
 - 👤 **Cada erro seu** faz surgir um seguidor visível. Acerte-o para eliminá-lo.
-- 💥 **Lula:** com 6 petistas reunidos, eles **explodem 4 casas** da sua arena.
+- 💥 **Lula Molusco:** com 6 petistas reunidos, eles **explodem 4 casas** da sua arena.
 - 💚 **Flávio:** com 6 bolsonaristas reunidos, ele **recarrega a vida toda**.
 - 📊 Use a **pesquisa** para descobrir em que área ele está.
 
@@ -111,7 +111,7 @@ créditos rolando e o QR code do Pix.
 
 <table>
   <tr>
-    <td align="center"><img src="docs/img/final_lula.png" width="390"><br><b>Trilha do Lula</b></td>
+    <td align="center"><img src="docs/img/final_lula.png" width="390"><br><b>Trilha do Lula Molusco</b></td>
     <td align="center"><img src="docs/img/final_flavio.png" width="390"><br><b>Trilha do Flávio</b></td>
   </tr>
 </table>

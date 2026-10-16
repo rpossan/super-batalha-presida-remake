@@ -343,7 +343,7 @@
   <div class="step">1 · Escolha o seu lado</div>
   <div class="choose">
     <div class="card f" data-side="flavio">Flávio Bolsonaro<small>PL · verde e amarelo<br>Poder final: Motociata (linha inteira)</small></div>
-    <div class="card l" data-side="lula">Lula<small>PT · vermelho e estrela<br>Poder final: Caravana (coluna inteira)</small></div>
+    <div class="card l" data-side="lula">Lula Molusco<small>PT · vermelho e estrela<br>Poder final: Caravana (coluna inteira)</small></div>
   </div>
   <div id="levelsWrap" class="hidden">
     <div class="step" id="levelsTitle">2 · Escolha a fase</div>
@@ -428,7 +428,7 @@ const SIDES = {
             main:0x009c3b, alt:0xffdf00, css:"#009c3b", cssAlt:"#ffdf00",
             cross:"Buzinaço", ultra:"Motociata", ultraDesc:"linha inteira", ultraMode:"row",
             skin:0xf2c9a5, hair:0x2b1d14, beard:false, shirts:[0x009c3b,0xffdf00,0x009c3b,0xffffff] },
-  lula:   { key:"lula", name:"Lula", short:"Lula", party:"PT",
+  lula:   { key:"lula", name:"Lula Molusco", short:"Molusco", party:"PT",
             main:0xd7191c, alt:0xffdf00, css:"#d7191c", cssAlt:"#ffdf00",
             cross:"Comício", ultra:"Caravana", ultraDesc:"coluna inteira", ultraMode:"col",
             skin:0xe8b48c, hair:0xf2f2f2, beard:true, shirts:[0xd7191c,0xffffff,0xd7191c,0xb01015] },
@@ -436,19 +436,19 @@ const SIDES = {
 /* personagens: os dois líderes e os adversários de cada trilha */
 const CHARS = {
   flavio:  { name:"Flávio Bolsonaro",    short:"Flávio",   party:"PL",           camp:"flavio", skin:0xf2c9a5, hair:0x2b1d14, hairStyle:"short" },
-  lula:    { name:"Lula",                short:"Lula",     party:"PT",           camp:"lula",   skin:0xe8b48c, hair:0xf2f2f2, hairStyle:"short", beard:true },
-  boulos:  { name:"Guilherme Boulos",    short:"Boulos",   party:"PSOL",         camp:"lula",   skin:0xe0ac82, hair:0x1d1510, hairStyle:"short", beard:true, beardColor:0x3a2a20 },
-  gleisi:  { name:"Gleisi Hoffmann",     short:"Gleisi",   party:"PT",           camp:"lula",   skin:0xf2c9a5, hair:0x6b4a2a, hairStyle:"bob" },
-  moraes:  { name:"Alexandre de Moraes", short:"Moraes",   party:"STF",          camp:"lula",   skin:0xe8b48c, hair:0x222222, hairStyle:"bald", glasses:true },
-  nikolas: { name:"Nikolas Ferreira",    short:"Nikolas",  party:"PL",           camp:"flavio", skin:0xf2c9a5, hair:0x2b1d14, hairStyle:"short" },
-  tarcisio:{ name:"Tarcísio de Freitas", short:"Tarcísio", party:"Republicanos", camp:"flavio", skin:0xe8b48c, hair:0x2b2018, hairStyle:"short", glasses:true },
-  michelle:{ name:"Michelle Bolsonaro",  short:"Michelle", party:"PL",           camp:"flavio", skin:0xf2c9a5, hair:0xd9b36a, hairStyle:"long" },
-  felipe:  { name:"Felipe Neto",         short:"Felipe",   party:"Influencer",   camp:"lula",   skin:0xf2c9a5, hair:0x1d1510, hairStyle:"short" },
-  hang:    { name:"Luciano Hang",        short:"Hang",     party:"Empresário",   camp:"flavio", skin:0xf2c9a5, hair:0xdcdcdc, hairStyle:"short" },
-  marina:  { name:"Marina Silva",        short:"Marina",   party:"Rede",         camp:"lula",   skin:0xe0ac82, hair:0x3a2a1a, hairStyle:"bob" },
-  salles:  { name:"Ricardo Salles",      short:"Salles",   party:"PL",           camp:"flavio", skin:0xf2c9a5, hair:0x2b1d14, hairStyle:"short" },
-  anitta:  { name:"Anitta",              short:"Anitta",   party:"Cantora",      camp:"lula",   skin:0xe0ac82, hair:0x5a2f1c, hairStyle:"long" },
-  carlos:  { name:"Carlos Bolsonaro",    short:"Carlos",   party:"PL",           camp:"flavio", skin:0xf2c9a5, hair:0x2b1d14, hairStyle:"short", beard:true, beardColor:0x3a2a20 },
+  lula:    { name:"Lula Molusco",                short:"Molusco",     party:"PT",           camp:"lula",   skin:0xe8b48c, hair:0xf2f2f2, hairStyle:"short", beard:true },
+  boulos:  { name:"Guilherme Bolos",    short:"Bolos",   party:"PSOL",         camp:"lula",   skin:0xe0ac82, hair:0x1d1510, hairStyle:"short", beard:true, beardColor:0x3a2a20 },
+  gleisi:  { name:"G. Rofman",     short:"Rofman",   party:"PT",           camp:"lula",   skin:0xf2c9a5, hair:0x6b4a2a, hairStyle:"bob" },
+  moraes:  { name:"Alexandre sem Moral", short:"Sem Moral",   party:"STF",          camp:"lula",   skin:0xe8b48c, hair:0x222222, hairStyle:"bald", glasses:true },
+  nikolas: { name:"Niko Ferrado",    short:"Niko",  party:"PL",           camp:"flavio", skin:0xf2c9a5, hair:0x2b1d14, hairStyle:"short" },
+  tarcisio:{ name:"Tarcizinho", short:"Tarcizinho", party:"Republicanos", camp:"flavio", skin:0xe8b48c, hair:0x2b2018, hairStyle:"short", glasses:true },
+  michelle:{ name:"Michela",  short:"Michela", party:"PL",           camp:"flavio", skin:0xf2c9a5, hair:0xd9b36a, hairStyle:"long" },
+  felipe:  { name:"Felipe Feto",         short:"Feto",   party:"Influencer",   camp:"lula",   skin:0xf2c9a5, hair:0x1d1510, hairStyle:"short" },
+  hang:    { name:"Véio da Avon",        short:"Véio",     party:"Empresário",   camp:"flavio", skin:0xf2c9a5, hair:0xdcdcdc, hairStyle:"short" },
+  marina:  { name:"Marina Sílvia",        short:"Sílvia",   party:"Rede",         camp:"lula",   skin:0xe0ac82, hair:0x3a2a1a, hairStyle:"bob" },
+  salles:  { name:"Ricardo Venddas",      short:"Venddas",   party:"PL",           camp:"flavio", skin:0xf2c9a5, hair:0x2b1d14, hairStyle:"short" },
+  anitta:  { name:"Pablo Vital",              short:"Vital",   party:"Cantora",      camp:"lula",   skin:0xe0ac82, hair:0x5a2f1c, hairStyle:"long" },
+  carlos:  { name:"Carlucho",    short:"Carlucho",   party:"PL",           camp:"flavio", skin:0xf2c9a5, hair:0x2b1d14, hairStyle:"short", beard:true, beardColor:0x3a2a20 },
 };
 /* adversários por fase, conforme o lado que você escolheu (o chefão é sempre o líder do outro lado) */
 const TRACKS = {
@@ -1828,9 +1828,9 @@ function bossPower(done) {
   if (G.boss.kind === "flavio") {                                    // Flávio: recarrega a vida toda
     keys.forEach(([r,c]) => { const p = tilePos(1,r,c); burst(p, [0x2f9a3f, 0xffd23a, 0xffffff], 20, 5); removeMinion(r, c, false); });
     G.boss.hp = G.boss.max;
-    toast("FLÁVIO RECARREGOU A VIDA!", "#ffdf00");
-    setAction("💚 Flávio recarregou a vida toda!", "#ffdf00", `${BOSS_MINIONS} bolsonaristas reunidos · vida ${G.boss.hp}/${G.boss.max}`);
-    log(`💚 ${BOSS_MINIONS} bolsonaristas reunidos: Flávio recarregou a vida (${G.boss.hp}/${G.boss.max}).`);
+    toast(`${G.enemy.short.toUpperCase()} RECARREGOU A VIDA!`, "#ffdf00");
+    setAction(`💚 ${G.enemy.short} recarregou a vida toda!`, "#ffdf00", `${BOSS_MINIONS} bolsonaristas reunidos · vida ${G.boss.hp}/${G.boss.max}`);
+    log(`💚 ${BOSS_MINIONS} bolsonaristas reunidos: ${G.enemy.short} recarregou a vida (${G.boss.hp}/${G.boss.max}).`);
     [523,659,784,1047].forEach((f,i) => tone(f,.2,"square",.08,0,i*.1));
     ui(); setTimeout(done, 1100);
     return;
@@ -2692,8 +2692,8 @@ function startEnding(side) {
   if (isRec) setRecord(total);
   $("endArt").innerHTML = endingArt(side);
   $("endCaption").innerHTML = side === "lula"
-    ? `Lula sobe a rampa do Palácio do Planalto com a faixa presidencial.<small>${ch.name} foi eleito presidente do Brasil!</small>`
-    : `Flávio abraça o pai, Jair Bolsonaro, na rampa do Palácio do Planalto.<small>${ch.name} foi eleito presidente do Brasil!</small>`;
+    ? `${ch.name} sobe a rampa do Palácio do Planalto com a faixa presidencial.<small>${ch.name} foi eleito presidente do Brasil!</small>`
+    : `${ch.short} abraça o pai, Jair Bolsonaro, na rampa do Palácio do Planalto.<small>${ch.name} foi eleito presidente do Brasil!</small>`;
   $("endVotes").textContent = fmtVotes(total);
   $("endRecord").textContent = `Recorde: ${fmtVotes(Math.max(prev, total))} votos`;
   $("endNewRec").classList.toggle("hidden", !isRec);
@@ -2701,7 +2701,7 @@ function startEnding(side) {
   $("endKey").textContent = PIX_KEY;
   $("credits").innerHTML = `
     <h3>SUPER PRESIDA BATALHA</h3>
-    <div class="dim">${side === "lula" ? "A trilha do Lula" : "A trilha do Flávio"} · fim</div>
+    <div class="dim">${side === "lula" ? "A trilha do " + CHARS.lula.short : "A trilha do " + CHARS.flavio.short} · fim</div>
     <div class="role">Um jogo criado por</div><div class="name">rpossan</div>
     <div class="role">Direção e roteiro</div><div class="name">rpossan</div>
     <div class="role">Programação</div><div class="name">rpossan</div>
@@ -2713,8 +2713,8 @@ function startEnding(side) {
     <h3>CENÁRIOS</h3>
     <div class="dim" style="margin-top:6px">Av. Paulista · Aeroporto Salgado Filho · Cristo Redentor · Sertão · Amazônia · Balneário Camboriú · Praça dos Três Poderes</div>
     <div class="role">Participações (em tom de paródia)</div>
-    <div class="name" style="font-size:1em">Boulos · Gleisi · Moraes · Felipe Neto · Marina Silva · Anitta · Lula</div>
-    <div class="name" style="font-size:1em">Nikolas · Tarcísio · Michelle · Luciano Hang · Ricardo Salles · Carlos · Flávio</div>
+    <div class="name" style="font-size:1em">${["boulos","gleisi","moraes","felipe","marina","anitta","lula"].map(k => CHARS[k].name).join(" · ")}</div>
+    <div class="name" style="font-size:1em">${["nikolas","tarcisio","michelle","hang","salles","carlos","flavio"].map(k => CHARS[k].name).join(" · ")}</div>
     <div class="dim">Jogo apartidário e imparcial. Paródia bem-humorada: os personagens são inspirados em figuras públicas, sem nenhuma intenção de ofender ninguém.</div>
     <h3>OBRIGADO POR JOGAR!</h3>
     <div class="name">rpossan</div>
