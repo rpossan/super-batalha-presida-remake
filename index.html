@@ -303,6 +303,7 @@
     <div class="step" id="levelsTitle">2 · Escolha a fase</div>
     <div id="levelGrid"></div>
   </div>
+  <p id="musicHint" class="rules" style="margin:6px 0 0">🎵 Toque ou clique em qualquer lugar para ouvir o tema</p>
   <div class="rules">
     Paródia bem-humorada: ninguém se machuca, quem é "atingido" só senta, cansado de tanto gritar. 🎺<br>
     Atire com o mouse/toque · R gira a torcida · 1–4 escolhem poderes · Esc cancela · O progresso fica só nesta aba (atualizou, recomeça)
@@ -511,6 +512,14 @@ const SONGS = {
     bass:[1,0,0,0,0,0,2,0,1,0,0,0,0,0,2,0],
     melody: bars([76,0,0,74,72,0,69,0,72,0,74,0,76,0,0,0],[74,0,0,72,69,0,0,0,74,0,77,0,76,0,74,0],
                  [76,0,0,79,76,0,74,0,71,0,74,0,76,0,0,0],[72,0,74,0,76,0,74,72,69,0,0,0,69,0,0,0]) },
+  /* Menu: hino de campanha (Dó maior, I–V–vi–IV), refrão repetitivo, bumbo marcado e harmonia em terças */
+  menu: { bpm:124, chords:[48,43,45,41], kick:{f:140,g:45,d:.2,v:1}, lead:{type:"square", filter:3200, dur:.2, vol:.14},
+    k:[1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,1], s:[0,0,0,0,1,0,0,0,0,0,0,0,1,0,.6,.6], h:[0,0,.8,0,0,0,.8,0,0,0,.8,0,0,0,.8,.5],
+    x:[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    bass:[1,0,1,0,2,0,1,0,1,0,1,0,2,0,1,0],
+    melody: bars([67,0,67,0,69,0,67,0,72,0,0,0,67,0,64,0],[71,0,71,0,72,0,71,0,74,0,0,0,71,0,67,0],
+                 [69,0,69,0,72,0,69,0,76,0,0,0,72,0,69,0],[72,0,72,0,77,0,76,0,74,0,72,0,72,0,0,0]),
+    harmony: null },
   /* Brasília: marcha solene com fanfarra em Dó maior */
   brasilia: { bpm:108, chords:[48,53,55,48], kick:{f:130,g:50,d:.22,v:1}, lead:{type:"sawtooth", filter:2000, dur:.2, vol:.12},
     k:[1,0,0,0,0,0,1,0,1,0,0,0,0,0,1,0], s:[0,0,0,0,1,0,0,.5,0,0,0,0,1,0,.5,.5], h:[0,0,.7,0,0,0,.7,0,0,0,.7,0,0,0,.7,0], x:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -524,6 +533,8 @@ const SONGS = {
     melody: bars([74,0,71,0,67,0,71,0,74,0,0,71,72,0,71,0],[72,0,76,0,72,0,67,0,71,0,72,0,76,0,0,0],
                  [74,0,78,0,74,0,69,0,72,0,74,0,78,0,74,0],[74,0,71,0,67,0,0,71,74,0,0,0,67,0,0,0]) },
 };
+const thirdBelow = n => n ? n - ({0:3,2:3,4:4,5:3,7:3,9:4,11:4}[n%12] || 4) : 0;
+SONGS.menu.harmony = SONGS.menu.melody.map(thirdBelow);
 const Music = { gain:null, timer:null, step:0, next:0, song:null, noise:null, on:true };
 function musicVol() { if (Music.gain) Music.gain.gain.value = (muted || !Music.on) ? 0 : .55; }
 function mOsc(t, type, f, dur, vol, glide, filt) {
@@ -547,6 +558,7 @@ function musicStep(i, t) {
   if (S.h[st]) mNoise(t, .05, .13*S.h[st], 7000);
   if (S.x[st]) mOsc(t, "square", 2300, .05, .06*S.x[st]);
   if (S.bass[st]) mOsc(t, "triangle", midiF(S.chords[bar] + (S.bass[st]===2 ? 7 : 0)), .22, .45, 0, 700);
+  if (S.harmony) { const h = S.harmony[i%64]; if (h) mOsc(t, "triangle", midiF(h), S.lead.dur, S.lead.vol*.9, 0, 2600); }
   const n = S.melody[i%64];
   if (n) mOsc(t, S.lead.type, midiF(n), S.lead.dur, S.lead.vol, 0, S.lead.filter);
 }
@@ -1919,7 +1931,7 @@ function buildMenu() {
   grid.appendChild(soon);
 }
 function showMenu() {
-  musicStop(); G.phase = "menu";
+  musicStart("menu"); G.phase = "menu";
   ["endscreen","placePanel","battlePanel","focusTag","action"].forEach(id => $(id).classList.add("hidden"));
   $("menu").classList.remove("hidden");
   buildMenu(); justUnlocked = -1;
@@ -1930,6 +1942,12 @@ function startLevel(i) {
   newGame(menuSide, i);
 }
 $("btnMenu").onclick = showMenu;
+/* os navegadores só liberam áudio após um gesto: o tema começa no primeiro toque/tecla */
+function ensureMenuMusic() {
+  if (G.phase === "menu" && !Music.timer) musicStart("menu");
+  const h = $("musicHint"); if (h && Music.timer) h.classList.add("hidden");
+}
+["pointerdown","keydown","touchstart"].forEach(ev => addEventListener(ev, ensureMenuMusic, { passive:true }));
 $("btnAgain").onclick = () => {
   if (G.lastWin) showMenu();            // vitória: volta à tela inicial já com a próxima fase liberada
   else startLevel(G.levelIdx);          // derrota: tenta a mesma fase de novo
