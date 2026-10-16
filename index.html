@@ -144,7 +144,7 @@
   .chip.cur .sq i, .chip.done .sq i { background:var(--sc,#009c3b); }
   .chip.done { opacity:.9; } .chip.done::after { content:"✔"; color:#4cd964; }
   #placePanel .btn kbd { margin-left:4px; }
-  #mute, #musicBtn { pointer-events:auto; background:#0006; border:1px solid #fff4; color:#fff; border-radius:8px; padding:6px 10px; cursor:pointer; }
+  #mute, #musicBtn, #pauseBtn { pointer-events:auto; background:#0006; border:1px solid #fff4; color:#fff; border-radius:8px; padding:6px 10px; cursor:pointer; }
   #musicBtn.off { opacity:.45; text-decoration:line-through; }
   #focusTag { top:118px; left:50%; transform:translateX(-50%); padding:5px 14px; border-radius:20px; font-weight:800; font-size:13px; white-space:nowrap;
               background:rgba(10,14,22,.85); border:2px solid var(--amarelo); pointer-events:none; z-index:3; display:none; }
@@ -224,6 +224,10 @@
   .item .qty { position:absolute; top:-7px; right:-6px; background:var(--amarelo); color:#222; font-weight:900; font-size:12px; border-radius:999px; min-width:22px; padding:1px 6px; text-align:center; box-shadow:0 2px 6px #0008; }
   .item.empty { opacity:.35; text-decoration:line-through; }
   .item kbd { margin-left:2px; }
+  #pauseModal { position:fixed; inset:0; z-index:35; display:flex; align-items:center; justify-content:center; padding:16px; background:rgba(3,6,10,.78); backdrop-filter:blur(4px); }
+  #pauseModal .box { background:linear-gradient(#1c2638,#111823); border:2px solid #fff4; border-radius:18px; padding:20px; width:min(340px,100%); text-align:center; box-shadow:0 12px 40px #000a; }
+  #pauseModal h2 { margin:0 0 4px; } #pauseModal p { margin:4px 0 12px; opacity:.85; font-size:14px; } #pauseModal p.small { font-size:12px; opacity:.65; margin:12px 0 0; }
+  #pauseModal .col { display:flex; flex-direction:column; gap:10px; } #pauseModal .btn { font-size:16px; padding:12px; }
   #quickBar { display:none; }
   #qbPower { display:flex; align-items:center; gap:10px; padding:9px 14px; font-weight:800; border:2px solid var(--amarelo); background:#3a3510; }
   #qbPower .qbMore { font-size:11px; opacity:.8; font-weight:600; }
@@ -337,7 +341,7 @@
     <div class="hp" id="hpB"><div class="trail" id="trailB"></div><div class="fill" id="fillB"></div></div>
     <div class="fleetlist hidden" id="fleetB"></div>
   </div>
-  <div id="topBtns"><button id="musicBtn" title="Música">🎵</button><button id="mute" title="Som">🔊</button></div>
+  <div id="topBtns"><button id="pauseBtn" title="Pausar (Esc)" class="hidden">⏸</button><button id="musicBtn" title="Música">🎵</button><button id="mute" title="Som">🔊</button></div>
 </div>
 
 <div id="action" class="abs hidden"></div>
@@ -407,6 +411,7 @@
     <div id="levelGrid"></div>
   </div>
   <button class="coffee-btn" id="menuCoffee">☕ Me pague um café</button>
+  <button class="btn" id="devBtn" style="margin-top:6px;font-size:12px;opacity:.85"></button>
   <p id="musicHint" class="rules" style="margin:6px 0 0">🎵 Toque ou clique em qualquer lugar para ouvir o tema</p>
   <div class="rules">
     Jogo apartidário e imparcial: os dois lados têm as mesmas regras. Obra de paródia e ficção: personagens estilizados inspirados em figuras públicas, sem vínculo com partidos, campanhas ou pessoas citadas. Ninguém se machuca: quem é "atingido" só senta, cansado de tanto gritar. 🎺<br>
@@ -448,6 +453,19 @@
     <div class="ok" id="endOk" style="min-height:20px;margin-top:8px;font-weight:700;color:#4cd964"></div>
   </div>
   <button id="endSkip">Pular ▶</button>
+</div>
+
+<div id="pauseModal" class="hidden" role="dialog" aria-modal="true" aria-label="Pausa">
+  <div class="box">
+    <h2>⏸ Jogo pausado</h2>
+    <p>O tempo e as animações estão parados.</p>
+    <div class="col">
+      <button class="btn primary" id="pResume">▶ Continuar</button>
+      <button class="btn" id="pReset">↻ Reiniciar a fase</button>
+      <button class="btn" id="pExit">⌂ Sair para o menu principal</button>
+    </div>
+    <p class="small">Reiniciar ou sair desfaz os votos e itens gastos nesta fase.</p>
+  </div>
 </div>
 
 <div id="coffeeModal" class="hidden" role="dialog" aria-modal="true" aria-label="Me pague um café">
@@ -523,6 +541,8 @@ const LEVELS = [
   { scn:"brasilia", diff:"CHEFÃO",  ai:4, def:[0,1,2,3,4], boss:true },
 ];
 /* progresso só em memória: recarregar a página recomeça */
+/* modo desenvolvedor: todas as fases desbloqueadas (ligado por padrão; ?dev=0 desliga, ?dev=1 liga) */
+let DEV_MODE = (() => { try { const v = new URLSearchParams(location.search).get("dev"); return v === null ? true : v !== "0"; } catch (e) { return true; } })();
 const PROG = { flavio:1, lula:1 };               // fases liberadas por trilha
 const CLEARED = { flavio:[], lula:[] };          // fases já vencidas
 let menuSide = null, justUnlocked = -1;
@@ -544,6 +564,7 @@ const FLEET_TOTAL = FLEET.reduce((a,f) => a+f.len, 0);
    ================================================================ */
 let lastEnergy = 1;
 const G = {
+  paused:false,
   round:1, panelOpen:false, votes:0, combo:0, boss:null, scn:null, level:1, levelIdx:0, enemy:null, defs:[FLEET,FLEET],
   phase:"menu", side:[null,null], boards:[], fleets:[[],[]], fans:[{},{}],
   energy:[1,1], turn:0, busy:false, timeLeft:TURN_TIME, power:"normal",
@@ -1086,10 +1107,14 @@ const SCENARIOS = [
     thumb:"linear-gradient(170deg,#7fd0ff,#f2dca6 70%)", sky:0x79c8ff, fog:[0xc3e7ff,75,210], tiles:[0xcdb27a,0xbfa26a],
     build() {
       groundPlane(360,260,0xf0dba4,-.12,-26);                          // areia
-      E(box(360,.03,7,0xd9c18a, 0,-.1,-12));                            // areia molhada
-      const sea = new THREE.Mesh(new THREE.PlaneGeometry(360,70), LM(0x2fb4d6)); sea.rotation.x = -Math.PI/2; sea.position.set(0,-.09,-52); E(sea);
-      E(box(360,.05,1.4,0xffffff, 0,-.06,-16.4));                       // espuma
-      for (let i=0;i<14;i++) E(box(6+Math.random()*8,.04,.3,0xdff6ff, -60+i*9+Math.random()*4,-.05,-20-Math.random()*18));   // ondas
+      E(box(360,.03,7,0xd9c18a, 0,-.1,-19));                            // areia molhada
+      const sea = new THREE.Mesh(new THREE.PlaneGeometry(76,70), LM(0x2fb4d6)); sea.rotation.x = -Math.PI/2; sea.position.set(0,-.09,-60); E(sea);
+      E(box(76,.05,1.4,0xffffff, 0,-.06,-24.4));                        // espuma
+      // calçadão de ondas (pedra portuguesa) entre a arena e o mar
+      E(box(360,.04,7.6,0xefe7d2, 0,-.1,-12));
+      for (let x=-120;x<120;x+=3.2) { const w = box(3.2,.045,.9,0x3a3a3f, x+1.6,-.09,-9.6+Math.sin(x*.7)*.35); E(w); const w2 = box(3.2,.045,.9,0x3a3a3f, x,-.09,-12.4-Math.sin(x*.7)*.35); E(w2); }
+      for (let x=-30;x<=30;x+=10) { E(cyl(.1,.12,3.6,0x555a60, x,1.8,-14.4,6)); E(box(.9,.2,.4,0xfff4c2, x,3.7,-14.4)); }   // postes do calçadão
+      for (let i=0;i<14;i++) E(box(6+Math.random()*8,.04,.3,0xdff6ff, -30+i*4.5+Math.random()*2,-.05,-28-Math.random()*20));   // ondas
       const winTex = (() => {
         const c = document.createElement("canvas"); c.width = 64; c.height = 128;
         const x = c.getContext("2d"); x.fillStyle = "#cfd8e3"; x.fillRect(0,0,64,128);
@@ -1101,9 +1126,9 @@ const SCENARIOS = [
         const m = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), new THREE.MeshLambertMaterial({ map:t, color:new THREE.Color().setHSL(.08+Math.random()*.1,.12,.78+Math.random()*.15) }));
         m.position.set(x,h/2,z); E(m);
       };
-      for (let i=0;i<11;i++) tower(-21-i*7.5-Math.random()*2, -9-Math.random()*14, 6+Math.random()*3, 26+Math.random()*30, 7+Math.random()*3);
-      for (let i=0;i<11;i++) tower(21+i*7.5+Math.random()*2, -9-Math.random()*14, 6+Math.random()*3, 26+Math.random()*30, 7+Math.random()*3);
-      for (let i=0;i<7;i++) tower(-24+i*8+Math.random()*2, 12+Math.random()*6, 5+Math.random()*2, 10+Math.random()*10, 5);   // prédios menores na orla
+      for (let i=0;i<9;i++) tower(-44-i*8-Math.random()*2, -20-Math.random()*10, 6+Math.random()*3, 26+Math.random()*30, 7+Math.random()*3);   // prédios só nas laterais, atrás do calçadão
+      for (let i=0;i<9;i++) tower(44+i*8+Math.random()*2, -20-Math.random()*10, 6+Math.random()*3, 26+Math.random()*30, 7+Math.random()*3);
+      for (let i=0;i<14;i++) tower(-60+i*9+Math.random()*3, -105-Math.random()*8, 7+Math.random()*3, 22+Math.random()*30, 8);   // skyline distante, depois do mar
       const cores = [0xff4d4d,0xffc933,0x2fb4d6,0xff7aa8,0x7ed957,0xffffff];
       const sombrinha = (x,z,c) => {                                    // guarda-sol
         E(cyl(.04,.04,2.1,0xeeeeee, x,1.05,z,6));
@@ -2014,7 +2039,7 @@ function doRadar(targetB, r, c, who, cb) {
 function startBattle() {
   G.phase = "battle"; G.turn = 0; G.round = 1; G.power = "normal"; G.firstTurn = true;
   G.finished = false; G.matchEnd = Date.now() + MATCH_TIME*1000;
-  G.furia = 0; G.itemUse = { revive:0, furia:0, reforco:0 };
+  G.furia = 0; G.itemUse = { revive:0, furia:0, reforco:0 }; G.itemsSnap = { ...ITEMS };
   if (G.runOver) { G.votes = 0; G.runOver = false; resetItems(); }       // nova jornada: placar e itens recomeçam
   G.combo = 0; G.levelStartVotes = G.votes; shownVotes = G.votes;
   $("votesNum").textContent = fmtVotes(G.votes); renderCombo();
@@ -2022,9 +2047,9 @@ function startBattle() {
   log(`⚔️ Fase ${G.level}: <b>${sname(0)}</b> contra <b>${G.enemy.name}</b> (${LEVELS[G.levelIdx].diff}).`);
   if (LEVELS[G.levelIdx].boss) setTimeout(() => toast(`CHEFÃO: ${G.enemy.short.toUpperCase()}!`, "#ff5a4a"), 300);
   if (G.boss) log(`👑 ${G.enemy.short} é único, com ${G.boss.max} pontos de vida. A cada acerto ele muda de casa, escondido. Cada erro seu faz surgir um ${minionName()}; com ${BOSS_MINIONS}, ${G.boss.kind==="lula" ? `eles explodem ${BOSS_BLAST} casas suas` : "ele recarrega a vida toda"}. Acerte os seguidores para eliminá-los!`);
-  if (LEVELS[G.levelIdx].hazard === "bala") log("⚠️ Perigo do cenário: uma bala perdida cai do céu a cada turno, na arena de quem joga.");
+  if (LEVELS[G.levelIdx].hazard === "bala") log("⚠️ Perigo do cenário: uma bala perdida cai do céu a cada turno: antes do seu ataque, na arena do adversário; antes do ataque dele, na sua.");
   if (LEVELS[G.levelIdx].hazard === "fogo") log("🔥 Perigo do cenário: a cada 2 turnos o sol escaldante incendeia 4 casas de cada arena.");
-  if (LEVELS[G.levelIdx].hazard === "flechas") log(`🏹 Perigo do cenário: ${ARROWS_PER_TURN} flechas caem da floresta a cada turno, na arena de quem joga.`);
+  if (LEVELS[G.levelIdx].hazard === "flechas") log(`🏹 Perigo do cenário: ${ARROWS_PER_TURN} flechas caem da floresta a cada turno: antes do seu ataque, no adversário; antes do ataque dele, em você.`);
   $("placePanel").classList.add("hidden");
   $("battlePanel").classList.remove("hidden");
   startTurn();
@@ -2060,13 +2085,13 @@ function startTurn(repeat) {
   const hz = repeat ? null : LEVELS[G.levelIdx].hazard;       // o perigo do cenário não repete nos turnos da Fúria
   if (hz === "bala") {                                  // Rio: bala perdida cai na arena de quem vai jogar
     G.busy = true; ui();
-    hazardDrop(G.turn === 0 ? 0 : 1, begin);
+    hazardDrop(G.turn === 0 ? 1 : 0, begin);          // na sua vez cai no adversário; na vez dele, em você
   } else if (hz === "fogo" && G.turn === 0 && G.round >= 2) {   // Sertão: a cada 2 turnos (uma vez por rodada), nas duas arenas
     G.busy = true; ui();
     fireBurn(begin);
   } else if (hz === "flechas") {                         // Amazônia: chuva de flechas na arena de quem vai jogar
     G.busy = true; ui();
-    arrowRain(G.turn === 0 ? 0 : 1, begin);
+    arrowRain(G.turn === 0 ? 1 : 0, begin);
   } else begin();
 }
 
@@ -2440,6 +2465,7 @@ function ui() {
     (G.phase==="battle" || G.phase==="over" ? ` · Rodada <b>${G.round}</b>` : "");
   $("sideA").textContent = `${s0.short} (você)`; $("sideA").style.background = s0.css;
   $("sideB").textContent = `${G.enemy ? G.enemy.short : s1.short} (CPU)` + (G.phase==="battle" ? ` ⚡${G.energy[1]}` : "");  $("sideB").style.background = s1.css;
+  $("pauseBtn").classList.toggle("hidden", !(G.phase==="battle" || G.phase==="place"));
   $("sideA").style.color = s0.key==="flavio" ? "#ffdf00" : "#fff";
   const ft = $("focusTag");
   if (G.phase==="battle") {
@@ -2679,6 +2705,7 @@ function updateHoverPreview() {
 const cv = renderer.domElement;
 cv.addEventListener("pointermove", e => { G.hover = pick(e); updateHoverPreview(); });
 cv.addEventListener("pointerdown", e => {
+  if (G.paused) return;
   actx && actx.state==="suspended" && actx.resume();
   const h = pick(e); G.hover = h; if (!h) return;
   if (G.phase==="place" && h.b===0) {
@@ -2690,13 +2717,15 @@ cv.addEventListener("pointerdown", e => {
 });
 addEventListener("keydown", e => {
   const k = e.key.toLowerCase();
+  if (k === "escape" && !$("coffeeModal").classList.contains("hidden")) return;
+  if (k === "escape" && (G.phase==="battle" || G.phase==="place")) { G.paused ? resumeGame() : pauseGame(); return; }
+  if (G.paused) return;
   if (k==="r" && G.phase==="place") { G.horiz = !G.horiz; ui(); updateHoverPreview(); }
   if (G.phase==="battle") {
     const map = {"1":"normal","2":"radar","3":"cross","4":"ultra"};
     if (map[k]) selectPower(map[k]);
     const itm = {"5":"revive","6":"furia","7":"reforco"};
     if (itm[k]) useItem(itm[k]);
-    if (k==="escape") selectPower("normal");
   }
 });
 $("btnRotate").onclick = () => { G.horiz = !G.horiz; ui(); updateHoverPreview(); };
@@ -2936,6 +2965,33 @@ addEventListener("keydown", e => { if (e.key === "Escape" && !$("coffeeModal").c
 $("copyKey").onclick = () => copyText(PIX_KEY, "Chave Pix copiada! ☕");
 $("copyCode").onclick = () => copyText(PIX_CODE, "Código Pix copiado! Cole no app do seu banco. ☕");
 
+/* ---- pausa: congela animações, tempo e callbacks agendados ---- */
+const _setTimeout = window.setTimeout.bind(window);
+window.setTimeout = (fn, ms, ...a) => _setTimeout(function tick() { if (G.paused) _setTimeout(tick, 120); else fn(...a); }, ms);
+function pauseGame() {
+  if (G.paused || !(G.phase === "battle" || G.phase === "place")) return;
+  G.paused = true; $("pauseModal").classList.remove("hidden");
+  try { actx && actx.state === "running" && actx.suspend(); } catch (e) {}
+}
+function resumeGame() {
+  if (!G.paused) return;
+  G.paused = false; $("pauseModal").classList.add("hidden");
+  try { actx && actx.state === "suspended" && actx.resume(); } catch (e) {}
+}
+function restoreLevelStart() {                    // desfaz o que foi ganho/gasto na fase em andamento
+  if (G.levelStartVotes !== undefined) G.votes = G.levelStartVotes;
+  if (G.itemsSnap) Object.assign(ITEMS, G.itemsSnap);
+}
+$("pauseBtn").onclick = pauseGame;
+$("pResume").onclick = resumeGame;
+$("pReset").onclick = () => { const i = G.levelIdx; resumeGame(); restoreLevelStart(); startLevel(i); };
+$("pExit").onclick = () => { resumeGame(); restoreLevelStart(); showMenu(); };
+function refreshDevBtn() {
+  $("devBtn").textContent = DEV_MODE ? "🛠 Modo desenvolvedor: ATIVO (todas as fases liberadas)" : "🛠 Modo desenvolvedor: desligado";
+}
+$("devBtn").onclick = () => { DEV_MODE = !DEV_MODE; refreshDevBtn(); buildMenu(); };
+refreshDevBtn();
+
 const hexCss = n => "#" + n.toString(16).padStart(6,"0");
 /* rosto estilizado do personagem para os cartões de fase */
 function faceSVG(ch, size, boss) {
@@ -2964,7 +3020,7 @@ function buildMenu() {
   LEVELS.forEach((L, i) => {
     const sc = SCENARIOS.find(x => x.id === L.scn), en = CHARS[TRACKS[menuSide][i]];
     const total = L.def.reduce((a,idx) => a + FLEET[idx].len, 0);
-    const locked = i >= PROG[menuSide], cleared = CLEARED[menuSide][i], fresh = i === justUnlocked;
+    const locked = !DEV_MODE && i >= PROG[menuSide], cleared = CLEARED[menuSide][i], fresh = i === justUnlocked;
     const d = document.createElement("div");
     d.className = "lvl" + (locked ? " locked" : "") + (cleared ? " done" : "") + (fresh ? " fresh" : "") + (L.boss ? " boss" : "");
     d.style.backgroundImage = sc.thumb;
@@ -2983,14 +3039,14 @@ function buildMenu() {
   grid.appendChild(soon);
 }
 function showMenu() {
-  musicStart("menu"); G.phase = "menu";
+  musicStart("menu"); G.phase = "menu"; $("pauseBtn").classList.add("hidden");
   ["endscreen","placePanel","battlePanel","focusTag","action","ending"].forEach(id => $(id).classList.add("hidden"));
   $("ending").classList.remove("on"); endTimers.forEach(clearTimeout); endTimers = []; endActive = false;
   $("menu").classList.remove("hidden");
   buildMenu(); justUnlocked = -1;
 }
 function startLevel(i) {
-  if (!menuSide || i >= PROG[menuSide]) return;
+  if (!menuSide || (!DEV_MODE && i >= PROG[menuSide])) return;
   actx && actx.state==="suspended" && actx.resume();
   newGame(menuSide, i);
 }
@@ -3056,7 +3112,7 @@ function newGame(playerKey, levelIdx = 0) {
 const clock = new THREE.Clock();
 function animate() {
   requestAnimationFrame(animate);
-  const dt = Math.min(clock.getDelta(), .05), t = clock.elapsedTime;
+  const dt = G.paused ? 0 : Math.min(clock.getDelta(), .05), t = clock.elapsedTime;
 
   // torcedores
   for (let b=0;b<2;b++) fanGroups[b].children.forEach(f => {

@@ -136,6 +136,13 @@ créditos rolando e o QR code do Pix.
 
 Energia: **+1 por turno** e **+1 por torcedor atingido**. No celular, a câmera acompanha o turno.
 
+### ⏸ Pausa e modo desenvolvedor
+
+- **Pausa:** botão ⏸ no topo (ou `Esc`) congela o jogo e abre o menu com **Continuar**, **Reiniciar a fase** e
+  **Sair para o menu principal**. Reiniciar ou sair desfaz os votos e itens gastos na fase em andamento.
+- **Modo desenvolvedor:** vem **ativo por padrão** e deixa todas as fases desbloqueadas. Dá para ligar/desligar pelo
+  botão "🛠 Modo desenvolvedor" no menu, ou abrir o jogo com `?dev=0` (desligado) / `?dev=1` (ligado).
+
 ### 🎒 Itens da campanha
 
 Além dos poderes, você carrega itens que valem para a **campanha toda**. O estoque é único e limitado:
