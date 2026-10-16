@@ -30,8 +30,10 @@ https://rpossan.github.io/super-presida-batalha/
 |---|---|---|---|---|
 | 1 | Av. Paulista (SP) | Boulos | Nikolas Ferreira | Fácil |
 | 2 | Aeroporto Salgado Filho (RS) | Gleisi Hoffmann | Tarcísio de Freitas | Médio |
-| 3 | Cristo Redentor (RJ) | Alexandre de Moraes | Michelle Bolsonaro | Difícil |
+| 3 | Cristo Redentor (RJ) ⚠️ bala perdida | Alexandre de Moraes | Michelle Bolsonaro | Difícil |
 | 4 | Esplanada dos Ministérios (DF) | **Lula (chefão)** | **Flávio (chefão)** | Chefão |
+
+Na fase 3 uma bala perdida cai do céu a cada turno, em 1 casa aleatória da arena de quem joga (pode derrubar um torcedor seu ou do adversário).
 
 As fases e os adversários ficam em `LEVELS`, `TRACKS` e `CHARS` no `index.html`.
 
