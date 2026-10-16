@@ -356,11 +356,13 @@ const CHARS = {
   michelle:{ name:"Michelle Bolsonaro",  short:"Michelle", party:"PL",           camp:"flavio", skin:0xf2c9a5, hair:0xd9b36a, hairStyle:"long" },
   felipe:  { name:"Felipe Neto",         short:"Felipe",   party:"Influencer",   camp:"lula",   skin:0xf2c9a5, hair:0x1d1510, hairStyle:"short" },
   hang:    { name:"Luciano Hang",        short:"Hang",     party:"Empresário",   camp:"flavio", skin:0xf2c9a5, hair:0xdcdcdc, hairStyle:"short" },
+  marina:  { name:"Marina Silva",        short:"Marina",   party:"Rede",         camp:"lula",   skin:0xe0ac82, hair:0x3a2a1a, hairStyle:"bob" },
+  salles:  { name:"Ricardo Salles",      short:"Salles",   party:"PL",           camp:"flavio", skin:0xf2c9a5, hair:0x2b1d14, hairStyle:"short" },
 };
 /* adversários por fase, conforme o lado que você escolheu (o chefão é sempre o líder do outro lado) */
 const TRACKS = {
-  flavio: ["boulos","gleisi","moraes","felipe","lula"],
-  lula:   ["nikolas","tarcisio","michelle","hang","flavio"],
+  flavio: ["boulos","gleisi","moraes","felipe","marina","lula"],
+  lula:   ["nikolas","tarcisio","michelle","hang","salles","flavio"],
 };
 /* fases: cenário, dificuldade, tamanho da torcida adversária (índices de FLEET) e nível da IA */
 const LEVELS = [
@@ -368,12 +370,14 @@ const LEVELS = [
   { scn:"poa",      diff:"Médio",   ai:2, def:[1,2,3,4] },
   { scn:"rio",      diff:"Difícil", ai:3, def:[0,1,2,4], hazard:"bala" },
   { scn:"sertao",   diff:"Muito difícil", ai:3, def:[0,1,2,3], hazard:"fogo" },
+  { scn:"amazonia", diff:"Extremo", ai:3, def:[0,1,2,3,4], hazard:"flechas" },
   { scn:"brasilia", diff:"CHEFÃO",  ai:4, def:[0,1,2,3,4], boss:true },
 ];
 /* progresso só em memória: recarregar a página recomeça */
 const PROG = { flavio:1, lula:1 };               // fases liberadas por trilha
 const CLEARED = { flavio:[], lula:[] };          // fases já vencidas
 let menuSide = null, justUnlocked = -1;
+const ARROWS_PER_TURN = 4;
 const COST = { normal:0, radar:2, cross:3, ultra:6 };
 const MAX_ENERGY = 9;
 const TURN_TIME = Infinity;    // segundos por jogada (Infinity = sem limite)
@@ -530,6 +534,13 @@ const SONGS = {
     bass:[1,0,0,0,2,0,0,0,1,0,0,0,2,0,0,0],
     melody: bars([74,0,76,78,79,0,78,0,76,0,74,0,71,0,74,0],[79,0,81,0,79,78,76,0,74,0,76,0,79,0,0,0],
                  [81,0,81,79,78,0,76,0,74,0,76,78,76,0,0,0],[78,0,76,74,72,0,74,0,71,0,69,0,74,0,0,0]) },
+  /* Amazônia: tambores e flauta pentatônica em Lá menor */
+  amazonia: { bpm:96, chords:[45,43,45,40], kick:{f:95,g:48,d:.32,v:1}, lead:{type:"triangle", filter:3600, dur:.3, vol:.2},
+    k:[1,0,0,1,0,0,0,0,1,0,0,0,0,1,0,0], s:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], h:[.4,0,.5,.3,.4,0,.5,.3,.4,0,.5,.3,.4,0,.5,.3],
+    x:[0,0,0,0,1,0,0,.6,0,0,0,0,1,0,0,0],
+    bass:[1,0,0,0,0,0,2,0,1,0,0,0,0,0,2,0],
+    melody: bars([69,0,0,72,74,0,72,0,69,0,0,0,67,0,69,0],[72,0,74,0,76,0,0,74,72,0,0,0,69,0,0,0],
+                 [76,0,0,79,76,0,74,0,72,0,74,0,76,0,0,0],[74,0,72,0,69,0,67,0,69,0,0,0,69,0,0,0]) },
   /* Brasília: marcha solene com fanfarra em Dó maior */
   brasilia: { bpm:108, chords:[48,53,55,48], kick:{f:130,g:50,d:.22,v:1}, lead:{type:"sawtooth", filter:2000, dur:.2, vol:.12},
     k:[1,0,0,0,0,0,1,0,1,0,0,0,0,0,1,0], s:[0,0,0,0,1,0,0,.5,0,0,0,0,1,0,.5,.5], h:[0,0,.7,0,0,0,.7,0,0,0,.7,0,0,0,.7,0], x:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -868,6 +879,44 @@ const SCENARIOS = [
       E(box(5,3,4,0xdcc79c, 30,1.5,-24));                               // casa de taipa
       const roof = new THREE.Mesh(new THREE.ConeGeometry(4.2,2.2,4), LM(0x8a6a3a)); roof.rotation.y = Math.PI/4; roof.position.set(30,4.1,-24); E(roof);
       E(box(1,1.8,.1,0x5d4023, 30,.9,-21.95));
+    } },
+
+  /* ---------- Amazônia ---------- */
+  { id:"amazonia", name:"Floresta Amazônica", short:"Amazônia", of:"da Floresta Amazônica", emoji:"🌴", city:"Amazônia · Rio Negro",
+    thumb:"linear-gradient(170deg,#9fe0a8,#1f5a2c 75%)", sky:0xa6dcc0, fog:[0xa9d9b8,36,115], tiles:[0x5f7d3b,0x516e31],
+    build() {
+      groundPlane(340,240,0x3f5326,-.12,-24);                          // chão de mata
+      for (let i=0;i<60;i++) E(cyl(.35+Math.random()*.4,.35+Math.random()*.4,.03,0x2f4a1f, -48+Math.random()*96,-.1,-30+Math.random()*50,8));   // folhas caídas
+      const river = new THREE.Mesh(new THREE.PlaneGeometry(260,26), LM(0x4a6a52)); river.rotation.x = -Math.PI/2; river.position.set(0,-.09,-19); E(river);
+      E(box(260,.04,2.5,0x8bb6a0, 0,-.07,-12.3));                    // margem clara
+      const tree = (x,z,h,w) => {                                     // árvore de copa densa
+        const g = new THREE.Group();
+        g.add(cyl(w*.28,w*.4,h,0x5a3d22, 0,h/2,0,8));
+        for (let k=0;k<4;k++) { const cn = ball(w*(.9+Math.random()*.5),[0x2a6a2a,0x357a30,0x1f5a26][k%3], (Math.random()-.5)*w, h+.2+Math.random()*.8, (Math.random()-.5)*w); cn.scale.y = .72; g.add(cn); }
+        g.position.set(x,0,z); E(g);
+      };
+      [[-16,-9,6,1.6],[-24,-14,8,2],[-34,-8,7,1.8],[-44,-16,9,2.2],[-54,-6,7,1.8],[17,-9,6.5,1.7],[26,-15,8.5,2.1],[36,-8,7,1.8],[46,-17,9,2.2],[56,-5,7,1.8],
+       [-30,9,5,1.4],[33,10,5.5,1.5],[-52,12,6,1.6],[55,11,6,1.6],[-8,-26,10,2.4],[10,-27,11,2.6],[-62,-22,10,2.3],[64,-24,10,2.3]].forEach(a => tree(...a));
+      const sum = new THREE.Group();                                  // sumaúma gigante ao fundo
+      sum.add(cyl(1.2,2.6,9,0x6a4a2a, 0,4.5,0,10));
+      [[0,10.4,0,4.6],[-3,9.3,1,3.2],[3,9.6,-1,3.4]].forEach(([x,y,z,r]) => { const cn = ball(r,0x2f7030, x,y,z); cn.scale.y = .7; sum.add(cn); });
+      for (let k=0;k<5;k++) { const rt = box(.4,3.4,3.2,0x6a4a2a, Math.cos(k*1.26)*1.9,1.7,Math.sin(k*1.26)*1.9); rt.rotation.y = -k*1.26; sum.add(rt); }   // sapopemas
+      sum.position.set(0,0,-34); E(sum);
+      [[-30,-12.5],[30,-12.8]].forEach(([x,z]) => {                   // cabana (maloca) de palha
+        E(box(5,2.2,4,0xb48a52, x,1.1,z));
+        const roof = new THREE.Mesh(new THREE.ConeGeometry(4,2.8,10), LM(0x8a6a2a)); roof.position.set(x,3.5,z); E(roof);
+      });
+      [[-6,-19,1.2],[12,-21,-.9]].forEach(([x,z,ry]) => {             // canoas no rio
+        const c = box(4.4,.4,1,0x7a5230, x,-.02,z); c.rotation.y = ry*.15; E(c);
+      });
+      const cores = [0xff3b30, 0x2f6fe0, 0xffd400, 0x2f9a3f];         // araras
+      for (let i=0;i<8;i++) {
+        const g = new THREE.Group();
+        g.add(box(.5,.28,.28, cores[i%4], 0,0,0)); g.add(box(.18,.18,.18, cores[(i+1)%4], .3,.12,0));
+        const w = box(.5,.04,.35, cores[(i+2)%4], 0,.05,.3); w.rotation.z = .3; g.add(w);
+        const w2 = box(.5,.04,.35, cores[(i+2)%4], 0,.05,-.3); w2.rotation.z = .3; g.add(w2);
+        g.position.set(-40+i*11+Math.random()*4, 8+Math.random()*3, -20-Math.random()*10); E(g);
+      }
     } },
 
   /* ---------- Brasília: Esplanada dos Ministérios ---------- */
@@ -1573,6 +1622,7 @@ function startBattle() {
   if (LEVELS[G.levelIdx].boss) setTimeout(() => toast(`CHEFÃO: ${G.enemy.short.toUpperCase()}!`, "#ff5a4a"), 300);
   if (LEVELS[G.levelIdx].hazard === "bala") log("⚠️ Perigo do cenário: uma bala perdida cai do céu a cada turno, na arena de quem joga.");
   if (LEVELS[G.levelIdx].hazard === "fogo") log("🔥 Perigo do cenário: a cada 2 turnos o sol escaldante incendeia 4 casas de cada arena.");
+  if (LEVELS[G.levelIdx].hazard === "flechas") log(`🏹 Perigo do cenário: ${ARROWS_PER_TURN} flechas caem da floresta a cada turno, na arena de quem joga.`);
   $("placePanel").classList.add("hidden");
   $("battlePanel").classList.remove("hidden");
   startTurn();
@@ -1599,6 +1649,9 @@ function startTurn() {
   } else if (hz === "fogo" && G.turn === 0 && G.round >= 2) {   // Sertão: a cada 2 turnos (uma vez por rodada), nas duas arenas
     G.busy = true; ui();
     fireBurn(begin);
+  } else if (hz === "flechas") {                         // Amazônia: chuva de flechas na arena de quem vai jogar
+    G.busy = true; ui();
+    arrowRain(G.turn === 0 ? 0 : 1, begin);
   } else begin();
 }
 
@@ -1634,6 +1687,74 @@ function hazardDrop(b, done) {
     if (G.phase === "battle") setTimeout(done, 350); 
   });
 }
+/* Amazônia: várias flechas caem a cada turno na arena de quem joga; cada uma pega 1 casa */
+function makeArrow() {
+  const g = new THREE.Group();
+  g.add(cyl(.025,.025,1.5,0x7a5230, 0,0,0,6));                                   // haste
+  const head = new THREE.Mesh(new THREE.ConeGeometry(.075,.22,6), LM(0x8a8f96)); head.position.y = -.85; head.rotation.x = Math.PI; g.add(head);
+  [[.66,0xff3b30],[.5,0x2f9a3f]].forEach(([y,c]) => g.add(box(.2,.16,.02,c, 0,y,0)));   // penas
+  g.add(box(.02,.16,.2,0xff3b30, 0,.66,0));
+  return g;
+}
+function arrowRain(b, done) {
+  const free = [];
+  for (let r=0;r<N;r++) for (let c=0;c<N;c++) if (!G.boards[b][r][c].shot) free.push([r,c]);
+  const picks = [];
+  while (picks.length < ARROWS_PER_TURN && free.length) picks.push(free.splice(rand(free.length),1)[0]);
+  const owner = b===0 ? "da sua arena" : `da arena de ${sname(1)}`;
+  setAction("🏹 CHUVA DE FLECHAS!", "#8bd450", `${picks.length} flechas vão cair ${owner}…`);
+  log(`🏹 ${picks.length} flechas da floresta a caminho ${owner}.`);
+  tone(300,.1,"triangle",.07); tone(420,.1,"triangle",.07,0,.12);
+  const root = new THREE.Group(); scene.add(root);
+  const side = Math.random() < .5 ? -1 : 1;
+  const arrows = picks.map(([r,c], i) => {
+    const p = tilePos(b,r,c), ret = makeRing(0x8bd450); ret.position.set(p.x,.09,p.z); ret.scale.setScalar(.5); root.add(ret);
+    const a = makeArrow(); a.visible = false; scene.add(a);
+    return { r, c, p, ret, a, t0: .8 + i*.17, from: new THREE.Vector3(p.x + side*(7+Math.random()*4), 14+Math.random()*3, p.z - 6 - Math.random()*3), done:false };
+  });
+  const up = new THREE.Vector3(0,-1,0), v = new THREE.Vector3(), q = new THREE.Quaternion(), to = new THREE.Vector3();
+  const hits = { n:0, sunk:0 };
+  const total = .8 + picks.length*.17 + .5;
+  addFx(total + .5, (t) => {
+    arrows.forEach(o => {
+      if (t < o.t0) { o.ret.material.opacity = .5 + Math.abs(Math.sin(t*14 + o.r))*.4; o.ret.scale.setScalar(.45 + .06*Math.sin(t*14)); return; }
+      const k = (t - o.t0)/.4;
+      if (k < 1) {
+        if (!o.a.visible) { o.a.visible = true; tone(1700,.3,"sine",.045,-900); }
+        to.set(o.p.x, .25, o.p.z);
+        o.a.position.lerpVectors(o.from, to, k);
+        v.subVectors(to, o.from).normalize(); q.setFromUnitVectors(up, v); o.a.quaternion.copy(q);
+      } else if (!o.done) {
+        o.done = true; o.ret.material.opacity = 0;
+        o.a.position.set(o.p.x, .1, o.p.z); markerGroup.add(o.a);                 // a flecha fica cravada na casa
+        const cell = G.boards[b][o.r][o.c];
+        if (cell.ship >= 0 && !cell.shot) { const res = applyShot(b, o.r, o.c, true); hits.n++; if (res === "sunk") hits.sunk++; }
+        else if (!cell.shot) { cell.shot = true; refreshTile(b, o.r, o.c); sfx.miss(); }
+        addDecal(o.p.x, o.p.z, 0x2a1d10, .16, .03);
+        burst(o.p, [0x3f7a3a, 0x7a5230, 0xffffff], 7, 2.6);
+        tone(180,.1,"triangle",.09,-60);
+      }
+    });
+  }, () => {
+    scene.remove(root);
+    if (G.phase !== "battle") return;
+    const who = b===0 ? "sua" : `de ${sname(1)}`;
+    if (hits.n > 0) {
+      captainReact(b, "shake");
+      log(`🏹 As flechas derrubaram ${hits.n} torcedor${hits.n>1?"es":""} ${b===0 ? "seu" : "de " + sname(1)}${hits.n>1?"s":""}.`);
+      toast(`${hits.n} FLECHADA${hits.n>1?"S":""}!`, "#8bd450");
+      setAction(`🏹 ${hits.n} flecha${hits.n>1?"s":""} acertou${hits.n>1?"aram":""} torcedores`, "#8bd450", b===0 ? "Foi na SUA torcida" : `Foi na torcida de ${sname(1)}`);
+    } else {
+      log("🏹 As flechas só pegaram a mata.");
+      setAction("🏹 As flechas só pegaram o chão", "#cfd8e3", "Nenhum torcedor atingido");
+    }
+    if (hits.sunk) { sfx.sunk(); log(`🎺 Um grupo ${who} se dispersou!`); }
+    ui();
+    if (allSunk(b)) { finish(1 - b); return; }
+    setTimeout(done, 350);
+  });
+}
+
 /* Sertão: a cada 2 turnos o calor incendeia 4 casas aleatórias em CADA arena (mesmo dano da bala: derruba o torcedor da casa) */
 function fireBurn(done) {
   const picks = [[],[]];
@@ -2101,7 +2222,7 @@ function buildMenu() {
          <span class="info"><span class="tg">FASE ${i+1} · ${L.diff.toUpperCase()}</span><b>🔒 ???</b><small>Vença a fase ${i} para liberar</small></span>`
       : `<span class="face">${faceSVG(en, 54, L.boss)}</span>
          <span class="info"><span class="tg">FASE ${i+1} · ${L.diff.toUpperCase()}</span><b>${en.name}</b>
-         <small>${en.party} · ${sc.name}<br>👥 ${total} torcedores para dispersar${L.hazard === "bala" ? "<br>⚠️ Bala perdida a cada turno" : L.hazard === "fogo" ? "<br>🔥 Fogo queima 4 casas de cada arena a cada 2 turnos" : ""}</small></span>
+         <small>${en.party} · ${sc.name}<br>👥 ${total} torcedores para dispersar${L.hazard === "bala" ? "<br>⚠️ Bala perdida a cada turno" : L.hazard === "fogo" ? "<br>🔥 Fogo queima 4 casas de cada arena a cada 2 turnos" : L.hazard === "flechas" ? `<br>🏹 ${ARROWS_PER_TURN} flechas por turno` : ""}</small></span>
          ${fresh ? '<span class="badge">NOVA!</span>' : cleared ? '<span class="badge">✔ VENCIDA</span>' : ""}`;
     if (!locked) d.onclick = () => startLevel(i);
     grid.appendChild(d);

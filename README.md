@@ -32,15 +32,15 @@ https://rpossan.github.io/super-presida-batalha/
 | 2 | Aeroporto Salgado Filho (RS) | Gleisi Hoffmann | Tarcísio de Freitas | Médio | — |
 | 3 | Cristo Redentor (RJ) | Alexandre de Moraes | Michelle Bolsonaro | Difícil | ⚠️ bala perdida, 1 por turno |
 | 4 | Sertão Nordestino | Felipe Neto | Luciano Hang | Muito difícil | 🔥 fogo: 4 casas de cada arena a cada 2 turnos |
-| 5 | Esplanada dos Ministérios (DF) | **Lula (chefão)** | **Flávio (chefão)** | Chefão | — |
+| 5 | Floresta Amazônica | Marina Silva | Ricardo Salles | Extremo | 🏹 4 flechas por turno na arena de quem joga |
+| 6 | Esplanada dos Ministérios (DF) | **Lula (chefão)** | **Flávio (chefão)** | Chefão | — |
 
-Na fase 3, uma bala perdida cai do céu em 1 casa aleatória da arena de quem joga a cada turno.
-Na fase 4, a cada 2 turnos (uma vez por rodada) o sol escaldante incendeia 4 casas aleatórias de cada arena; o fogo derruba o torcedor da casa, como a bala.
+Perigos: na fase 3 uma bala perdida cai em 1 casa da arena de quem joga a cada turno; na fase 4 o sol incendeia 4 casas de cada arena a cada 2 turnos; na fase 5 caem 4 flechas por turno (cada uma pega 1 casa) na arena de quem joga. Cada casa atingida derruba o torcedor que estiver nela, sem dar votos.
 
 As fases e os adversários ficam em `LEVELS`, `TRACKS` e `CHARS` no `index.html`.
 
 ## Cenários
-Av. Paulista (SP), Aeroporto Salgado Filho (RS), Cristo Redentor (RJ), Sertão Nordestino e Esplanada dos Ministérios (DF).
+Av. Paulista (SP), Aeroporto Salgado Filho (RS), Cristo Redentor (RJ), Sertão Nordestino, Floresta Amazônica e Esplanada dos Ministérios (DF).
 Para criar um novo, adicione um objeto em `SCENARIOS` no `index.html`
 (há um comentário `ADICIONE NOVOS CENÁRIOS AQUI`); depois inclua o cenário em `LEVELS` para virar uma fase.
 
