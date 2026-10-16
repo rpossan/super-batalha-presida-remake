@@ -224,6 +224,22 @@
   .item .qty { position:absolute; top:-7px; right:-6px; background:var(--amarelo); color:#222; font-weight:900; font-size:12px; border-radius:999px; min-width:22px; padding:1px 6px; text-align:center; box-shadow:0 2px 6px #0008; }
   .item.empty { opacity:.35; text-decoration:line-through; }
   .item kbd { margin-left:2px; }
+  #items { position:relative; }
+  #itemsToggle { display:none; align-items:center; gap:7px; padding:7px 12px; position:relative; }
+  #itemsToggle .bag { font-size:20px; line-height:1; }
+  #itemsToggle .tl { font-weight:800; }
+  #itemsToggle .qty { position:static; margin-left:2px; }
+  #itemsToggle.empty { opacity:.45; }
+  #items .itemsList { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  body.mobile #itemsToggle { display:flex; }
+  body.mobile #items { margin-top:6px; padding-top:6px; }
+  body.mobile #items .itemsList { display:none; }
+  body.mobile #items.open .itemsList { display:flex; flex-direction:column; align-items:stretch; position:absolute; left:0; right:0; bottom:calc(100% + 6px);
+      background:#0e131c; border:2px solid var(--amarelo); border-radius:14px; padding:10px; z-index:8; box-shadow:0 10px 30px #000c; }
+  body.mobile #items .itemsList .item { min-width:0; width:100%; padding:7px 10px 7px 7px; }
+  body.mobile #items .itemsList .item .itx small { display:block; }
+  body.mobile #items .itemsList .item .qty { top:50%; right:10px; transform:translateY(-50%); position:absolute; }
+  body.mobile #items .itemsList .ilabel { margin-bottom:2px; }
   #furia { font:900 17px/1.15 Impact,"Arial Black",sans-serif; padding:3px 12px; border-radius:10px; color:#fff; white-space:nowrap;
            background:linear-gradient(#32a8ff,#1c4fd6); border:2px solid #fff; text-shadow:0 2px 0 #0007; box-shadow:0 0 14px #32a8ff99; animation:comboPulse .35s ease-in-out infinite alternate; }
   .hidden { display:none !important; }
@@ -242,7 +258,6 @@
     #matchClock { font-size:30px; min-width:62px; }
     #votes { padding:1px 8px; } #votes b { font-size:17px; } #votes small { font-size:9px; }
     #furia { font-size:14px; padding:2px 8px; }
-    .item { min-width:0; flex:1 1 30%; padding:5px 8px 5px 5px; } .item .itx small { display:none; }
     #combo { font-size:15px; padding:2px 8px; position:absolute; top:100%; left:0; right:0; margin:2px auto 0; width:max-content; z-index:4; }
     #combo.max { font-size:17px; }
     .hp { height:20px; border-width:2px; }
@@ -256,7 +271,7 @@
     #toast { top:34%; }
   }
   /* celular na horizontal: faixa de poderes compacta, sem cobrir o tabuleiro */
-  @media (max-height:520px) and (pointer:coarse), (max-height:520px) and (max-width:700px) {
+  @media (max-height:520px) {
     #top { padding:4px 8px 6px; }
     #matchClock { font-size:24px; min-width:52px; padding:2px 8px 0; }
     #scoreRow { min-height:26px; margin-top:2px; }
@@ -275,6 +290,11 @@
     #action { display:none; }
     #focusTag { top:94px; font-size:11px; padding:3px 10px; }
     .fleetlist { display:none !important; }
+    #battlePanel { display:flex; align-items:center; gap:8px; flex-wrap:nowrap; }
+    #battlePanel #powers { flex:1 1 auto; }
+    #battlePanel #items { margin:0; padding:0; border:0; flex:none; }
+    body.mobile #items.open .itemsList { left:auto; right:0; width:min(380px,86vw); flex-direction:column; }
+    body.mobile #items .itemsList .item .itx small { display:block; }
     #placePanel .btn { padding:6px 8px; font-size:12px; }
     #shipChips, #placePanel > div:last-child { display:none; }
   }
@@ -745,7 +765,7 @@ scene.fog = new THREE.Fog(0x8fc0ef, 55, 120);
 const camera = new THREE.PerspectiveCamera(62, innerWidth/innerHeight, 0.1, 400);
 const camLook = new THREE.Vector3(0,0,-1.5);
 /* celular: telas estreitas ou toque em tela pequena */
-const mobileQuery = matchMedia("(max-width:700px), (pointer:coarse) and (max-width:950px)");
+const mobileQuery = matchMedia("(max-width:700px), (max-height:520px), (pointer:coarse) and (max-width:950px)");
 const isMobile = () => mobileQuery.matches;
 function fitCamera() {
   const a = innerWidth/innerHeight;
@@ -2574,18 +2594,33 @@ function useItem(id) {
   ITEMS[id]--; G.itemUse[id]++;
   ui();
 }
+let itemsOpen = false;
 function renderItems(myTurn) {
-  const box = $("items"); box.innerHTML = '<span class="ilabel">Itens</span>';
+  const box = $("items"); box.innerHTML = "";
+  box.classList.toggle("open", itemsOpen);
+  const total = ITEM_DEFS.reduce((n,d) => n + ITEMS[d.id], 0);
+  // botão único (usado no celular): abre/fecha a lista de itens
+  const tg = document.createElement("button");
+  tg.id = "itemsToggle"; tg.className = "btn" + (total <= 0 ? " empty" : "");
+  tg.innerHTML = `<span class="bag">🎒</span><span class="tl">Itens</span><span class="qty">${total}</span>`;
+  tg.onclick = e => { e.stopPropagation(); itemsOpen = !itemsOpen; renderItems(myTurn); };
+  box.appendChild(tg);
+  const list = document.createElement("div"); list.className = "itemsList";
+  list.innerHTML = '<span class="ilabel">Itens</span>';
   ITEM_DEFS.forEach(d => {
-    const b = document.createElement("button");
+    const bt = document.createElement("button");
     const left = ITEMS[d.id], cap = ITEM_CAP[d.id] - G.itemUse[d.id];
-    b.className = "btn item" + (left <= 0 ? " empty" : "");
-    b.innerHTML = `${d.svg}<span class="itx"><b>${d.name} <kbd>${d.key}</kbd></b><small>${d.desc}${left>0 ? ` · limite ${Math.max(0,cap)}/fase` : ""}</small></span><span class="qty">×${left}</span>`;
-    b.disabled = !myTurn || !canUseItem(d.id);
-    b.onclick = () => useItem(d.id);
-    box.appendChild(b);
+    bt.className = "btn item" + (left <= 0 ? " empty" : "");
+    bt.innerHTML = `${d.svg}<span class="itx"><b>${d.name} <kbd>${d.key}</kbd></b><small>${d.desc}${left>0 ? ` · limite ${Math.max(0,cap)}/fase` : ""}</small></span><span class="qty">×${left}</span>`;
+    bt.disabled = !myTurn || !canUseItem(d.id);
+    bt.onclick = e => { e.stopPropagation(); itemsOpen = false; useItem(d.id); };
+    list.appendChild(bt);
   });
+  box.appendChild(list);
 }
+document.addEventListener("pointerdown", e => {          // toque fora fecha a lista de itens
+  if (itemsOpen && !e.target.closest("#items")) { itemsOpen = false; $("items").classList.remove("open"); }
+});
 function selectPower(id) {
   if (G.phase!=="battle" || G.turn!==0 || G.busy) return;
   if (G.energy[0] < COST[id]) return;
