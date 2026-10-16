@@ -392,7 +392,7 @@ const FLEET_TOTAL = FLEET.reduce((a,f) => a+f.len, 0);
    ================================================================ */
 let lastEnergy = 1;
 const G = {
-  round:1, votes:0, combo:0, scn:null, level:1, levelIdx:0, enemy:null, defs:[FLEET,FLEET],
+  round:1, votes:0, combo:0, boss:null, scn:null, level:1, levelIdx:0, enemy:null, defs:[FLEET,FLEET],
   phase:"menu", side:[null,null], boards:[], fleets:[[],[]], fans:[{},{}],
   energy:[1,1], turn:0, busy:false, timeLeft:TURN_TIME, power:"normal",
   horiz:true, firstTurn:true, captains:[null,null], hover:null,
@@ -1226,8 +1226,9 @@ function tileBase(r,c) { const t = G.scn ? G.scn.tiles : [0x484e58,0x3d434c]; re
 function refreshTile(b,r,c) {
   const cell = G.boards[b][r][c], m = tiles[b][r][c];
   let col = tileBase(r,c);
-  if (cell.shot) col = cell.ship>=0 ? 0xb3261e : 0x7d8a99;
-  else if (cell.scanned) col = cell.ship>=0 ? 0xe0b800 : 0x2f6fb5;
+  if (cell.minion) col = 0xd4a017;                                   // seguidor do chefão (visível): alvo
+  else if (cell.shot) col = (cell.ship>=0 || cell.bossHit) ? 0xb3261e : 0x7d8a99;
+  else if (cell.scanned) col = (cell.ship>=0 || cell.boss) ? 0xe0b800 : 0x2f6fb5;
   else if (b===0 && cell.ship>=0) col = new THREE.Color(SIDES[G.side[0]].main).multiplyScalar(.75).getHex();
   m.material.color.setHex(col);
 }
@@ -1645,6 +1646,16 @@ function captainReact(b, kind) {
 /* aplica um tiro numa célula. Retorna "hit" | "miss" | "sunk" */
 function applyShot(b, r, c, noCone) {
   const cell = G.boards[b][r][c];
+  if (G.boss && b === 1) {                                           // arena do chefão: sem torcida
+    if (cell.minion) { removeMinion(r, c, true); sfx.hit(); return "hit"; }
+    if (cell.boss) {
+      cell.boss = false; cell.shot = true; cell.bossHit = true; refreshTile(b, r, c);
+      G.boss.hp = Math.max(0, G.boss.hp - 1); G.boss.hitFlag = true;
+      bossFlash(r, c); sfx.hit();
+      if (G.boss.hp > 0) placeBoss();                                // muda de casa, sem o jogador ver
+      return "hit";
+    }
+  }
   cell.shot = true; refreshTile(b,r,c);
   const p = tilePos(b,r,c);
   if (cell.ship >= 0) {
@@ -1666,7 +1677,114 @@ function applyShot(b, r, c, noCone) {
   return "miss";
 }
 
-function allSunk(b) { return G.fleets[b].every(s => s.sunk); }
+function allSunk(b) {
+  if (G.boss && b === 1) return G.boss.hp <= 0;
+  return G.fleets[b].every(s => s.sunk);
+}
+
+/* ================================================================
+   Chefão final: único, sem torcida, com pontos de vida e posição escondida
+   - a cada acerto ele muda de casa (sem você ver)
+   - cada tiro seu que erra faz surgir um seguidor visível na casa
+   - Lula: com 5 seguidores, eles explodem 5 casas da sua arena
+   - Flávio: com 5 seguidores, ele recarrega a vida toda
+   ================================================================ */
+const BOSS_HP = 4, BOSS_MINIONS = 5, BOSS_BLAST = 5;
+const minionName = () => G.boss.kind === "lula" ? "petista" : "bolsonarista";
+function placeBoss() {
+  const B = G.boards[1], free = () => {
+    const f = [];
+    for (let r=0;r<N;r++) for (let c=0;c<N;c++) if (!B[r][c].shot && !B[r][c].minion) f.push([r,c]);
+    return f;
+  };
+  let f = free();
+  if (!f.length) {                                                   // arena esgotada: embaralha
+    for (let r=0;r<N;r++) for (let c=0;c<N;c++) { B[r][c].shot = false; B[r][c].bossHit = false; }
+    clearMarkers(); refreshAll(); f = free();
+  }
+  for (let r=0;r<N;r++) for (let c=0;c<N;c++) B[r][c].boss = false;
+  const [r,c] = f[rand(f.length)];
+  B[r][c].boss = true; G.boss.r = r; G.boss.c = c;
+}
+function bossFlash(r, c) {                                           // o chefão aparece um instante ao ser acertado
+  const p = tilePos(1, r, c), f = makeFan(G.side[1]);
+  f.scale.setScalar(2.4); f.position.set(p.x, 0, p.z); fanGroups[1].add(f);
+  const crown = new THREE.Mesh(new THREE.CylinderGeometry(.2,.2,.14,10), new THREE.MeshLambertMaterial({color:0xffd23a, emissive:0x664400}));
+  crown.position.y = 1.0; f.add(crown);
+  const s = SIDES[G.side[1]];
+  burst(p, [s.main, s.alt, 0xffffff], 34, 5);
+  addFx(.9, (t) => { f.position.y = Math.abs(Math.sin(t*9))*.7; f.userData.fall = -1; }, () => fanGroups[1].remove(f));
+}
+function spawnMinion(r, c) {
+  const cell = G.boards[1][r][c]; if (cell.minion) return;
+  const key = r+","+c, p = tilePos(1, r, c), f = makeFan(G.side[1]);
+  cell.minion = true; cell.shot = false; G.boss.minions.add(key);
+  f.position.set(p.x, 0, p.z); f.scale.setScalar(1.25); fanGroups[1].add(f); G.fans[1][key] = f;
+  refreshTile(1, r, c);
+  burst(p, [SIDES[G.side[1]].main, SIDES[G.side[1]].alt, 0xffffff], 14, 3);
+  const n = G.boss.minions.size;
+  log(`👤 Surgiu um ${minionName()} em ${r+1}·${c+1}! (${n}/${BOSS_MINIONS})`);
+  toast(`SURGIU UM ${minionName().toUpperCase()}! ${n}/${BOSS_MINIONS}`, SIDES[G.side[1]].cssAlt);
+}
+function removeMinion(r, c, burstIt) {
+  const key = r+","+c, cell = G.boards[1][r][c], f = G.fans[1][key];
+  if (f) { fanGroups[1].remove(f); delete G.fans[1][key]; }
+  cell.minion = false; cell.shot = true; G.boss.minions.delete(key);
+  if (burstIt) { const s = SIDES[G.side[1]]; burst(tilePos(1, r, c), [s.main, s.alt, 0xffffff], 22, 4); }
+  refreshTile(1, r, c);
+}
+function bossPower(done) {
+  const keys = [...G.boss.minions].map(k => k.split(",").map(Number));
+  if (G.boss.kind === "flavio") {                                    // Flávio: recarrega a vida toda
+    keys.forEach(([r,c]) => { const p = tilePos(1,r,c); burst(p, [0x2f9a3f, 0xffd23a, 0xffffff], 20, 5); removeMinion(r, c, false); });
+    G.boss.hp = G.boss.max;
+    toast("FLÁVIO RECARREGOU A VIDA!", "#ffdf00");
+    setAction("💚 Flávio recarregou a vida toda!", "#ffdf00", `${BOSS_MINIONS} bolsonaristas reunidos · vida ${G.boss.hp}/${G.boss.max}`);
+    log(`💚 ${BOSS_MINIONS} bolsonaristas reunidos: Flávio recarregou a vida (${G.boss.hp}/${G.boss.max}).`);
+    [523,659,784,1047].forEach((f,i) => tone(f,.2,"square",.08,0,i*.1));
+    ui(); setTimeout(done, 1100);
+    return;
+  }
+  keys.forEach(([r,c]) => { burst(tilePos(1,r,c), [0xd7191c, 0xffdf00, 0xffffff], 24, 5); removeMinion(r, c, false); });   // Lula: eles explodem
+  bossBlast(done);
+}
+function bossBlast(done) {
+  const B0 = G.boards[0], free = [];
+  for (let r=0;r<N;r++) for (let c=0;c<N;c++) if (!B0[r][c].shot) free.push([r,c]);
+  const picks = [];
+  while (picks.length < BOSS_BLAST && free.length) picks.push(free.splice(rand(free.length),1)[0]);
+  setAction("💥 OS PETISTAS EXPLODIRAM!", "#ff5a4a", `${picks.length} casas da sua arena vão pelos ares…`);
+  log(`💥 ${BOSS_MINIONS} petistas reunidos: eles explodem ${picks.length} casas da sua arena!`);
+  const root = new THREE.Group(); scene.add(root);
+  const rings = picks.map(([r,c]) => {
+    const p = tilePos(0,r,c), ring = makeRing(0xff3b30); ring.position.set(p.x,.09,p.z); ring.scale.setScalar(.55); root.add(ring); return ring;
+  });
+  tone(420,.12,"square",.07); tone(420,.12,"square",.07,0,.2);
+  let boom = false, hit = 0;
+  addFx(1.8, (t) => {
+    if (t < .9) rings.forEach(rg => { rg.material.opacity = .55 + Math.abs(Math.sin(t*14))*.4; rg.scale.setScalar(.5 + .08*Math.sin(t*14)); });
+    else if (!boom) {
+      boom = true; rings.forEach(rg => rg.material.opacity = 0);
+      tone(70,.5,"sawtooth",.14,-30); tone(160,.3,"square",.09,-100);
+      picks.forEach(([r,c]) => {
+        const p = tilePos(0,r,c), cell = G.boards[0][r][c];
+        if (cell.ship >= 0 && !cell.shot) { applyShot(0, r, c, true); hit++; }
+        else if (!cell.shot) { cell.shot = true; refreshTile(0, r, c); }
+        addDecal(p.x, p.z, 0x1b120a, .4, .03);
+        burst(p, [0xff7a1a, 0xffd23a, 0xff3b30, 0x555555], 18, 5);
+      });
+      captainReact(0, hit ? "shake" : "jump");
+      toast(hit ? `EXPLOSÃO! ${hit} TORCEDOR${hit>1?"ES":""} DERRUBADO${hit>1?"S":""}!` : "EXPLOSÃO NO CHÃO!", "#ff5a4a");
+      log(`💥 A explosão derrubou ${hit} torcedor${hit===1?"":"es"} seu${hit===1?"":"s"}.`);
+      ui();
+    }
+  }, () => {
+    scene.remove(root);
+    if (G.phase !== "battle") return;
+    if (allSunk(0)) { finish(1); return; }
+    setTimeout(done, 300);
+  });
+}
 
 /* dispara uma lista de células; who = atirador */
 function resolveShots(targetB, cells, who, powerLabel, opts = {}) {
@@ -1691,7 +1809,8 @@ function resolveShots(targetB, cells, who, powerLabel, opts = {}) {
       G.energy[who] = Math.min(MAX_ENERGY, G.energy[who] + hits);
       captainReact(who,"jump"); captainReact(targetB,"shake");
       log(`<b style="color:${SIDES[G.side[who]].cssAlt}">${sname(who)}</b>: ${powerLabel} acertou <b>${hits}</b> torcedor${hits>1?"es":""} de ${target}!`);
-      const phrase = pickPhrase(hits>1 ? MULTI_PHRASES : HIT_PHRASES);
+      const bossWasHit = G.boss && G.boss.hitFlag; if (G.boss) G.boss.hitFlag = false;
+      const phrase = bossWasHit ? `ACERTOU O CHEFÃO! Vida ${G.boss.hp}/${G.boss.max}` : pickPhrase(hits>1 ? MULTI_PHRASES : HIT_PHRASES);
       toast(phrase, SIDES[G.side[who]].cssAlt);
       setAction(`✅ ${phrase}`, "#4cd964", `${powerLabel} derrubou ${hits} torcedor${hits>1?"es":""} de ${target} · +${hits} ⚡${who===0 ? ` · +${fmtVotes(gained)} votos${G.combo>=2 ? ` (combo ${comboMult(G.combo)}x)` : ""}` : ""}`);
     } else {
@@ -1706,9 +1825,13 @@ function resolveShots(targetB, cells, who, powerLabel, opts = {}) {
       toast(pickPhrase(SUNK_PHRASES), "#ffdf00");
       setAction(`🎺 ${n} de ${target} se dispersou!`, "#ffdf00", "Grupo inteiro fora de combate");
     });
+    if (G.boss && who === 0 && targetB === 1 && hits === 0 && cells.length) {          // errou: surge um seguidor do chefão na casa
+      const [mr, mc] = cells[rand(cells.length)]; spawnMinion(mr, mc);
+    }
     ui();
     if (allSunk(targetB)) return finish(who);
-    setTimeout(nextTurn, 900);
+    const proceed = () => setTimeout(nextTurn, 900);
+    if (G.boss && who === 0 && G.boss.minions.size >= BOSS_MINIONS) bossPower(proceed); else proceed();
   }, total);
 }
 
@@ -1721,12 +1844,13 @@ function doRadar(targetB, r, c, who, cb) {
     let found = 0;
     cells.forEach(([rr,cc]) => {
       const cell = G.boards[targetB][rr][cc]; cell.scanned = true;
-      if (cell.ship>=0 && !cell.shot) found++;
+      if ((cell.ship>=0 || cell.boss) && !cell.shot) found++;
       refreshTile(targetB,rr,cc);
     });
-    log(`📊 ${sname(who)} encomendou uma <b>pesquisa</b>: ${found} torcedor${found===1?"":"es"} na área.`);
-    toast(found ? `PESQUISA: ${found} NA ÁREA` : "PESQUISA: NADA POR AQUI", "#8cc4ff");
-    setAction(`📊 Pesquisa: ${found ? found+" torcedor"+(found>1?"es":"")+" na área" : "nada por aqui"}`, "#8cc4ff", "Casas amarelas = tem torcida · azuis = vazio");
+    const bm = G.boss && targetB === 1;
+    log(bm ? `📊 Pesquisa: ${found ? "o CHEFÃO está nessa área!" : "o chefão não está nessa área."}` : `📊 ${sname(who)} encomendou uma <b>pesquisa</b>: ${found} torcedor${found===1?"":"es"} na área.`);
+    toast(bm ? (found ? "O CHEFÃO ESTÁ AQUI!" : "NADA POR AQUI") : (found ? `PESQUISA: ${found} NA ÁREA` : "PESQUISA: NADA POR AQUI"), "#8cc4ff");
+    setAction(`📊 Pesquisa: ${bm ? (found ? "o chefão está nessa área!" : "nada por aqui") : (found ? found+" torcedor"+(found>1?"es":"")+" na área" : "nada por aqui")}`, "#8cc4ff", bm ? "Casa amarela = onde o chefão está agora" : "Casas amarelas = tem torcida · azuis = vazio");
     setTimeout(() => { if (cb) cb(); else { G.busy = G.turn!==0; ui(); } }, 900);
   }, 1000);
 }
@@ -1743,6 +1867,7 @@ function startBattle() {
   G.energy = [1, LEVELS[G.levelIdx].ai >= 4 ? 3 : 1]; lastEnergy = 1; $("log").innerHTML = "";
   log(`⚔️ Fase ${G.level}: <b>${sname(0)}</b> contra <b>${G.enemy.name}</b> (${LEVELS[G.levelIdx].diff}).`);
   if (LEVELS[G.levelIdx].boss) setTimeout(() => toast(`CHEFÃO: ${G.enemy.short.toUpperCase()}!`, "#ff5a4a"), 300);
+  if (G.boss) log(`👑 ${G.enemy.short} é único, com ${G.boss.max} pontos de vida. A cada acerto ele muda de casa, escondido. Cada erro seu faz surgir um ${minionName()}; com ${BOSS_MINIONS}, ${G.boss.kind==="lula" ? "eles explodem 5 casas suas" : "ele recarrega a vida toda"}. Acerte os seguidores para eliminá-los!`);
   if (LEVELS[G.levelIdx].hazard === "bala") log("⚠️ Perigo do cenário: uma bala perdida cai do céu a cada turno, na arena de quem joga.");
   if (LEVELS[G.levelIdx].hazard === "fogo") log("🔥 Perigo do cenário: a cada 2 turnos o sol escaldante incendeia 4 casas de cada arena.");
   if (LEVELS[G.levelIdx].hazard === "flechas") log(`🏹 Perigo do cenário: ${ARROWS_PER_TURN} flechas caem da floresta a cada turno, na arena de quem joga.`);
@@ -2147,8 +2272,9 @@ function ui() {
   } else if (G.phase==="place") { ft.classList.remove("hidden"); ft.textContent = "🧭 SUA ARENA · toque para posicionar"; ft.style.borderColor = "#4cd964"; }
   else ft.classList.add("hidden");
   [[0,"A",s0],[1,"B",s1]].forEach(([b,k,sd]) => {
-    const tot = G.defs[b].reduce((a,f) => a+f.len, 0);
-    const left = tot - G.fleets[b].reduce((n,sh) => n + sh.hits, 0), pct = Math.max(0,left/tot*100);
+    const boss = G.boss && b === 1;
+    const tot = boss ? G.boss.max : G.defs[b].reduce((a,f) => a+f.len, 0);
+    const left = boss ? G.boss.hp : tot - G.fleets[b].reduce((n,sh) => n + sh.hits, 0), pct = Math.max(0,left/tot*100);
     $("fill"+k).style.width = pct+"%"; $("trail"+k).style.width = pct+"%";
     $("fill"+k).style.background = `linear-gradient(${b===0?90:270}deg, ${sd.css}, ${sd.cssAlt})`;
     $("hp"+k).classList.toggle("low", pct>0 && pct<=30);
@@ -2204,7 +2330,9 @@ function ui() {
     const row = (b) => G.fleets[b].map(sh =>
       `<div class="${sh.sunk?"sunk":""}">${"●".repeat(sh.len-sh.hits)}${"○".repeat(sh.hits)} ${sh.name}</div>`).join("");
     $("fleetA").innerHTML = `<b style="color:${s0.cssAlt}">Sua torcida</b>${row(0)}`;
-    $("fleetB").innerHTML = `<b style="color:${s1.cssAlt}">Torcida de ${G.enemy ? G.enemy.short : s1.short}</b>${row(1)}`;
+    $("fleetB").innerHTML = G.boss
+      ? `<b style="color:${s1.cssAlt}">👑 Chefão ${G.enemy.short}</b>❤ Vida: ${G.boss.hp}/${G.boss.max}<br>👤 ${G.boss.kind==="lula" ? "Petistas" : "Bolsonaristas"}: ${G.boss.minions.size}/${BOSS_MINIONS}<br><span style="opacity:.8">${G.boss.kind==="lula" ? "com 5: explodem 5 casas suas" : "com 5: recarrega a vida"}</span>`
+      : `<b style="color:${s1.cssAlt}">Torcida de ${G.enemy ? G.enemy.short : s1.short}</b>${row(1)}`;
   } else if (G.phase==="place") {
     $("fleetA").classList.add("hidden"); $("fleetB").classList.add("hidden");
   }
@@ -2345,7 +2473,7 @@ function buildMenu() {
          <span class="info"><span class="tg">FASE ${i+1} · ${L.diff.toUpperCase()}</span><b>🔒 ???</b><small>Vença a fase ${i} para liberar</small></span>`
       : `<span class="face">${faceSVG(en, 54, L.boss)}</span>
          <span class="info"><span class="tg">FASE ${i+1} · ${L.diff.toUpperCase()}</span><b>${en.name}</b>
-         <small>${en.party} · ${sc.name}<br>👥 ${total} torcedores para dispersar${L.hazard === "bala" ? "<br>⚠️ Bala perdida a cada turno" : L.hazard === "fogo" ? "<br>🔥 Fogo queima 4 casas de cada arena a cada 2 turnos" : L.hazard === "flechas" ? `<br>🏹 ${ARROWS_PER_TURN} flechas por turno` : L.calm ? "<br>🏖️ Cenário sem danos" : ""}</small></span>
+         <small>${en.party} · ${sc.name}<br>${L.boss ? `❤ Chefão único: ${BOSS_HP} pontos de vida · sem torcida` : `👥 ${total} torcedores para dispersar`}${L.hazard === "bala" ? "<br>⚠️ Bala perdida a cada turno" : L.hazard === "fogo" ? "<br>🔥 Fogo queima 4 casas de cada arena a cada 2 turnos" : L.hazard === "flechas" ? `<br>🏹 ${ARROWS_PER_TURN} flechas por turno` : L.calm ? "<br>🏖️ Cenário sem danos" : ""}</small></span>
          ${fresh ? '<span class="badge">NOVA!</span>' : cleared ? '<span class="badge">✔ VENCIDA</span>' : ""}`;
     if (!locked) d.onclick = () => startLevel(i);
     grid.appendChild(d);
@@ -2391,11 +2519,14 @@ function newGame(playerKey, levelIdx = 0) {
   G.combo = 0; shownVotes = G.votes; $("votesNum").textContent = fmtVotes(G.votes); renderCombo();
   G.enemy = { ...CHARS[TRACKS[playerKey][levelIdx]], boss: !!L.boss };
   G.defs = [FLEET, L.def.map(i => FLEET[i])];
+  G.boss = L.boss ? { hp:BOSS_HP, max:BOSS_HP, r:0, c:0, minions:new Set(), kind: G.enemy.camp === "lula" ? "lula" : "flavio" } : null;
+  if (G.boss) G.defs[1] = [];                                      // chefão: sem torcida
   G.phase = "place"; G.turn = 0; G.busy = false; G.horiz = true; G.power = "normal";
   G.energy = [1,1]; G.hover = null;
   applyScenario(SCENARIOS.find(x => x.id === L.scn) || SCENARIOS[0]);
   musicStart(G.scn.id);
   $("action").classList.add("hidden"); clearMarkers(); resetFleet(0); resetFleet(1); randomFleet(1);
+  if (G.boss) placeBoss();
   for (let b=0;b<2;b++) {
     frames[b].material.color.setHex(SIDES[G.side[b]].main);
     if (G.captains[b]) scene.remove(G.captains[b]);

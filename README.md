@@ -36,6 +36,8 @@ https://rpossan.github.io/super-presida-batalha/
 | 6 | Balneário Camboriú (SC) | Anitta | Carlos Bolsonaro | Pré-chefão | 🏖️ sem danos |
 | 7 | Brasília · Praça dos Três Poderes (DF) | **Lula (chefão)** | **Flávio (chefão)** | Chefão | — |
 
+**Chefão final (fase 7):** Lula e Flávio são únicos, sem torcida, com 4 pontos de vida. A cada acerto o chefão muda de casa, escondido. Cada tiro seu que erra faz surgir um seguidor visível na casa (dá para acertá-lo para eliminar). Com 5 seguidores: o Lula explode 5 casas da sua arena; o Flávio recarrega a vida toda.
+
 Perigos: na fase 3 uma bala perdida cai em 1 casa da arena de quem joga a cada turno; na fase 4 o sol incendeia 4 casas de cada arena a cada 2 turnos; na fase 5 caem 4 flechas por turno (cada uma pega 1 casa) na arena de quem joga. Cada casa atingida derruba o torcedor que estiver nela, sem dar votos.
 
 As fases e os adversários ficam em `LEVELS`, `TRACKS` e `CHARS` no `index.html`.
