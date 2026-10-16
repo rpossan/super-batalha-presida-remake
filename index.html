@@ -1954,13 +1954,17 @@ function pattern(power, r, c) {
 /* frases de reação (contexto político, tom de brincadeira) */
 const HIT_PHRASES = ["Na mosca!","Arribaaaa!","Viva a democracia!","Aprovado por unanimidade!","Maioria absoluta!","Ganhou o debate!",
   "Voto certeiro!","A urna confirmou!","Direto no palanque!","Que comício!","A pesquisa não mentiu!","Vai pro segundo turno!",
-  "Eleito no primeiro turno!","Esse é do povo!","Boca de urna certeira!","Mandou bem na campanha!"];
+  "Eleito no primeiro turno!","Esse é do povo!","Boca de urna certeira!","Mandou bem na campanha!",
+  "Acertou em cheio!","Esse voto é nosso!","Contagem confirmada!","Urna eletrônica aprova!","Santinho certeiro!","Subiu nas pesquisas!","Debate ganho!","Discurso afiado!","Candidato do povo!","Palanque cheio!","Carreata na veia!","Apoio garantido!","Aliança fechada!","Papo reto!","Foi cirúrgico!","Quórum batido!","Pesquisa de boca de urna!","Margem de erro: zero!","Voto consciente!","Veio de lavada!","Mandou a real!","Recebeu o apoio!","Direto no alvo, parlamentar!","A militância vibra!","Tá no horário eleitoral!","Mira de campanha!"];
 const MULTI_PHRASES = ["Lavada nas urnas!","Maioria esmagadora!","Virada histórica!","Showmício de acertos!","Chapa completa!",
-  "Varreu a convenção!","Combo no horário eleitoral!","Aprovado em todas as seções!"];
+  "Varreu a convenção!","Combo no horário eleitoral!","Aprovado em todas as seções!",
+  "Arrasou na apuração!","Votação histórica!","Maioria qualificada!","Três turnos num só!","Tsunami de votos!","Chuva de apoio!","Apuração relâmpago!","Sessão encerrada com goleada!","Virou o placar!","Rodada de aplausos!","Comitê em festa!","Fechou a coligação!"];
 const MISS_PHRASES = ["Não foi desta vez!","Por pouco!","Errrouuuuu!","Voto nulo!","Foi pra urna errada!","Abstenção!",
   "Projeto arquivado!","Vetado!","Pediram vista!","Cadê o quórum?","Sumiu na tramitação!","Passou longe da tribuna!",
-  "Caiu no orçamento secreto!","Mira de CPI!","Fake news: não acertou ninguém!"];
-const SUNK_PHRASES = ["TORCIDA DISPERSADA!","COMÍCIO ESVAZIADO!","FOI TUDO PRA CASA!","CABO ELEITORAL DESISTIU!","CARREATA DISSOLVIDA!"];
+  "Caiu no orçamento secreto!","Mira de CPI!","Fake news: não acertou ninguém!",
+  "Quase, candidato!","Ficou no quase!","Foi pro segundo turno... do erro!","Voto em branco!","Urna vazia!","Tentou, mas não rolou!","Discurso sem plateia!","Santinho no lixo!","Passou batido!","Foi de arrasto!","Sem quórum pra isso!","Tá difícil, hein?","Desistiu do mandato!","Mandato cassado!","Errou o endereço do comício!","Caiu na tramitação!","Emenda rejeitada!","Rejeitado em plenário!","Foi pro arquivo!","Pesquisa errou a margem!","O eleitor mudou de ideia!","Caiu na pegadinha!","Cadê o voto?","Nem fez cócegas!","Tropeçou no palanque!","Aposta perdida!","Ixi, errou!","Nem chegou perto!","Boato desmentido!","Erro de cálculo eleitoral!"];
+const SUNK_PHRASES = ["TORCIDA DISPERSADA!","COMÍCIO ESVAZIADO!","FOI TUDO PRA CASA!","CABO ELEITORAL DESISTIU!","CARREATA DISSOLVIDA!",
+  "PELOTÃO DE APOIADORES DISPERSO!","MILITÂNCIA EM RETIRADA!","ATO ENCERRADO!","BANDEIRAS RECOLHIDAS!","CORREU TUDO PRO ÔNIBUS!","GRUPO DESMOBILIZADO!"];
 let lastPhrase = "";
 function pickPhrase(list) {
   let p; do { p = list[rand(list.length)]; } while (p===lastPhrase && list.length>1);
