@@ -118,7 +118,7 @@ Zerou a campanha e viu os créditos? Um ditador surge das cinzas. **O NG+ é des
 - **☢️ Bombas:** caem a cada turno e atingem uma cruz de 5 casas: antes do seu ataque no inimigo, antes do ataque dele em você.
   A cada 3 rodadas cai uma bomba a mais (até 3).
 - **🧟 Zumbis:** cada vez que você erra, surge um zumbi visível na casa. Acerte-o para eliminá-lo. Com **5 zumbis**, a horda invade e morde 5 casas da sua arena.
-- **Dificuldade extrema:** o Tirano começa com mais energia e ganha energia extra a cada turno.
+- **Dificuldade extrema:** o Tirano começa com mais energia e ganha energia extra a cada turno. Quanto mais as suas skills evoluem de nível, mais reforços, energia e zumbis ele traz.
 
 <p align="center"><img src="docs/img/ng_batalha.png" alt="Batalha do NG+" width="760"></p>
 
@@ -158,9 +158,33 @@ Ficam salvas no navegador (veja [Salvamento](#-salvamento-local)).
 
 <p align="center"><img src="docs/img/skills_batalha.png" alt="Batalha com skills ativas" width="760"></p>
 
+### 📈 Níveis das skills
+Cada skill tem **3 níveis**. Evoluir custa 1,5x (nível 2) e 2,5x (nível 3) o preço base. O nível máximo que você pode comprar
+**depende de até onde você chegou na campanha** (em qualquer trilha), então não dá para subir tudo de uma vez:
+
+| Teto de nível | Como liberar |
+|---|---|
+| 1 | desde o começo |
+| 2 | vencer a fase 3 (Cristo Redentor) |
+| 3 | vencer o chefão final (fase 7) |
+
+| Skill | Nível 1 | Nível 2 | Nível 3 |
+|---|---|---|---|
+| ⚡ Fôlego de campanha | começa com 4 de energia | 6 | 8 |
+| 📊 Instituto de pesquisa | Pesquisa custa 1 e revela 3×3 | revela 3×5 | revela 5×5 |
+| ☂️ Guarda-chuva | 3 protegidos | 5 | 7 |
+| 💥 Super tiro | 3 usos por fase | 4 | 5 |
+| 🎉 Empolgação | 3 usos por fase | 4 | 5 |
+
+**Importante:** subir de nível **não aumenta a ameaça**; só **comprar skills novas** deixa o inimigo mais forte (veja abaixo).
+Assim, evoluir é pura vantagem para o jogador, e é o que torna o chefão e o Apocalipse vencíveis.
+
+**Apoio da torcida:** se você perder no chefão, na tentativa seguinte ganha torcedores extras na sua arena (+1 por derrota seguida, até +3).
+Vencer o chefão zera esse apoio.
+
 ### ⚖️ Ameaça e equilíbrio
-As skills ajudam, mas **quanto mais votos você investe nelas, mais forte o inimigo fica**. A *ameaça* é o total gasto em skills
-(em milhares de votos, de 0 a 31) e muda de nível: **Calma → Moderada → Elevada → Alta → Crítica → Extrema**.
+As skills ajudam, mas **quanto mais votos você investe nelas, mais forte o inimigo fica**. A *ameaça* é o total gasto na **compra** de skills
+(em milhares de votos, de 0 a 31; os níveis não contam) e muda de nível: **Calma → Moderada → Elevada → Alta → Crítica → Extrema**.
 O jogo avisa o nível no começo de cada fase e na aba de skills da loja.
 
 | Ameaça (votos gastos) | Fases comuns | Chefão final (Lula Molusco / Flávio) | Apocalipse (NG+) |
@@ -173,7 +197,7 @@ O jogo avisa o nível no começo de cada fase e na aba de skills da loja.
 
 **Como foi calibrado:** simulação do chefão e do Apocalipse com um jogador competente **usando skills e itens**. Os itens
 pesam bastante: sem considerá-los o chefão parecia equilibrado, mas na prática dava cerca de 79% de vitória. Agora o chefão
-fica em torno de **50% sem skills e ~25% com todas**, e o Apocalipse em torno de **30%**, em qualquer nível de investimento.
+fica em torno de **50% sem skills e ~23% com todas no nível 1**, subindo para ~44% com tudo no nível 2 e ~60% no nível 3, e o Apocalipse em torno de **30%**, em qualquer nível de investimento.
 Jogadores humanos tendem a ir melhor que o simulador, então a sensação real deve ser um pouco mais confortável.
 
 ---

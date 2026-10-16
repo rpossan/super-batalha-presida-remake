@@ -604,16 +604,43 @@ const SKILLS = [
 ];
 let WALLET = DEV_MODE ? 99999 : 0;            // votos gastáveis (os votos do placar continuam separados)
 const OWNED = new Set();                       // skills compradas (permanentes na sessão)
+const SKLV = {};                                 // nível de cada skill (1 a 3)
 const skillOn = id => OWNED.has(id);
+const skillLv = id => OWNED.has(id) ? Math.max(1, Math.min(3, SKLV[id] || 1)) : 0;
+/* valor da skill em cada nível (índice = nível - 1) */
+const LVT = { folego:[4,6,8], guardachuva:[3,5,7], supertiro:[3,4,5], empolgacao:[3,4,5], instituto:[[1,1],[1,2],[2,2]] };
+const lvVal = id => LVT[id][skillLv(id) - 1];
+const levelBonus = () => SKILLS.reduce((a,k) => a + Math.max(0, skillLv(k.id) - 1), 0);          // níveis acima do 1 (0 a 10)
+const upgradePrice = (k, lv) => Math.round(k.price * [1, 1.5, 2.5][lv-1] / 100) * 100;            // preço para chegar ao nível lv
+/* trava: o nível máximo depende da fase mais avançada que você já venceu (em qualquer trilha) */
+function bestCleared() { return Math.max(0, ...["flavio","lula"].map(sd => CLEARED[sd].reduce((m,c,i) => c ? Math.max(m, i+1) : m, 0))); }
+function skillCap() {
+  if (DEV_MODE) return 3;
+  const boss = LEVELS.findIndex(l => l.boss) + 1, best = bestCleared();
+  return best >= boss ? 3 : best >= 3 ? 2 : 1;
+}
+const capReason = lv => lv === 2 ? "vença a fase 3 (Cristo Redentor)" : "vença o chefão (fase 7)";
+function skillDesc(k, lv) {
+  const v = LVT[k.id][lv-1];
+  switch (k.id) {
+    case "folego":      return `Você começa cada fase com ${v} de energia.`;
+    case "instituto":   return `A Pesquisa custa 1 de energia e revela ${v[0]*2+1}×${v[1]*2+1} casas.`;
+    case "guardachuva": return `${v} torcedores seus começam cada fase protegidos: o adversário gasta um tiro para quebrar o guarda-chuva antes de atingi-los.`;
+    case "supertiro":   return `O tiro comum atinge 4 casas (quadrado 2×2), até ${v} vezes por fase.`;
+    case "empolgacao":  return `Ao acertar um alvo, você ganha um turno extra (1 por turno), até ${v} vezes por fase.`;
+  }
+  return k.desc;
+}
+let BOSS_LOSSES = 0;                              // derrotas seguidas no chefão: dão apoio extra na próxima tentativa
 /* AMEAÇA: quanto mais votos você investe em skills, mais forte o inimigo fica (valores calibrados por simulação) */
 const threat = () => SKILLS.reduce((a,k) => a + (skillOn(k.id) ? k.price/1000 : 0), 0);        // 0 a 31
 const THREAT_TIERS = [[28,"Extrema"],[21,"Crítica"],[14,"Alta"],[7,"Elevada"],[1,"Moderada"],[0,"Calma"]];
 const threatName = () => (THREAT_TIERS.find(([min]) => threat() >= min) || [0,"Calma"])[1];
 const bossHp = () => 3 + Math.round(threat()/10);                                    // chefão: 3 a 6 de vida
 const extraGroups = div => [2,3,2].slice(0, Math.min(3, Math.floor(threat()/div)));   // reforços inimigos (tamanho dos grupos)
-const cpuExtraEnergy = () => { const L = LEVELS[G.levelIdx]; return (L.cpuBonus ? 1 : 0) + (threat() >= (L.ng ? 20 : 16) ? 1 : 0); };
+const cpuExtraEnergy = () => { const L = LEVELS[G.levelIdx]; return (L.cpuBonus ? 1 : 0) + (threat() >= (L.ng ? 20 : 16) ? 1 : 0) + (L.ng && levelBonus() >= 8 ? 1 : 0); };
 const ARROWS_PER_TURN = 4;
-const zombieMax = () => threat() >= 20 ? 4 : 5, zombieBite = () => 5 + Math.floor(threat()/10);
+const zombieMax = () => (threat() >= 20 ? 4 : 5) - (levelBonus() >= 9 ? 1 : 0), zombieBite = () => 5 + Math.floor(threat()/10) + (levelBonus() >= 9 ? 1 : 0);
 const NG_SIDE = { key:"regime", name:"Regime", short:"Tirano", party:"Regime", main:0x39402a, alt:0xc9c27a, css:"#5b6636", cssAlt:"#e0da86",
   cross:"Bombardeio", ultra:"Blitz", ultraDesc:"linha inteira", ultraMode:"row", skin:0xd9b08c, hair:0x151515, shirts:[0x4a5230,0x39402a] };
 const COST = { normal:0, radar:2, cross:3, ultra:6 };
@@ -1949,7 +1976,7 @@ function pattern(power, r, c) {
   const ultra = SIDES[G.side[G.turn]].ultraMode;
   switch (power) {
     case "cross": add(r,c); add(r-1,c); add(r+1,c); add(r,c-1); add(r,c+1); break;
-    case "radar": for (let dr=-1;dr<=1;dr++) for (let dc=-1;dc<=1;dc++) add(r+dr,c+dc); break;
+    case "radar": { const [hh,hw] = (G.turn===0 && skillOn("instituto")) ? lvVal("instituto") : [1,1]; for (let dr=-hh;dr<=hh;dr++) for (let dc=-hw;dc<=hw;dc++) add(r+dr,c+dc); break; }
     case "ultra":
       if (ultra==="row") for (let cc=0;cc<N;cc++) add(r,cc); else for (let rr=0;rr<N;rr++) add(rr,c);
       break;
@@ -2684,9 +2711,11 @@ function finish(winner, reason) {
   }
   const rounds = `${G.round} rodada${G.round>1?"s":""}`;
   const side = G.side[0], last = LEVELS.length-1, bossIdx = LEVELS.findIndex(l => l.boss);
-  let title, text, btn;
+  let title, text, btn, capUp = 0;
   if (youWin) {
+    const capBefore = skillCap();
     CLEARED[side][G.levelIdx] = true;
+    capUp = skillCap() > capBefore ? skillCap() : 0;
     if (G.levelIdx < last && PROG[side] === G.levelIdx+1) { PROG[side]++; justUnlocked = G.levelIdx+1; }
     if (G.levelIdx === last) {
       title = "SOBREVIVENTE DO APOCALIPSE!";
@@ -2712,7 +2741,9 @@ function finish(winner, reason) {
   if (!youWin) {
     text += ` Total da jornada: ${fmtVotes(G.votes)} votos. O placar recomeça; os votos da loja e suas skills ficam.`;
     G.runOver = true; resetItems();
+    if (LEVELS[G.levelIdx].boss) { BOSS_LOSSES++; text += ` Na próxima tentativa você terá apoio extra de ${Math.min(3, BOSS_LOSSES)} torcedor${BOSS_LOSSES>1?"es":""}.`; }
   } else if (G.levelIdx === bossIdx) {
+    BOSS_LOSSES = 0;
     text += ` Votos nesta fase: ${fmtVotes(levelVotes)}. TOTAL DA CAMPANHA: ${fmtVotes(G.votes)} votos! O NG+ foi desbloqueado.`;
   } else if (G.levelIdx === last) {
     text += ` Votos nesta fase: ${fmtVotes(levelVotes)}. TOTAL FINAL: ${fmtVotes(G.votes)} votos!`;
@@ -2720,6 +2751,7 @@ function finish(winner, reason) {
   } else {
     text += ` Votos nesta fase: ${fmtVotes(levelVotes)} · Total acumulado: ${fmtVotes(G.votes)}.`;
   }
+  if (capUp) text += ` ⭐ Suas skills agora podem chegar ao nível ${capUp}! Veja na loja.`;
   G.lastWin = youWin;
   saveGame();
   $("coffeeNudge").classList.toggle("hidden", !youWin);
@@ -2884,16 +2916,30 @@ function breakUmbrella(r, c) {
 function setupSkills() {
   clearUmbrellas();
   COST.radar = skillOn("instituto") ? 1 : 2;
-  G.energy[0] = skillOn("folego") ? 4 : 1; lastEnergy = G.energy[0];
-  G.superLeft = 3; G.empoLeft = 3; G.empoBonus = false; G.bonusPending = false;
+  G.energy[0] = skillOn("folego") ? lvVal("folego") : 1; lastEnergy = G.energy[0];
+  G.superLeft = skillOn("supertiro") ? lvVal("supertiro") : 0; G.empoLeft = skillOn("empolgacao") ? lvVal("empolgacao") : 0; G.empoBonus = false; G.bonusPending = false;
   if (skillOn("guardachuva")) {
     const cells = []; G.fleets[0].forEach(sh => sh.cells.forEach(c => cells.push(c)));
-    for (let i=0; i<3 && cells.length; i++) {
+    for (let i=0; i<lvVal("guardachuva") && cells.length; i++) {
       const [r,c] = cells.splice(rand(cells.length),1)[0], m = makeUmbrella(), p = tilePos(0,r,c);
       m.position.set(p.x, 0, p.z); umbGroup.add(m); G.umbrellas[r+","+c] = m; G.boards[0][r][c].umbrella = true;
     }
   }
-  if (OWNED.size) log("⭐ Skills ativas: " + SKILLS.filter(k => skillOn(k.id)).map(k => k.icon+" "+k.name).join(" · "));
+  if (OWNED.size) log("⭐ Skills ativas: " + SKILLS.filter(k => skillOn(k.id)).map(k => k.icon+" "+k.name+" "+skillLv(k.id)).join(" · "));
+  if (LEVELS[G.levelIdx].boss && BOSS_LOSSES > 0) {                  // alívio: a cada derrota seguida no chefão, +1 apoiador (máx. 3)
+    const n = Math.min(3, BOSS_LOSSES); let added = 0;
+    for (let i=0;i<n;i++) if (addSupportFan()) added++;
+    if (added) log(`🤝 Apoio da torcida: +${added} torcedor${added>1?"es":""} na sua arena depois das derrotas anteriores.`);
+  }
+}
+function addSupportFan() {
+  const free = []; for (let r=0;r<N;r++) for (let c=0;c<N;c++) { const k = G.boards[0][r][c]; if (k.ship < 0 && !k.shot) free.push([r,c]); }
+  if (!free.length) return false;
+  const [r,c] = free[rand(free.length)];
+  G.defs[0] = [...G.defs[0], { name:"Apoio da torcida", len:1 }];
+  G.fleets[0].push({ name:"Apoio da torcida", len:1, idx:-1, cells:[[r,c]], hits:0, sunk:false });
+  G.boards[0][r][c].ship = G.fleets[0].length - 1; addFan(0, r, c); refreshTile(0, r, c);
+  return true;
 }
 const superActive = () => skillOn("supertiro") && G.superLeft > 0;
 
@@ -3281,7 +3327,7 @@ let shopTab = "items";
 function refreshShopButtons() {
   const w = fmtVotes(WALLET);
   $("menuShop").textContent = `🛒 Loja · 🗳️ ${w}`;
-  $("menuSkills").textContent = `⭐ Skills (${OWNED.size}/${SKILLS.length})`;
+  $("menuSkills").textContent = `⭐ Skills (${OWNED.size}/${SKILLS.length}) · nv ${SKILLS.reduce((a,k) => a + skillLv(k.id), 0)}`;
   $("endShop").textContent = `🛒 Loja · 🗳️ ${w}`;
 }
 function renderShop(msg, ok) {
@@ -3296,14 +3342,22 @@ function renderShop(msg, ok) {
         <button class="btn primary" data-buy="item:${d.id}" ${full || WALLET < price ? "disabled" : ""}>${full ? "Estoque cheio" : WALLET < price ? "Votos insuficientes" : "Comprar +1"}</button></div>`;
     });
   } else {
+    const cap = skillCap();
     SKILLS.forEach(k => {
-      const own = skillOn(k.id);
-      h += `<div class="card2 ${own ? "owned" : ""}"><div class="ic">${k.icon}</div><b>${k.name}</b><div class="dsc">${k.desc}</div>
-        <div class="pr">${own ? "✔ Comprada" : "🗳️ " + fmtVotes(k.price)}</div>
-        <button class="btn primary" data-buy="skill:${k.id}" ${own || WALLET < k.price ? "disabled" : ""}>${own ? "Ativa" : WALLET < k.price ? "Votos insuficientes" : "Desbloquear"}</button></div>`;
+      const own = skillOn(k.id), lv = skillLv(k.id), nxt = lv + 1, max = lv >= 3;
+      const pips = [1,2,3].map(i => `<i style="display:inline-block;width:22px;height:8px;border-radius:3px;margin-right:3px;background:${i <= lv ? "var(--amarelo)" : "#fff3"}"></i>`).join("");
+      let btn, price = "", dsc = skillDesc(k, own ? lv : 1);
+      if (!own) { price = upgradePrice(k, 1); btn = `<button class="btn primary" data-buy="skill:${k.id}" ${WALLET < price ? "disabled" : ""}>${WALLET < price ? "Votos insuficientes" : "Desbloquear"}</button>`; }
+      else if (max) btn = `<button class="btn" disabled>Nível máximo</button>`;
+      else if (nxt > cap) btn = `<button class="btn" disabled>🔒 Nível ${nxt}: ${capReason(nxt)}</button>`;
+      else { price = upgradePrice(k, nxt); btn = `<button class="btn primary" data-buy="skill:${k.id}" ${WALLET < price ? "disabled" : ""}>${WALLET < price ? "Votos insuficientes" : "Evoluir para nível " + nxt}</button>`; }
+      h += `<div class="card2 ${own ? "owned" : ""}"><div class="ic">${k.icon}</div><b>${k.name}</b>
+        <div>${pips} <small>${own ? "Nível " + lv + "/3" : "Não comprada"}</small></div>
+        <div class="dsc">${dsc}${own && !max && nxt <= cap ? `<br><small>Próximo: ${skillDesc(k, nxt)}</small>` : ""}</div>
+        <div class="pr">${price ? "🗳️ " + fmtVotes(price) : (own ? "✔ Comprada" : "")}</div>${btn}</div>`;
     });
   }
-  $("shopBody").innerHTML = h + "</div>" + (shopTab === "skills" ? '<div class="note">Atenção: quanto mais votos você investe em skills, mais forte o inimigo fica (mais vida no chefão, reforços e bombas). Ameaça atual: <b>' + threatName() + '</b>.</div>' : "");
+  $("shopBody").innerHTML = h + "</div>" + (shopTab === "skills" ? '<div class="note">Comprar skills novas deixa o inimigo mais forte (mais vida no chefão, reforços e bombas), mas <b>evoluir o nível</b> só ajuda você. Ameaça atual: <b>' + threatName() + '</b>. Teto de nível agora: <b>' + skillCap() + '</b>' + (skillCap() < 3 ? ' (nível ' + (skillCap()+1) + ': ' + capReason(skillCap()+1) + ')' : '') + '.</div>' : "");
   const m = $("shopMsg"); m.textContent = msg || ""; m.style.color = ok === false ? "#ff8a7a" : "#4cd964";
 }
 function openShop(tab) { shopTab = tab || shopTab; renderShop(); $("shop").classList.remove("hidden"); }
@@ -3315,9 +3369,17 @@ function buy(kind, id) {
     WALLET -= ITEM_PRICE[id]; ITEMS[id]++; tone(660,.1,"square",.07); tone(990,.15,"square",.07,0,.09);
     renderShop(`Comprou +1 ${ITEM_DEFS.find(d => d.id === id).name}!`, true);
   } else {
-    const k = SKILLS.find(x => x.id === id); if (!k || skillOn(id) || WALLET < k.price) return;
-    WALLET -= k.price; OWNED.add(id); [523,659,784,1047].forEach((f,i) => tone(f,.15,"triangle",.09,0,i*.07));
-    renderShop(`Skill desbloqueada: ${k.name}!`, true);
+    const k = SKILLS.find(x => x.id === id); if (!k) return;
+    if (!skillOn(id)) {
+      const pr = upgradePrice(k, 1); if (WALLET < pr) return;
+      WALLET -= pr; OWNED.add(id); SKLV[id] = 1; [523,659,784,1047].forEach((f,i) => tone(f,.15,"triangle",.09,0,i*.07));
+      renderShop(`Skill desbloqueada: ${k.name}!`, true);
+    } else {
+      const nxt = skillLv(id) + 1, pr = upgradePrice(k, nxt);
+      if (nxt > 3 || nxt > skillCap() || WALLET < pr) return;
+      WALLET -= pr; SKLV[id] = nxt; [659,784,988,1319].forEach((f,i) => tone(f,.15,"triangle",.09,0,i*.07));
+      renderShop(`${k.name} evoluiu para o nível ${nxt}!`, true);
+    }
   }
   refreshShopButtons();
 }
@@ -3380,7 +3442,7 @@ function snapshotForSave() {
   return {
     v: SAVE_VERSION,
     wallet: inLevel && G.walletSnap !== undefined ? G.walletSnap : WALLET,
-    skills: [...OWNED],
+    skills: [...OWNED], sklv: Object.fromEntries([...OWNED].map(id => [id, skillLv(id)])), bossLosses: BOSS_LOSSES,
     items: inLevel && G.itemsSnap ? { ...G.itemsSnap } : { ...ITEMS },
     prog: { flavio: PROG.flavio, lula: PROG.lula },
     cleared: { flavio: CLEARED.flavio.map(Boolean), lula: CLEARED.lula.map(Boolean) },
@@ -3397,7 +3459,9 @@ function loadGame() {
     const d = JSON.parse(raw); if (!d || d.v !== SAVE_VERSION) return false;
     const num = (x, max) => Math.max(0, Math.min(max, Math.floor(Number(x) || 0)));
     WALLET = num(d.wallet, 1e9);
-    OWNED.clear(); (d.skills || []).forEach(id => { if (SKILLS.some(k => k.id === id)) OWNED.add(id); });
+    OWNED.clear(); Object.keys(SKLV).forEach(k => delete SKLV[k]);
+    (d.skills || []).forEach(id => { if (SKILLS.some(k => k.id === id)) { OWNED.add(id); SKLV[id] = Math.max(1, Math.min(3, Math.floor(Number(d.sklv && d.sklv[id]) || 1))); } });
+    BOSS_LOSSES = num(d.bossLosses, 99);
     Object.keys(ITEM_MAX).forEach(id => { ITEMS[id] = num(d.items && d.items[id], ITEM_MAX[id]); });
     ["flavio","lula"].forEach(sd => {
       PROG[sd] = Math.max(1, num(d.prog && d.prog[sd], LEVELS.length));
@@ -3409,7 +3473,7 @@ function loadGame() {
 }
 function resetSave() {
   storage.del(SAVE_KEY);
-  resetItems(); WALLET = 0; OWNED.clear();
+  resetItems(); WALLET = 0; OWNED.clear(); Object.keys(SKLV).forEach(k => delete SKLV[k]); BOSS_LOSSES = 0;
   PROG.flavio = PROG.lula = 1; CLEARED.flavio = []; CLEARED.lula = [];
 }
 ["pagehide","visibilitychange"].forEach(ev => addEventListener(ev, () => { if (ev !== "visibilitychange" || document.hidden) saveGame(); }));
@@ -3510,6 +3574,7 @@ function newGame(playerKey, levelIdx = 0) {
   G.enemy = { ...CHARS[TRACKS[playerKey][levelIdx]], boss: !!L.boss };
   G.ng = !!L.ng; G.ngz = L.ng ? { minions:new Set() } : null;
   G.defs = [FLEET, L.defs ? L.defs.map(d => ({...d})) : L.def.map(i => FLEET[i])];
+  if (L.ng) [3,2,3,2,3].slice(0, Math.min(4, Math.floor(levelBonus()/3.5))).forEach(len => G.defs[1].push({ name:"Legião veterana", len, kind:["zombie","soldier","monster"][len % 3] }));
   if (!L.boss) extraGroups(L.ng ? 6 : 8).forEach(len => G.defs[1].push({ name: L.ng ? "Tropa de reforço" : "Reforço adversário", len, kind: ["zombie","soldier","monster"][len % 3] }));
   G.boss = L.boss ? { hp:bossHp(), max:bossHp(), r:0, c:0, minions:new Set(), kind: G.enemy.camp === "lula" ? "lula" : "flavio" } : null;
   if (G.boss) G.defs[1] = [];                                      // chefão: sem torcida
