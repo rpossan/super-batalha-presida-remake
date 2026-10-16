@@ -1727,7 +1727,8 @@ function allSunk(b) {
    - Lula: com 5 seguidores, eles explodem 5 casas da sua arena
    - Flávio: com 5 seguidores, ele recarrega a vida toda
    ================================================================ */
-const BOSS_HP = 4, BOSS_MINIONS = 5, BOSS_BLAST = 5;
+/* equilíbrio definido por simulação (jogador competente x IA): ~60% de vitória, lutas de ~26 turnos */
+const BOSS_HP = 2, BOSS_MINIONS = 6, BOSS_BLAST = 4, BOSS_REST = .25;
 const minionName = () => G.boss.kind === "lula" ? "petista" : "bolsonarista";
 function placeBoss() {
   const B = G.boards[1], free = () => {
@@ -1902,10 +1903,10 @@ function startBattle() {
   if (G.runOver) { G.votes = 0; G.runOver = false; }       // nova jornada: placar recomeça do zero
   G.combo = 0; G.levelStartVotes = G.votes; shownVotes = G.votes;
   $("votesNum").textContent = fmtVotes(G.votes); renderCombo();
-  G.energy = [1, LEVELS[G.levelIdx].ai >= 4 ? 3 : 1]; lastEnergy = 1; $("log").innerHTML = "";
+  G.energy = [1, 1]; lastEnergy = 1; $("log").innerHTML = "";
   log(`⚔️ Fase ${G.level}: <b>${sname(0)}</b> contra <b>${G.enemy.name}</b> (${LEVELS[G.levelIdx].diff}).`);
   if (LEVELS[G.levelIdx].boss) setTimeout(() => toast(`CHEFÃO: ${G.enemy.short.toUpperCase()}!`, "#ff5a4a"), 300);
-  if (G.boss) log(`👑 ${G.enemy.short} é único, com ${G.boss.max} pontos de vida. A cada acerto ele muda de casa, escondido. Cada erro seu faz surgir um ${minionName()}; com ${BOSS_MINIONS}, ${G.boss.kind==="lula" ? "eles explodem 5 casas suas" : "ele recarrega a vida toda"}. Acerte os seguidores para eliminá-los!`);
+  if (G.boss) log(`👑 ${G.enemy.short} é único, com ${G.boss.max} pontos de vida. A cada acerto ele muda de casa, escondido. Cada erro seu faz surgir um ${minionName()}; com ${BOSS_MINIONS}, ${G.boss.kind==="lula" ? `eles explodem ${BOSS_BLAST} casas suas` : "ele recarrega a vida toda"}. Acerte os seguidores para eliminá-los!`);
   if (LEVELS[G.levelIdx].hazard === "bala") log("⚠️ Perigo do cenário: uma bala perdida cai do céu a cada turno, na arena de quem joga.");
   if (LEVELS[G.levelIdx].hazard === "fogo") log("🔥 Perigo do cenário: a cada 2 turnos o sol escaldante incendeia 4 casas de cada arena.");
   if (LEVELS[G.levelIdx].hazard === "flechas") log(`🏹 Perigo do cenário: ${ARROWS_PER_TURN} flechas caem da floresta a cada turno, na arena de quem joga.`);
@@ -1914,7 +1915,7 @@ function startBattle() {
   startTurn();
 }
 function startTurn() {
-  if (!G.firstTurn) G.energy[G.turn] = Math.min(MAX_ENERGY, G.energy[G.turn] + 1 + (G.turn===1 && LEVELS[G.levelIdx].ai >= 4 ? 1 : 0));   // chefão ganha energia extra
+  if (!G.firstTurn) G.energy[G.turn] = Math.min(MAX_ENERGY, G.energy[G.turn] + 1);
   G.firstTurn = false;
   G.timeLeft = TURN_TIME; G.power = "normal";
   const begin = () => {
@@ -1923,8 +1924,15 @@ function startTurn() {
       G.busy = false; toast("SUA VEZ!", SIDES[G.side[0]].cssAlt);
       setAction("🎯 SUA VEZ", SIDES[G.side[0]].cssAlt, "Clique numa casa do tabuleiro adversário · +1 ⚡ por turno");
     } else {
-      G.busy = true; setTimeout(cpuPlay, 1500);
-      setAction(`🤔 Vez de ${sname(1)}`, SIDES[G.side[1]].cssAlt, "O adversário está escolhendo o alvo…");
+      G.busy = true;
+      if (G.boss && Math.random() < BOSS_REST) {                       // o chefão descansa: não ataca neste turno
+        setAction(`😮‍💨 ${sname(1)} descansou`, "#9aa7b5", "O chefão perdeu o fôlego e não atacou neste turno");
+        log(`😮‍💨 ${sname(1)} descansou e não atacou.`);
+        setTimeout(() => { if (G.phase === "battle") nextTurn(); }, 1400);
+      } else {
+        setTimeout(cpuPlay, 1500);
+        setAction(`🤔 Vez de ${sname(1)}`, SIDES[G.side[1]].cssAlt, "O adversário está escolhendo o alvo…");
+      }
     }
     ui();
   };
@@ -2370,7 +2378,7 @@ function ui() {
       `<div class="${sh.sunk?"sunk":""}">${"●".repeat(sh.len-sh.hits)}${"○".repeat(sh.hits)} ${sh.name}</div>`).join("");
     $("fleetA").innerHTML = `<b style="color:${s0.cssAlt}">Sua torcida</b>${row(0)}`;
     $("fleetB").innerHTML = G.boss
-      ? `<b style="color:${s1.cssAlt}">👑 Chefão ${G.enemy.short}</b>❤ Vida: ${G.boss.hp}/${G.boss.max}<br>👤 ${G.boss.kind==="lula" ? "Petistas" : "Bolsonaristas"}: ${G.boss.minions.size}/${BOSS_MINIONS}<br><span style="opacity:.8">${G.boss.kind==="lula" ? "com 5: explodem 5 casas suas" : "com 5: recarrega a vida"}</span>`
+      ? `<b style="color:${s1.cssAlt}">👑 Chefão ${G.enemy.short}</b>❤ Vida: ${G.boss.hp}/${G.boss.max}<br>👤 ${G.boss.kind==="lula" ? "Petistas" : "Bolsonaristas"}: ${G.boss.minions.size}/${BOSS_MINIONS}<br><span style="opacity:.8">${G.boss.kind==="lula" ? `com ${BOSS_MINIONS}: explodem ${BOSS_BLAST} casas suas` : `com ${BOSS_MINIONS}: recarrega a vida`}</span>`
       : `<b style="color:${s1.cssAlt}">Torcida de ${G.enemy ? G.enemy.short : s1.short}</b>${row(1)}`;
   } else if (G.phase==="place") {
     $("fleetA").classList.add("hidden"); $("fleetB").classList.add("hidden");
