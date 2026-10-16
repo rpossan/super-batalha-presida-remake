@@ -1502,7 +1502,9 @@ function doRadar(targetB, r, c, who, cb) {
 function startBattle() {
   G.phase = "battle"; G.turn = 0; G.round = 1; G.power = "normal"; G.firstTurn = true;
   G.finished = false; G.matchEnd = Date.now() + MATCH_TIME*1000;
-  G.votes = 0; G.combo = 0; shownVotes = 0; $("votesNum").textContent = "0"; renderCombo();
+  if (G.runOver) { G.votes = 0; G.runOver = false; }       // nova jornada: placar recomeça do zero
+  G.combo = 0; G.levelStartVotes = G.votes; shownVotes = G.votes;
+  $("votesNum").textContent = fmtVotes(G.votes); renderCombo();
   G.energy = [1, G.level>=4 ? 3 : 1]; lastEnergy = 1; $("log").innerHTML = "";
   log(`⚔️ Fase ${G.level}: <b>${sname(0)}</b> contra <b>${G.enemy.name}</b> (${LEVELS[G.levelIdx].diff}).`);
   if (LEVELS[G.levelIdx].boss) setTimeout(() => toast(`CHEFÃO: ${G.enemy.short.toUpperCase()}!`, "#ff5a4a"), 300);
@@ -1668,11 +1670,21 @@ function finish(winner, reason) {
       btn = "Continuar ▶";
     }
   } else {
-    title = "DERROTA!";
+    title = "GAME OVER";
     text = `${G.enemy.name} (${G.enemy.party}) dominou a disputa ${G.scn.of} em ${rounds}. Reorganize a torcida e tente de novo!`;
     btn = "Tentar de novo ↻";
   }
-  text += ` Você somou ${fmtVotes(G.votes)} votos.`;
+  /* placar da jornada: acumula entre as fases até o game over ou até zerar o jogo */
+  const levelVotes = G.votes - (G.levelStartVotes || 0);
+  if (!youWin) {
+    text += ` Total da jornada: ${fmtVotes(G.votes)} votos. A contagem recomeça do zero.`;
+    G.runOver = true;
+  } else if (G.levelIdx === last) {
+    text += ` Votos nesta fase: ${fmtVotes(levelVotes)}. TOTAL DA CAMPANHA: ${fmtVotes(G.votes)} votos!`;
+    G.runOver = true;
+  } else {
+    text += ` Votos nesta fase: ${fmtVotes(levelVotes)} · Total acumulado: ${fmtVotes(G.votes)}.`;
+  }
   G.lastWin = youWin;
   setTimeout(() => {
     $("endTitle").textContent = title; $("endText").textContent = text; $("btnAgain").textContent = btn;
@@ -1881,7 +1893,9 @@ function buildMenu() {
   if (!menuSide) { wrap.classList.add("hidden"); return; }
   wrap.classList.remove("hidden");
   const done = CLEARED[menuSide].filter(Boolean).length;
-  $("levelsTitle").textContent = `2 · Trilha de ${CHARS[menuSide].short}: escolha a fase (${done}/${LEVELS.length} vencidas)`;
+  const run = G.runOver ? 0 : G.votes;
+  $("levelsTitle").textContent = `2 · Trilha de ${CHARS[menuSide].short}: escolha a fase (${done}/${LEVELS.length} vencidas)` +
+    (run > 0 ? ` · 🗳️ ${fmtVotes(run)} votos acumulados` : "");
   grid.innerHTML = "";
   LEVELS.forEach((L, i) => {
     const sc = SCENARIOS.find(x => x.id === L.scn), en = CHARS[TRACKS[menuSide][i]];
@@ -1931,6 +1945,8 @@ function newGame(playerKey, levelIdx = 0) {
   const L = LEVELS[levelIdx];
   G.side = [playerKey, other];
   G.levelIdx = levelIdx; G.level = levelIdx + 1; G.lastWin = false;
+  if (G.runOver) { G.votes = 0; G.runOver = false; }          // game over / campanha zerada: nova jornada
+  G.combo = 0; shownVotes = G.votes; $("votesNum").textContent = fmtVotes(G.votes); renderCombo();
   G.enemy = { ...CHARS[TRACKS[playerKey][levelIdx]], boss: !!L.boss };
   G.defs = [FLEET, L.def.map(i => FLEET[i])];
   G.phase = "place"; G.turn = 0; G.busy = false; G.horiz = true; G.power = "normal";

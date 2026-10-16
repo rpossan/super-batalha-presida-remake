@@ -20,7 +20,7 @@ https://rpossan.github.io/super-presida-batalha/
 - Em cada turno, arremesse um objeto de protesto (cone, tomate, bandeira, cavalete, chinelo, pedra ou ovo).
 - Energia: +1 por turno e +1 por torcedor atingido. Gaste em poderes:
   📊 Pesquisa (2) · 📣 Buzinaço/Comício (3) · 🏍️ Motociata / 🚌 Caravana (6).
-- Votos: cada acerto vale 100 pontos × combo (2x, 3x, 4x e, no 5º acerto seguido, 50x). Errar o tiro zera o combo.
+- Votos: cada acerto vale 100 pontos × combo (2x, 3x, 4x e, no 5º acerto seguido, 50x). Errar o tiro zera o combo. O placar de votos acumula entre as fases até o *game over* ou até zerar o jogo, quando mostra o total.
 - Sem limite de tempo, contador de rodadas; vence quem dispersar toda a torcida adversária.
 - Controles: mouse/toque · `R` gira · `1–4` poderes · `Esc` cancela. No celular a câmera acompanha o turno.
 
