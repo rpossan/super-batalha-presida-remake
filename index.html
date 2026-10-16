@@ -358,11 +358,13 @@ const CHARS = {
   hang:    { name:"Luciano Hang",        short:"Hang",     party:"Empresário",   camp:"flavio", skin:0xf2c9a5, hair:0xdcdcdc, hairStyle:"short" },
   marina:  { name:"Marina Silva",        short:"Marina",   party:"Rede",         camp:"lula",   skin:0xe0ac82, hair:0x3a2a1a, hairStyle:"bob" },
   salles:  { name:"Ricardo Salles",      short:"Salles",   party:"PL",           camp:"flavio", skin:0xf2c9a5, hair:0x2b1d14, hairStyle:"short" },
+  anitta:  { name:"Anitta",              short:"Anitta",   party:"Cantora",      camp:"lula",   skin:0xe0ac82, hair:0x5a2f1c, hairStyle:"long" },
+  carlos:  { name:"Carlos Bolsonaro",    short:"Carlos",   party:"PL",           camp:"flavio", skin:0xf2c9a5, hair:0x2b1d14, hairStyle:"short", beard:true, beardColor:0x3a2a20 },
 };
 /* adversários por fase, conforme o lado que você escolheu (o chefão é sempre o líder do outro lado) */
 const TRACKS = {
-  flavio: ["boulos","gleisi","moraes","felipe","marina","lula"],
-  lula:   ["nikolas","tarcisio","michelle","hang","salles","flavio"],
+  flavio: ["boulos","gleisi","moraes","felipe","marina","anitta","lula"],
+  lula:   ["nikolas","tarcisio","michelle","hang","salles","carlos","flavio"],
 };
 /* fases: cenário, dificuldade, tamanho da torcida adversária (índices de FLEET) e nível da IA */
 const LEVELS = [
@@ -371,6 +373,7 @@ const LEVELS = [
   { scn:"rio",      diff:"Difícil", ai:3, def:[0,1,2,4], hazard:"bala" },
   { scn:"sertao",   diff:"Muito difícil", ai:3, def:[0,1,2,3], hazard:"fogo" },
   { scn:"amazonia", diff:"Extremo", ai:3, def:[0,1,2,3,4], hazard:"flechas" },
+  { scn:"camboriu", diff:"Pré-chefão", ai:3, def:[0,1,2,3,4], calm:true },
   { scn:"brasilia", diff:"CHEFÃO",  ai:4, def:[0,1,2,3,4], boss:true },
 ];
 /* progresso só em memória: recarregar a página recomeça */
@@ -541,6 +544,13 @@ const SONGS = {
     bass:[1,0,0,0,0,0,2,0,1,0,0,0,0,0,2,0],
     melody: bars([69,0,0,72,74,0,72,0,69,0,0,0,67,0,69,0],[72,0,74,0,76,0,0,74,72,0,0,0,69,0,0,0],
                  [76,0,0,79,76,0,74,0,72,0,74,0,76,0,0,0],[74,0,72,0,69,0,67,0,69,0,0,0,69,0,0,0]) },
+  /* Balneário Camboriú: pop de verão, bossa leve em Sol maior */
+  camboriu: { bpm:112, chords:[43,40,48,50], kick:{f:120,g:50,d:.2,v:.9}, lead:{type:"triangle", filter:4200, dur:.16, vol:.2},
+    k:[1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0], s:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], h:[0,0,.7,0,0,0,.7,0,0,0,.7,0,0,0,.7,.4],
+    x:[1,0,0,1,0,0,1,0,0,0,1,0,0,1,0,0],
+    bass:[1,0,0,1,0,0,2,0,1,0,0,1,0,0,2,0],
+    melody: bars([74,0,71,0,74,0,79,0,76,0,74,0,71,0,69,0],[71,0,67,0,71,0,76,0,74,0,71,0,67,0,0,0],
+                 [72,0,76,0,79,0,76,0,72,0,76,0,74,0,72,0],[74,0,78,0,81,0,78,0,74,0,71,0,69,0,0,0]) },
   /* Brasília: marcha solene com fanfarra em Dó maior */
   brasilia: { bpm:108, chords:[48,53,55,48], kick:{f:130,g:50,d:.22,v:1}, lead:{type:"sawtooth", filter:2000, dur:.2, vol:.12},
     k:[1,0,0,0,0,0,1,0,1,0,0,0,0,0,1,0], s:[0,0,0,0,1,0,0,.5,0,0,0,0,1,0,.5,.5], h:[0,0,.7,0,0,0,.7,0,0,0,.7,0,0,0,.7,0], x:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -917,6 +927,53 @@ const SCENARIOS = [
         const w2 = box(.5,.04,.35, cores[(i+2)%4], 0,.05,-.3); w2.rotation.z = .3; g.add(w2);
         g.position.set(-40+i*11+Math.random()*4, 8+Math.random()*3, -20-Math.random()*10); E(g);
       }
+    } },
+
+  /* ---------- Santa Catarina: Balneário Camboriú ---------- */
+  { id:"camboriu", name:"Balneário Camboriú", short:"Camboriú", of:"de Balneário Camboriú", emoji:"🏖️", city:"Santa Catarina · SC",
+    thumb:"linear-gradient(170deg,#7fd0ff,#f2dca6 70%)", sky:0x79c8ff, fog:[0xc3e7ff,75,210], tiles:[0xcdb27a,0xbfa26a],
+    build() {
+      groundPlane(360,260,0xf0dba4,-.12,-26);                          // areia
+      E(box(360,.03,7,0xd9c18a, 0,-.1,-12));                            // areia molhada
+      const sea = new THREE.Mesh(new THREE.PlaneGeometry(360,70), LM(0x2fb4d6)); sea.rotation.x = -Math.PI/2; sea.position.set(0,-.09,-52); E(sea);
+      E(box(360,.05,1.4,0xffffff, 0,-.06,-16.4));                       // espuma
+      for (let i=0;i<14;i++) E(box(6+Math.random()*8,.04,.3,0xdff6ff, -60+i*9+Math.random()*4,-.05,-20-Math.random()*18));   // ondas
+      const winTex = (() => {
+        const c = document.createElement("canvas"); c.width = 64; c.height = 128;
+        const x = c.getContext("2d"); x.fillStyle = "#cfd8e3"; x.fillRect(0,0,64,128);
+        for (let j=0;j<16;j++) for (let i=0;i<6;i++) { x.fillStyle = Math.random()<.2 ? "#ffe9a0" : "#6e8fb0"; x.fillRect(4+i*10, 4+j*8, 7, 5); }
+        const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; return t;
+      })();
+      const tower = (x,z,w,h,d) => {                                    // prédios altos à beira-mar
+        const t = winTex.clone(); t.needsUpdate = true; t.repeat.set(Math.ceil(w/6), Math.ceil(h/10));
+        const m = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), new THREE.MeshLambertMaterial({ map:t, color:new THREE.Color().setHSL(.08+Math.random()*.1,.12,.78+Math.random()*.15) }));
+        m.position.set(x,h/2,z); E(m);
+      };
+      for (let i=0;i<11;i++) tower(-21-i*7.5-Math.random()*2, -9-Math.random()*14, 6+Math.random()*3, 26+Math.random()*30, 7+Math.random()*3);
+      for (let i=0;i<11;i++) tower(21+i*7.5+Math.random()*2, -9-Math.random()*14, 6+Math.random()*3, 26+Math.random()*30, 7+Math.random()*3);
+      for (let i=0;i<7;i++) tower(-24+i*8+Math.random()*2, 12+Math.random()*6, 5+Math.random()*2, 10+Math.random()*10, 5);   // prédios menores na orla
+      const cores = [0xff4d4d,0xffc933,0x2fb4d6,0xff7aa8,0x7ed957,0xffffff];
+      const sombrinha = (x,z,c) => {                                    // guarda-sol
+        E(cyl(.04,.04,2.1,0xeeeeee, x,1.05,z,6));
+        const top = new THREE.Mesh(new THREE.ConeGeometry(1.2,.55,10), LM(c)); top.position.set(x,2.25,z); E(top);
+        E(box(1.1,.08,.5,0xffffff, x+1.1,.12,z+.3));                    // espreguiçadeira
+      };
+      [[-14,10],[-20,6],[-27,11],[-35,4],[-9,13],[14,10],[21,7],[29,11],[36,4],[10,14],[-44,9],[45,8]].forEach(([x,z],i) => sombrinha(x,z,cores[i%cores.length]));
+      [[-17,-4],[-26,-6],[20,-5],[30,-7]].forEach(([x,z]) => {          // palmeiras
+        E(cyl(.15,.25,3.2,0x7a5a3a, x,1.6,z,6));
+        for (let k=0;k<6;k++) { const l = box(1.8,.06,.4,0x2f9a3f, x,3.3,z); l.rotation.y = k*Math.PI/3; l.rotation.z = .35; l.position.x += Math.cos(k*Math.PI/3)*.7; l.position.z -= Math.sin(k*Math.PI/3)*.7; E(l); }
+      });
+      E(box(2.2,2.6,2.2,0xffffff, -38,1.3,-6)); E(box(2.6,.35,2.6,0xd32f2f, -38,2.8,-6));        // posto salva-vidas
+      [-1,1].forEach(sx => E(cyl(.06,.06,2.4,0xeeeeee, 26+sx*3,1.2,5,6)));                          // rede de vôlei
+      E(box(6,1,.04,0xffffff, 26,1.9,5));
+      [[-18,-32,0],[16,-38,1],[40,-30,0]].forEach(([x,z,k]) => {                                      // veleiros
+        E(box(3.2,.5,1,0x7a5230, x,.1,z));
+        const sail = new THREE.Mesh(new THREE.ConeGeometry(1.1,3.2,3), LM(k?0xffd400:0xffffff)); sail.position.set(x,2.2,z); sail.rotation.y = Math.PI/2; E(sail);
+        E(cyl(.04,.04,3.6,0x333333, x,2,z,5));
+      });
+      const sun = new THREE.Mesh(new THREE.SphereGeometry(4.5,24,16), new THREE.MeshBasicMaterial({color:0xfffbe0})); sun.position.set(-22,16,-85); E(sun);
+      [[8,.2],[13,.1]].forEach(([r,o]) => { const h = new THREE.Mesh(new THREE.SphereGeometry(r,18,12), new THREE.MeshBasicMaterial({color:0xfff2b0, transparent:true, opacity:o, depthWrite:false})); h.position.copy(sun.position); E(h); });
+      for (let i=0;i<7;i++) { const c = ball(2.2+Math.random()*2.2,0xffffff, -60+i*18+Math.random()*6, 14+Math.random()*4, -60-Math.random()*20); c.scale.y = .45; E(c); }
     } },
 
   /* ---------- Brasília: Esplanada dos Ministérios ---------- */
@@ -2222,7 +2279,7 @@ function buildMenu() {
          <span class="info"><span class="tg">FASE ${i+1} · ${L.diff.toUpperCase()}</span><b>🔒 ???</b><small>Vença a fase ${i} para liberar</small></span>`
       : `<span class="face">${faceSVG(en, 54, L.boss)}</span>
          <span class="info"><span class="tg">FASE ${i+1} · ${L.diff.toUpperCase()}</span><b>${en.name}</b>
-         <small>${en.party} · ${sc.name}<br>👥 ${total} torcedores para dispersar${L.hazard === "bala" ? "<br>⚠️ Bala perdida a cada turno" : L.hazard === "fogo" ? "<br>🔥 Fogo queima 4 casas de cada arena a cada 2 turnos" : L.hazard === "flechas" ? `<br>🏹 ${ARROWS_PER_TURN} flechas por turno` : ""}</small></span>
+         <small>${en.party} · ${sc.name}<br>👥 ${total} torcedores para dispersar${L.hazard === "bala" ? "<br>⚠️ Bala perdida a cada turno" : L.hazard === "fogo" ? "<br>🔥 Fogo queima 4 casas de cada arena a cada 2 turnos" : L.hazard === "flechas" ? `<br>🏹 ${ARROWS_PER_TURN} flechas por turno` : L.calm ? "<br>🏖️ Cenário sem danos" : ""}</small></span>
          ${fresh ? '<span class="badge">NOVA!</span>' : cleared ? '<span class="badge">✔ VENCIDA</span>' : ""}`;
     if (!locked) d.onclick = () => startLevel(i);
     grid.appendChild(d);

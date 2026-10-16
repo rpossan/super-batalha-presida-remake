@@ -33,14 +33,15 @@ https://rpossan.github.io/super-presida-batalha/
 | 3 | Cristo Redentor (RJ) | Alexandre de Moraes | Michelle Bolsonaro | Difícil | ⚠️ bala perdida, 1 por turno |
 | 4 | Sertão Nordestino | Felipe Neto | Luciano Hang | Muito difícil | 🔥 fogo: 4 casas de cada arena a cada 2 turnos |
 | 5 | Floresta Amazônica | Marina Silva | Ricardo Salles | Extremo | 🏹 4 flechas por turno na arena de quem joga |
-| 6 | Esplanada dos Ministérios (DF) | **Lula (chefão)** | **Flávio (chefão)** | Chefão | — |
+| 6 | Balneário Camboriú (SC) | Anitta | Carlos Bolsonaro | Pré-chefão | 🏖️ sem danos |
+| 7 | Esplanada dos Ministérios (DF) | **Lula (chefão)** | **Flávio (chefão)** | Chefão | — |
 
 Perigos: na fase 3 uma bala perdida cai em 1 casa da arena de quem joga a cada turno; na fase 4 o sol incendeia 4 casas de cada arena a cada 2 turnos; na fase 5 caem 4 flechas por turno (cada uma pega 1 casa) na arena de quem joga. Cada casa atingida derruba o torcedor que estiver nela, sem dar votos.
 
 As fases e os adversários ficam em `LEVELS`, `TRACKS` e `CHARS` no `index.html`.
 
 ## Cenários
-Av. Paulista (SP), Aeroporto Salgado Filho (RS), Cristo Redentor (RJ), Sertão Nordestino, Floresta Amazônica e Esplanada dos Ministérios (DF).
+Av. Paulista (SP), Aeroporto Salgado Filho (RS), Cristo Redentor (RJ), Sertão Nordestino, Floresta Amazônica, Balneário Camboriú e Esplanada dos Ministérios (DF).
 Para criar um novo, adicione um objeto em `SCENARIOS` no `index.html`
 (há um comentário `ADICIONE NOVOS CENÁRIOS AQUI`); depois inclua o cenário em `LEVELS` para virar uma fase.
 
