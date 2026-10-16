@@ -168,6 +168,24 @@
   .lvl.fresh { border-color:var(--amarelo); animation:glow .9s infinite alternate; }
   .lvl.boss { border-color:#ff5a4a; }
   .lvl.boss .tg { color:#ff8a7a; }
+  .coffee-btn { font:inherit; font-weight:800; font-size:16px; color:#2a1a00; background:linear-gradient(#ffe36a,#ffb300); border:2px solid #fff6c4;
+                border-radius:999px; padding:10px 20px; cursor:pointer; box-shadow:0 4px 14px #ffb30055; transition:.15s; }
+  .coffee-btn:hover { transform:translateY(-2px) scale(1.03); box-shadow:0 6px 20px #ffb30099; }
+  #menuCoffee { margin:14px 0 4px; }
+  #coffeeNudge { margin:6px 0 14px; display:flex; flex-direction:column; align-items:center; gap:8px; }
+  #coffeeNudge b { font-size:18px; }
+  #coffeeModal { position:fixed; inset:0; z-index:30; display:flex; align-items:center; justify-content:center; padding:16px;
+                 background:rgba(3,6,10,.82); backdrop-filter:blur(4px); }
+  #coffeeModal .box { background:linear-gradient(#1c2638,#111823); border:2px solid #ffd23a; border-radius:18px; padding:20px; width:min(380px,100%);
+                      text-align:center; box-shadow:0 12px 40px #000a; max-height:100%; overflow:auto; position:relative; }
+  #coffeeModal h2 { margin:0 0 4px; font-size:22px; }
+  #coffeeModal p { margin:4px 0 10px; opacity:.9; font-size:14px; line-height:1.4; }
+  #coffeeModal .qr { background:#fff; border-radius:12px; padding:8px; width:min(230px,70vw); margin:6px auto 12px; line-height:0; }
+  #coffeeModal .qr svg { width:100%; height:auto; display:block; shape-rendering:crispEdges; }
+  #coffeeModal .key { font:700 15px ui-monospace,Consolas,monospace; background:#0007; border:1px dashed #ffd23a; border-radius:10px; padding:8px 10px; word-break:break-all; margin-bottom:10px; user-select:all; -webkit-user-select:all; }
+  #coffeeModal .row { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; }
+  #coffeeModal .close { position:absolute; top:8px; right:10px; background:none; border:0; color:#fff; font-size:22px; cursor:pointer; opacity:.8; }
+  #coffeeModal .ok { color:#4cd964; font-size:13px; min-height:18px; margin-top:8px; font-weight:700; }
   .hidden { display:none !important; }
   .rules { font-size:13px; opacity:.75; max-width:640px; }
   @media (max-width:700px) {
@@ -303,6 +321,7 @@
     <div class="step" id="levelsTitle">2 · Escolha a fase</div>
     <div id="levelGrid"></div>
   </div>
+  <button class="coffee-btn" id="menuCoffee">☕ Me pague um café</button>
   <p id="musicHint" class="rules" style="margin:6px 0 0">🎵 Toque ou clique em qualquer lugar para ouvir o tema</p>
   <div class="rules">
     Paródia bem-humorada: ninguém se machuca, quem é "atingido" só senta, cansado de tanto gritar. 🎺<br>
@@ -313,9 +332,28 @@
 <div id="endscreen" class="overlay abs hidden">
   <h1 id="endTitle"></h1>
   <p id="endText"></p>
+  <div id="coffeeNudge" class="hidden">
+    <b>Está curtindo? ☕</b>
+    <button class="coffee-btn" id="nudgeCoffee">Me pague um café</button>
+  </div>
   <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
     <button class="btn primary" id="btnAgain" style="font-size:18px;padding:12px 22px">Continuar</button>
     <button class="btn" id="btnMenu" style="font-size:18px;padding:12px 22px">Voltar ao menu</button>
+  </div>
+</div>
+
+<div id="coffeeModal" class="hidden" role="dialog" aria-modal="true" aria-label="Me pague um café">
+  <div class="box">
+    <button class="close" id="coffeeClose" aria-label="Fechar">✕</button>
+    <h2>☕ Me pague um café</h2>
+    <p>Curtiu o jogo? Ajude o desenvolvedor a continuar criando fases!<br>Aponte a câmera do banco para o QR code ou use a chave Pix.</p>
+    <div class="qr"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 53 53" class="segno"><path fill="#fff" d="M0 0h53v53h-53z"/><path class="qrline" stroke="#000" d="M2 2.5h7m1 0h1m1 0h1m1 0h1m1 0h1m2 0h4m3 0h1m3 0h1m1 0h4m2 0h2m2 0h1m1 0h7m-49 1h1m5 0h1m1 0h1m2 0h1m1 0h1m2 0h1m2 0h2m2 0h1m2 0h1m3 0h1m1 0h4m2 0h3m1 0h1m5 0h1m-49 1h1m1 0h3m1 0h1m2 0h2m1 0h1m1 0h4m2 0h3m2 0h1m2 0h1m3 0h1m2 0h3m1 0h2m1 0h1m1 0h3m1 0h1m-49 1h1m1 0h3m1 0h1m1 0h3m2 0h1m3 0h1m5 0h1m2 0h1m6 0h1m2 0h1m2 0h1m2 0h1m1 0h3m1 0h1m-49 1h1m1 0h3m1 0h1m8 0h2m2 0h1m2 0h6m1 0h1m1 0h2m2 0h1m1 0h1m4 0h1m1 0h3m1 0h1m-49 1h1m5 0h1m2 0h2m2 0h3m2 0h3m1 0h1m3 0h1m1 0h1m1 0h4m2 0h1m1 0h1m3 0h1m5 0h1m-49 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-41 1h3m2 0h4m1 0h2m1 0h2m3 0h1m1 0h1m2 0h1m4 0h3m-39 1h1m1 0h2m1 0h3m1 0h1m1 0h2m2 0h4m1 0h10m1 0h1m1 0h2m3 0h2m2 0h1m2 0h1m1 0h2m-48 1h1m1 0h1m3 0h1m6 0h1m2 0h2m2 0h1m3 0h1m2 0h1m1 0h1m2 0h1m2 0h1m2 0h1m1 0h3m1 0h1m-46 1h1m3 0h4m1 0h2m1 0h1m1 0h4m6 0h1m1 0h2m2 0h1m1 0h3m2 0h1m2 0h1m3 0h1m-40 1h1m1 0h3m1 0h1m1 0h1m6 0h4m1 0h1m2 0h1m5 0h4m1 0h2m3 0h1m1 0h2m-48 1h2m3 0h2m3 0h4m2 0h1m2 0h1m1 0h1m1 0h4m2 0h3m1 0h1m2 0h3m1 0h3m3 0h1m-45 1h4m2 0h1m1 0h1m3 0h2m1 0h1m2 0h1m2 0h1m2 0h1m1 0h2m8 0h1m2 0h1m2 0h1m3 0h1m-48 1h6m1 0h5m1 0h1m1 0h3m2 0h2m3 0h2m1 0h3m1 0h1m1 0h1m2 0h1m1 0h4m2 0h1m-47 1h1m1 0h2m4 0h1m1 0h2m1 0h1m7 0h1m3 0h3m2 0h4m1 0h1m3 0h1m1 0h2m1 0h2m2 0h1m-49 1h1m2 0h2m1 0h1m1 0h1m1 0h4m2 0h1m1 0h1m1 0h2m4 0h2m1 0h1m2 0h4m3 0h9m-47 1h1m1 0h2m5 0h1m1 0h1m1 0h1m1 0h2m6 0h1m3 0h1m2 0h2m1 0h2m1 0h1m2 0h1m2 0h2m1 0h3m-49 1h4m1 0h2m1 0h1m1 0h1m3 0h1m1 0h4m4 0h1m2 0h3m1 0h1m1 0h6m2 0h1m1 0h1m1 0h1m2 0h1m-38 1h3m1 0h2m1 0h1m1 0h2m4 0h1m3 0h2m4 0h1m1 0h4m1 0h1m3 0h1m-48 1h2m1 0h5m2 0h1m1 0h2m6 0h4m1 0h1m1 0h2m1 0h2m2 0h1m4 0h1m3 0h1m1 0h1m-44 1h1m4 0h2m1 0h3m1 0h1m1 0h2m3 0h2m4 0h5m1 0h1m1 0h2m2 0h1m2 0h1m2 0h1m1 0h1m-48 1h1m3 0h6m1 0h3m1 0h2m1 0h3m1 0h8m1 0h4m2 0h1m2 0h6m1 0h1m-47 1h4m3 0h1m2 0h2m3 0h1m2 0h1m1 0h2m3 0h2m1 0h1m2 0h5m3 0h1m3 0h1m1 0h1m1 0h1m-47 1h1m1 0h1m1 0h1m1 0h1m2 0h1m1 0h1m2 0h7m1 0h1m1 0h2m1 0h2m2 0h1m2 0h2m1 0h2m1 0h1m1 0h1m1 0h1m1 0h1m-49 1h3m1 0h1m3 0h2m3 0h1m2 0h2m2 0h1m1 0h1m3 0h2m1 0h1m8 0h1m1 0h1m3 0h2m2 0h1m-49 1h2m1 0h8m6 0h2m2 0h6m3 0h2m1 0h1m1 0h2m1 0h7m1 0h1m-47 1h3m2 0h1m1 0h1m4 0h1m2 0h3m4 0h2m3 0h4m2 0h1m1 0h1m2 0h1m2 0h1m3 0h1m-44 1h2m1 0h3m2 0h2m2 0h1m1 0h1m3 0h3m3 0h1m2 0h1m1 0h2m1 0h2m1 0h2m2 0h1m2 0h3m-47 1h1m1 0h1m1 0h2m2 0h1m2 0h1m3 0h4m1 0h1m5 0h1m2 0h1m1 0h1m1 0h2m1 0h2m3 0h2m2 0h4m-49 1h1m1 0h2m2 0h1m3 0h2m2 0h2m1 0h1m2 0h6m3 0h3m1 0h1m1 0h4m1 0h3m1 0h3m1 0h1m-48 1h1m1 0h1m3 0h1m2 0h2m1 0h2m1 0h4m1 0h3m2 0h3m2 0h1m2 0h1m1 0h1m1 0h2m1 0h1m2 0h2m1 0h2m-49 1h4m2 0h1m1 0h1m4 0h3m1 0h3m1 0h1m2 0h2m2 0h1m2 0h1m5 0h1m6 0h1m1 0h3m-48 1h2m1 0h2m7 0h1m1 0h1m3 0h1m4 0h1m5 0h1m1 0h2m2 0h1m5 0h1m2 0h1m1 0h1m-45 1h1m2 0h1m1 0h2m1 0h2m6 0h1m2 0h1m1 0h1m1 0h2m2 0h1m3 0h2m1 0h1m3 0h1m2 0h1m2 0h1m-48 1h2m2 0h2m1 0h3m4 0h1m1 0h2m1 0h1m1 0h4m1 0h1m1 0h2m2 0h1m1 0h4m1 0h5m2 0h1m1 0h1m-49 1h4m2 0h1m1 0h2m1 0h2m4 0h5m1 0h1m1 0h1m3 0h1m3 0h1m2 0h2m1 0h2m1 0h3m1 0h3m-49 1h1m2 0h2m4 0h2m1 0h1m1 0h1m1 0h3m1 0h1m2 0h1m2 0h3m6 0h2m1 0h1m2 0h1m2 0h2m2 0h1m-48 1h1m3 0h4m2 0h2m3 0h1m1 0h2m1 0h2m4 0h1m3 0h1m1 0h1m1 0h1m2 0h2m3 0h1m1 0h1m-45 1h3m6 0h2m1 0h1m2 0h1m1 0h1m2 0h2m5 0h2m2 0h2m7 0h1m3 0h1m1 0h2m-49 1h3m3 0h2m1 0h1m2 0h2m1 0h1m1 0h1m1 0h1m2 0h5m4 0h5m1 0h1m2 0h7m-39 1h1m3 0h2m2 0h1m1 0h2m1 0h2m3 0h3m5 0h3m2 0h2m3 0h1m1 0h3m-49 1h7m1 0h1m1 0h1m2 0h3m1 0h1m3 0h2m1 0h1m1 0h2m1 0h1m1 0h4m1 0h1m1 0h3m1 0h1m1 0h2m2 0h1m-49 1h1m5 0h1m1 0h1m1 0h5m2 0h1m2 0h1m1 0h1m3 0h2m1 0h1m1 0h1m4 0h1m3 0h1m3 0h1m3 0h1m-49 1h1m1 0h3m1 0h1m2 0h1m2 0h1m3 0h2m4 0h7m1 0h2m5 0h1m2 0h6m-46 1h1m1 0h3m1 0h1m1 0h3m5 0h3m3 0h1m2 0h2m1 0h4m7 0h1m1 0h5m2 0h1m-49 1h1m1 0h3m1 0h1m1 0h4m2 0h1m4 0h2m2 0h1m3 0h3m2 0h2m1 0h1m1 0h1m1 0h1m4 0h1m1 0h3m-49 1h1m5 0h1m2 0h3m1 0h1m5 0h1m1 0h1m2 0h1m1 0h2m3 0h2m2 0h2m2 0h2m2 0h4m-47 1h7m1 0h1m2 0h1m2 0h1m1 0h4m4 0h1m2 0h1m5 0h2m1 0h6m5 0h2"/></svg></div>
+    <div class="key" id="pixKey">9a706f09-753c-4143-b055-197c082e9201</div>
+    <div class="row">
+      <button class="btn primary" id="copyKey">Copiar chave Pix</button>
+      <button class="btn" id="copyCode">Copiar “copia e cola”</button>
+    </div>
+    <div class="ok" id="coffeeOk"></div>
   </div>
 </div>
 
@@ -2247,6 +2285,7 @@ function finish(winner, reason) {
     text += ` Votos nesta fase: ${fmtVotes(levelVotes)} · Total acumulado: ${fmtVotes(G.votes)}.`;
   }
   G.lastWin = youWin;
+  $("coffeeNudge").classList.toggle("hidden", !youWin);
   setTimeout(() => {
     $("endTitle").textContent = title; $("endText").textContent = text; $("btnAgain").textContent = btn;
     $("endscreen").classList.remove("hidden");
@@ -2436,6 +2475,29 @@ $("btnStart").onclick = startBattle;
 $("mute").onclick = () => { muted = !muted; $("mute").textContent = muted ? "🔇" : "🔊"; musicVol(); };
 $("musicBtn").onclick = () => { Music.on = !Music.on; $("musicBtn").classList.toggle("off", !Music.on); musicVol(); };
 cv.addEventListener("contextmenu", e => { e.preventDefault(); if (G.phase==="place") { G.horiz = !G.horiz; ui(); updateHoverPreview(); } });
+/* ---- me pague um café (Pix) ---- */
+const PIX_KEY = "9a706f09-753c-4143-b055-197c082e9201";
+const PIX_CODE = "00020101021126580014BR.GOV.BCB.PIX01369a706f09-753c-4143-b055-197c082e92015204000053039865802BR5914RONALDO POSSAN6006BRASIL62070503***6304258C";
+function openCoffee() { $("coffeeOk").textContent = ""; $("coffeeModal").classList.remove("hidden"); }
+function closeCoffee() { $("coffeeModal").classList.add("hidden"); }
+function copyText(text, okMsg) {
+  const done = () => { $("coffeeOk").textContent = okMsg; };
+  const fallback = () => {
+    try {
+      const ta = document.createElement("textarea"); ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select(); document.execCommand("copy"); ta.remove(); done();
+    } catch (e) { $("coffeeOk").textContent = "Selecione e copie a chave acima."; }
+  };
+  if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+}
+$("menuCoffee").onclick = openCoffee;
+$("nudgeCoffee").onclick = openCoffee;
+$("coffeeClose").onclick = closeCoffee;
+$("coffeeModal").addEventListener("pointerdown", e => { if (e.target === $("coffeeModal")) closeCoffee(); });
+addEventListener("keydown", e => { if (e.key === "Escape" && !$("coffeeModal").classList.contains("hidden")) closeCoffee(); });
+$("copyKey").onclick = () => copyText(PIX_KEY, "Chave Pix copiada! ☕");
+$("copyCode").onclick = () => copyText(PIX_CODE, "Código Pix copiado! Cole no app do seu banco. ☕");
+
 const hexCss = n => "#" + n.toString(16).padStart(6,"0");
 /* rosto estilizado do personagem para os cartões de fase */
 function faceSVG(ch, size, boss) {
