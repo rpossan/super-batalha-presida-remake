@@ -52,6 +52,7 @@ quando fazer uma pesquisa para descobrir onde o adversário se esconde e qual po
 | 🌎 **7 cenários do Brasil** | Av. Paulista, Aeroporto de Porto Alegre, Cristo Redentor, Sertão, Amazônia, Balneário Camboriú e Praça dos Três Poderes. |
 | ⚠️ **Perigos de cenário** | Bala perdida, fogo no sertão e chuva de flechas na floresta, em quantidade equilibrada ao nível. |
 | 👑 **Chefões únicos** | Sem torcida, com pontos de vida, que mudam de casa a cada acerto e reagem aos seus erros. |
+| 🛒 **Loja e skills** | Gaste seus votos em itens e desbloqueie skills permanentes: Empolgação, Super tiro, Guarda-chuva e mais. |
 | 🎒 **Itens da campanha** | Remédio (revive um torcedor), Fúria (turnos seguidos) e Reforço (invoca um torcedor). Estoque limitado para o jogo todo: acabou, já era. |
 | 🏆 **Votos e recorde** | Placar acumulado entre as fases, com combo e recorde pessoal. |
 | 🎵 **Trilha sonora própria** | Uma música diferente por cenário (samba, baião, milonga, tambores, marcha…), gerada por código. |
@@ -135,6 +136,38 @@ créditos rolando e o QR code do Pix.
 | 🏍️ Motociata / 🚌 Caravana | 6 | linha inteira / coluna inteira |
 
 Energia: **+1 por turno** e **+1 por torcedor atingido**. No celular, a câmera acompanha o turno.
+
+### 🛒 Loja e skills
+
+No menu principal e na tela de fim de fase há o botão **🛒 Loja** (e **⭐ Skills**). Os votos que você ganha acertando alvos
+viram **moeda**: gaste em itens ou desbloqueie skills permanentes. O placar da jornada continua separado (game over zera o
+placar, mas **os votos da loja e as skills ficam**).
+
+<p align="center"><img src="docs/img/loja_skills.png" alt="Loja de skills" width="640"></p>
+
+**Itens** (gastam e acabam; o game over repõe o estoque inicial)
+
+| Item | Preço | Estoque máx. |
+|---|---|---|
+| 💊 Remédio | 1.000 | 8 |
+| 🥫 Fúria | 3.000 | 5 |
+| 📢 Reforço | 1.500 | 6 |
+
+**Skills** (compra única, valem para o resto da sessão)
+
+| Skill | Preço | Efeito |
+|---|---|---|
+| ⚡ Fôlego de campanha | 3.000 | começa cada fase com 4 de energia (em vez de 1) |
+| 📊 Instituto de pesquisa | 4.000 | a Pesquisa custa 1 de energia (em vez de 2) |
+| ☂️ Guarda-chuva | 6.000 | 3 torcedores começam cada fase protegidos; o adversário gasta um tiro para quebrar a proteção |
+| 💥 Super tiro | 8.000 | o tiro comum atinge 4 casas (2×2), até 3 vezes por fase |
+| 🎉 Empolgação | 10.000 | ao acertar, ganha um turno extra (1 por turno), até 3 vezes por fase |
+
+<p align="center"><img src="docs/img/skills_batalha.png" alt="Batalha com skills ativas" width="760"></p>
+
+**Equilíbrio:** calibrado por simulação do chefão final (jogador competente). Sem skills, ~59% de vitória; cada skill
+sozinha leva a ~64–73%. Super tiro e Empolgação, sem limite, passavam de 88%, por isso têm 3 usos por fase. Para o
+jogo não ficar fácil com todas as skills (~93%), **o chefão ganha +1 de vida com 2 skills e +2 com 5 skills**.
 
 ### ⏸ Pausa e modo desenvolvedor
 

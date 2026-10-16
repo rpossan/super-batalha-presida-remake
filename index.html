@@ -224,6 +224,22 @@
   .item .qty { position:absolute; top:-7px; right:-6px; background:var(--amarelo); color:#222; font-weight:900; font-size:12px; border-radius:999px; min-width:22px; padding:1px 6px; text-align:center; box-shadow:0 2px 6px #0008; }
   .item.empty { opacity:.35; text-decoration:line-through; }
   .item kbd { margin-left:2px; }
+  #shop { position:fixed; inset:0; z-index:32; display:flex; align-items:center; justify-content:center; padding:12px; background:rgba(3,6,10,.86); backdrop-filter:blur(4px); }
+  #shop .box { background:linear-gradient(#1c2638,#111823); border:2px solid #ffd23a; border-radius:18px; padding:16px; width:min(760px,100%); max-height:100%; overflow:auto; box-shadow:0 12px 40px #000a; position:relative; }
+  #shop h2 { margin:0; font-size:22px; } #shop .top { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:10px; }
+  #shop .wallet { margin-left:auto; font:900 20px/1 Impact,"Arial Black",sans-serif; background:#000a; border:2px solid var(--amarelo); border-radius:10px; padding:6px 12px; }
+  #shop .close { position:static; background:#2a3342; border:1px solid #fff4; color:#fff; border-radius:10px; font-size:18px; padding:6px 12px; cursor:pointer; }
+  #shop .tabs { display:flex; gap:8px; margin-bottom:12px; } #shop .tab { flex:1; padding:9px; font-weight:800; }
+  #shop .tab.on { background:var(--amarelo); color:#222; border-color:#fff; }
+  #shop .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:10px; }
+  #shop .card2 { background:#0c121c; border:1px solid #fff3; border-radius:14px; padding:12px; display:flex; flex-direction:column; gap:6px; text-align:left; }
+  #shop .card2 .ic { font-size:30px; line-height:1; } #shop .card2 .ic svg { width:38px; height:38px; }
+  #shop .card2 b { font-size:16px; } #shop .card2 .dsc { font-size:12.5px; opacity:.85; line-height:1.4; flex:1; }
+  #shop .card2 .pr { font-weight:900; color:var(--amarelo); } #shop .card2.owned { border-color:#4cd964; }
+  #shop .msg { min-height:20px; margin-top:10px; font-weight:700; font-size:13px; text-align:center; }
+  #shop .note { font-size:12px; opacity:.7; text-align:center; margin-top:8px; }
+  .shoprow { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin:10px 0 2px; }
+  .shoprow .btn { font-size:15px; padding:10px 16px; border-color:var(--amarelo); }
   #pauseModal { position:fixed; inset:0; z-index:35; display:flex; align-items:center; justify-content:center; padding:16px; background:rgba(3,6,10,.78); backdrop-filter:blur(4px); }
   #pauseModal .box { background:linear-gradient(#1c2638,#111823); border:2px solid #fff4; border-radius:18px; padding:20px; width:min(340px,100%); text-align:center; box-shadow:0 12px 40px #000a; }
   #pauseModal h2 { margin:0 0 4px; } #pauseModal p { margin:4px 0 12px; opacity:.85; font-size:14px; } #pauseModal p.small { font-size:12px; opacity:.65; margin:12px 0 0; }
@@ -410,6 +426,7 @@
     <div class="step" id="levelsTitle">2 · Escolha a fase</div>
     <div id="levelGrid"></div>
   </div>
+  <div class="shoprow"><button class="btn" id="menuShop">🛒 Loja</button><button class="btn" id="menuSkills">⭐ Skills</button></div>
   <button class="coffee-btn" id="menuCoffee">☕ Me pague um café</button>
   <button class="btn" id="devBtn" style="margin-top:6px;font-size:12px;opacity:.85"></button>
   <p id="musicHint" class="rules" style="margin:6px 0 0">🎵 Toque ou clique em qualquer lugar para ouvir o tema</p>
@@ -428,6 +445,7 @@
   </div>
   <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
     <button class="btn primary" id="btnAgain" style="font-size:18px;padding:12px 22px">Continuar</button>
+    <button class="btn" id="endShop" style="font-size:18px;padding:12px 22px">🛒 Loja</button>
     <button class="btn" id="btnMenu" style="font-size:18px;padding:12px 22px">Voltar ao menu</button>
   </div>
 </div>
@@ -453,6 +471,16 @@
     <div class="ok" id="endOk" style="min-height:20px;margin-top:8px;font-weight:700;color:#4cd964"></div>
   </div>
   <button id="endSkip">Pular ▶</button>
+</div>
+
+<div id="shop" class="hidden" role="dialog" aria-modal="true" aria-label="Loja">
+  <div class="box">
+    <div class="top"><h2>🛒 Loja</h2><div class="wallet" id="shopWallet"></div><button class="close" id="shopClose">✕ Fechar</button></div>
+    <div class="tabs"><button class="btn tab" id="tabItems">🎒 Itens</button><button class="btn tab" id="tabSkills">⭐ Skills</button></div>
+    <div id="shopBody"></div>
+    <div class="msg" id="shopMsg"></div>
+    <div class="note">Os votos que você ganha acertando alvos viram moeda. Itens gastam e acabam; skills ficam para sempre (nesta aba).</div>
+  </div>
 </div>
 
 <div id="pauseModal" class="hidden" role="dialog" aria-modal="true" aria-label="Pausa">
@@ -552,6 +580,21 @@ const ITEM_CAP   = { revive:2, furia:1, reforco:1 };
 const FURIA_EXTRA = 2;                       // turnos seguidos além do atual
 const ITEMS = { ...ITEM_START };
 const resetItems = () => Object.assign(ITEMS, ITEM_START);
+
+/* ---- loja: votos viram moeda. Itens e skills ficam na memória da aba ---- */
+const ITEM_PRICE = { revive:1000, furia:3000, reforco:1500 };
+const ITEM_MAX   = { revive:8, furia:5, reforco:6 };
+const SKILLS = [
+  { id:"folego",      icon:"⚡", name:"Fôlego de campanha",   price:3000,  desc:"Você começa cada fase com 4 de energia (em vez de 1)." },
+  { id:"instituto",   icon:"📊", name:"Instituto de pesquisa", price:4000,  desc:"A Pesquisa custa só 1 de energia (em vez de 2)." },
+  { id:"guardachuva", icon:"☂️", name:"Guarda-chuva",          price:6000,  desc:"3 torcedores seus começam cada fase protegidos por um guarda-chuva: o adversário precisa quebrá-lo (gastando um tiro) antes de atingir o torcedor." },
+  { id:"supertiro",   icon:"💥", name:"Super tiro",            price:8000,  desc:"O tiro comum atinge 4 casas (quadrado 2×2). Até 3 vezes por fase." },
+  { id:"empolgacao",  icon:"🎉", name:"Empolgação",            price:10000, desc:"Ao acertar um alvo, você ganha um turno extra (1 por turno). Até 3 vezes por fase." },
+];
+let WALLET = DEV_MODE ? 99999 : 0;            // votos gastáveis (os votos do placar continuam separados)
+const OWNED = new Set();                       // skills compradas (permanentes na sessão)
+const skillOn = id => OWNED.has(id);
+const bossHp = () => 2 + (OWNED.size >= 2 ? 1 : 0) + (OWNED.size >= 5 ? 1 : 0);   // o chefão acompanha o seu arsenal
 const ARROWS_PER_TURN = 4;
 const COST = { normal:0, radar:2, cross:3, ultra:6 };
 const MAX_ENERGY = 9;
@@ -1779,7 +1822,7 @@ function pattern(power, r, c) {
     case "ultra":
       if (ultra==="row") for (let cc=0;cc<N;cc++) add(r,cc); else for (let rr=0;rr<N;rr++) add(rr,c);
       break;
-    default: add(r,c);
+    default: add(r,c); if (G.turn===0 && superActive()) { add(r,c+1); add(r+1,c); add(r+1,c+1); }
   }
   return out;
 }
@@ -1823,6 +1866,7 @@ function captainReact(b, kind) {
 /* aplica um tiro numa célula. Retorna "hit" | "miss" | "sunk" */
 function applyShot(b, r, c, noCone) {
   const cell = G.boards[b][r][c];
+  if (b === 0 && cell.umbrella && !cell.shot) { cell.umbrella = false; breakUmbrella(r, c); return "block"; }
   if (G.boss && b === 1) {                                           // arena do chefão: sem torcida
     if (cell.minion) { removeMinion(r, c, true); sfx.hit(); return "hit"; }
     if (cell.boss) {
@@ -1867,7 +1911,7 @@ function allSunk(b) {
    - Flávio: com 5 seguidores, ele recarrega a vida toda
    ================================================================ */
 /* equilíbrio definido por simulação (jogador competente x IA): ~60% de vitória, lutas de ~26 turnos */
-const BOSS_HP = 2, BOSS_MINIONS = 6, BOSS_BLAST = 4, BOSS_REST = .25;
+const BOSS_MINIONS = 6, BOSS_BLAST = 4, BOSS_REST = .25;
 const minionName = () => G.boss.kind === "lula" ? "petista" : "bolsonarista";
 function placeBoss() {
   const B = G.boards[1], free = () => {
@@ -1946,7 +1990,7 @@ function bossBlast(done) {
       tone(70,.5,"sawtooth",.14,-30); tone(160,.3,"square",.09,-100);
       picks.forEach(([r,c]) => {
         const p = tilePos(0,r,c), cell = G.boards[0][r][c];
-        if (cell.ship >= 0 && !cell.shot) { applyShot(0, r, c, true); hit++; }
+        if (cell.ship >= 0 && !cell.shot) { if (applyShot(0, r, c, true) !== "block") hit++; }
         else if (!cell.shot) { cell.shot = true; refreshTile(0, r, c); }
         addDecal(p.x, p.z, 0x1b120a, .4, .03);
         burst(p, [0xff7a1a, 0xffd23a, 0xff3b30, 0x555555], 18, 5);
@@ -1973,7 +2017,7 @@ function resolveShots(targetB, cells, who, powerLabel, opts = {}) {
     maxT = Math.max(maxT, tm);
     setTimeout(() => {
       const res = applyShot(targetB, r, c, opts.noCone);
-      if (res !== "miss") { hits++; if (who === 0) gained += registerHit(); }
+      if (res !== "miss" && res !== "block") { hits++; if (who === 0) gained += registerHit(); }
       if (res === "sunk") {
         const sh = G.boards[targetB][r][c].ship; sunkNames.push(G.fleets[targetB][sh].name);
       }
@@ -2008,6 +2052,7 @@ function resolveShots(targetB, cells, who, powerLabel, opts = {}) {
     }
     ui();
     if (allSunk(targetB)) return finish(who);
+    if (who === 0 && hits > 0 && skillOn("empolgacao") && G.empoLeft > 0 && !G.empoBonus) { G.empoLeft--; G.bonusPending = true; }
     const proceed = () => setTimeout(nextTurn, 900);
     if (G.boss && who === 0 && G.boss.minions.size >= BOSS_MINIONS) bossPower(proceed); else proceed();
   }, total);
@@ -2039,11 +2084,12 @@ function doRadar(targetB, r, c, who, cb) {
 function startBattle() {
   G.phase = "battle"; G.turn = 0; G.round = 1; G.power = "normal"; G.firstTurn = true;
   G.finished = false; G.matchEnd = Date.now() + MATCH_TIME*1000;
-  G.furia = 0; G.itemUse = { revive:0, furia:0, reforco:0 }; G.itemsSnap = { ...ITEMS };
-  if (G.runOver) { G.votes = 0; G.runOver = false; resetItems(); }       // nova jornada: placar e itens recomeçam
+  G.furia = 0; G.repeatKind = "furia"; G.itemUse = { revive:0, furia:0, reforco:0 }; G.itemsSnap = { ...ITEMS };
+  if (G.runOver) { G.votes = 0; G.runOver = false; }       // nova jornada: o placar recomeça (itens já foram repostos no fim da anterior)
   G.combo = 0; G.levelStartVotes = G.votes; shownVotes = G.votes;
   $("votesNum").textContent = fmtVotes(G.votes); renderCombo();
-  G.energy = [1, 1]; lastEnergy = 1; $("log").innerHTML = "";
+  G.energy = [1, 1]; lastEnergy = 1; $("log").innerHTML = ""; setupSkills();
+  G.walletSnap = WALLET;
   log(`⚔️ Fase ${G.level}: <b>${sname(0)}</b> contra <b>${G.enemy.name}</b> (${LEVELS[G.levelIdx].diff}).`);
   if (LEVELS[G.levelIdx].boss) setTimeout(() => toast(`CHEFÃO: ${G.enemy.short.toUpperCase()}!`, "#ff5a4a"), 300);
   if (G.boss) log(`👑 ${G.enemy.short} é único, com ${G.boss.max} pontos de vida. A cada acerto ele muda de casa, escondido. Cada erro seu faz surgir um ${minionName()}; com ${BOSS_MINIONS}, ${G.boss.kind==="lula" ? `eles explodem ${BOSS_BLAST} casas suas` : "ele recarrega a vida toda"}. Acerte os seguidores para eliminá-los!`);
@@ -2055,6 +2101,7 @@ function startBattle() {
   startTurn();
 }
 function startTurn(repeat) {
+  if (!repeat) G.empoBonus = false;
   if (!G.firstTurn) G.energy[G.turn] = Math.min(MAX_ENERGY, G.energy[G.turn] + 1);
   G.firstTurn = false;
   G.timeLeft = TURN_TIME; G.power = "normal"; G.panelOpen = false;
@@ -2062,7 +2109,10 @@ function startTurn(repeat) {
     if (G.phase !== "battle") return;
     if (G.turn===0) {
       G.busy = false;
-      if (repeat) {
+      if (repeat && G.repeatKind === "empo") {
+        toast("🎉 EMPOLGAÇÃO! DE NOVO!", "#ffdf00");
+        setAction("🎉 EMPOLGAÇÃO: JOGA DE NOVO!", "#ffdf00", `Turno extra por acertar · restam ${G.empoLeft} nesta fase`);
+      } else if (repeat) {
         toast("FÚRIA! DE NOVO!", "#32a8ff");
         setAction("🥫 FÚRIA: SUA VEZ DE NOVO!", "#32a8ff", `Turnos contínuos · restam ${G.furia} extra${G.furia===1?"":"s"}`);
       } else {
@@ -2168,7 +2218,7 @@ function arrowRain(b, done) {
         o.done = true; o.ret.material.opacity = 0;
         o.a.position.set(o.p.x, .1, o.p.z); markerGroup.add(o.a);                 // a flecha fica cravada na casa
         const cell = G.boards[b][o.r][o.c];
-        if (cell.ship >= 0 && !cell.shot) { const res = applyShot(b, o.r, o.c, true); hits.n++; if (res === "sunk") hits.sunk++; }
+        if (cell.ship >= 0 && !cell.shot) { const res = applyShot(b, o.r, o.c, true); if (res !== "block") hits.n++; if (res === "sunk") hits.sunk++; }
         else if (!cell.shot) { cell.shot = true; refreshTile(b, o.r, o.c); sfx.miss(); }
         addDecal(o.p.x, o.p.z, 0x2a1d10, .16, .03);
         burst(o.p, [0x3f7a3a, 0x7a5230, 0xffffff], 7, 2.6);
@@ -2233,7 +2283,7 @@ function fireImpact(picks, flames, root) {
     const p = tilePos(b,r,c), cell = G.boards[b][r][c];
     if (cell.ship >= 0 && !cell.shot) {
       const res = applyShot(b, r, c, true);
-      hit[b]++; if (res === "sunk") sunk[b]++;
+      if (res !== "block") hit[b]++; if (res === "sunk") sunk[b]++;
     } else if (!cell.shot) { cell.shot = true; refreshTile(b, r, c); }
     addDecal(p.x, p.z, 0x1b120a, .42, .03);                                   // chão carbonizado
     const fl = new THREE.Group();
@@ -2280,10 +2330,15 @@ function hazardImpact(b, r, c) {
 }
 function nextTurn() {
   if (G.phase!=="battle") return;
+  if (G.turn === 0 && G.bonusPending) {                               // Empolgação: acertou, joga de novo
+    G.bonusPending = false; G.empoBonus = true; G.repeatKind = "empo";
+    log(`🎉 Empolgação! Você joga de novo (${G.empoLeft} restante${G.empoLeft===1?"":"s"} nesta fase).`);
+    startTurn(true); return;
+  }
   if (G.turn === 0 && G.furia > 0) {                                  // Fúria: você joga de novo, o adversário não age
     G.furia--;
     log(`🥫 Fúria! Você joga de novo (${G.furia} turno${G.furia===1?"":"s"} extra${G.furia===1?"":"s"} restante${G.furia===1?"":"s"}).`);
-    startTurn(true); return;
+    G.repeatKind = "furia"; startTurn(true); return;
   }
   G.turn = 1-G.turn; if (G.turn===0) G.round++; startTurn();
 }
@@ -2296,6 +2351,7 @@ function playerFire(r,c) {
   const cells = pattern(power,r,c).filter(([rr,cc]) => !G.boards[1][rr][cc].shot);
   if (!cells.length) return;
   G.energy[0] -= COST[power];
+  if (power==="normal" && superActive()) { G.superLeft--; toast("💥 SUPER TIRO!", "#ffdf00"); }
   if (power!=="normal") sfx.power();
   let label, opts;
   if (power==="normal") {
@@ -2438,11 +2494,11 @@ function finish(winner, reason) {
   /* placar da jornada: acumula entre as fases até o game over ou até zerar o jogo */
   const levelVotes = G.votes - (G.levelStartVotes || 0);
   if (!youWin) {
-    text += ` Total da jornada: ${fmtVotes(G.votes)} votos. A contagem recomeça do zero.`;
-    G.runOver = true;
+    text += ` Total da jornada: ${fmtVotes(G.votes)} votos. O placar recomeça; os votos da loja e suas skills ficam.`;
+    G.runOver = true; resetItems();
   } else if (G.levelIdx === last) {
     text += ` Votos nesta fase: ${fmtVotes(levelVotes)}. TOTAL DA CAMPANHA: ${fmtVotes(G.votes)} votos!`;
-    G.runOver = true;
+    G.runOver = true; resetItems();
   } else {
     text += ` Votos nesta fase: ${fmtVotes(levelVotes)} · Total acumulado: ${fmtVotes(G.votes)}.`;
   }
@@ -2503,15 +2559,15 @@ function ui() {
       : G.turn===0 ? "Sua vez: escolha onde atirar" : `${s1.short} está planejando…`;
     $("timerfill").style.width = G.turn===0 && G.phase==="battle" ? (G.timeLeft/TURN_TIME*100)+"%" : "0%";
     const e = G.energy[0];
-    const marks = {1:"📊",2:"📣",5:"🏍️"};
+    const rcst = COST.radar, marks = {[rcst-1]:"📊",2:"📣",5:"🏍️"}, markCost = {[rcst-1]:rcst,2:3,5:6};
     const gain = e > lastEnergy ? `<span id="gain">+${e-lastEnergy} ⚡</span>` : "";
     lastEnergy = e;
     $("energy").innerHTML = `<div style="width:100%"><b>⚡ Energia da torcida: ${e}/${MAX_ENERGY}</b>
         <span style="opacity:.75"> · +1 a cada turno · +1 por torcedor atingido</span></div>
       <div id="meter">` + Array.from({length:MAX_ENERGY},(_,i)=>
-        `<span class="pip ${i<e?"on":""} ${marks[i]?"mark":""}" ${marks[i]?`data-m="${marks[i]} ${[2,3,6][Object.keys(marks).indexOf(String(i))]}"`:""}></span>`).join("") + `</div>` + gain;
+        `<span class="pip ${i<e?"on":""} ${marks[i]?"mark":""}" ${marks[i]?`data-m="${marks[i]} ${markCost[i]}"`:""}></span>`).join("") + `</div>` + gain;
     const defs = [
-      ["normal","1","🎯 Tiro",   "uma célula",           0],
+      ["normal","1","🎯 Tiro",   superActive() ? `💥 super 2×2 · ${G.superLeft} rest.` : "uma célula", 0],
       ["radar", "2","📊 "+"Pesquisa", "revela 3×3 (grátis)", COST.radar],
       ["cross", "3","📣 "+s0.cross, "cruz de 5",            COST.cross],
       ["ultra", "4","🏍️ "+s0.ultra, s0.ultraDesc,           COST.ultra],
@@ -2551,7 +2607,7 @@ function ui() {
   }
 }
 function shapeHTML(id, side) {
-  const on = { normal:[12], radar:[6,7,8,11,12,13,16,17,18], cross:[7,11,12,13,17] };
+  const on = { normal: superActive() ? [12,13,17,18] : [12], radar:[6,7,8,11,12,13,16,17,18], cross:[7,11,12,13,17] };
   on.ultra = side.ultraMode==="row" ? [10,11,12,13,14] : [2,7,12,17,22];
   const set = new Set(on[id]);
   return `<span class="shape">${Array.from({length:25},(_,i)=>`<i class="${set.has(i)?"on":""}"></i>`).join("")}</span>`;
@@ -2575,7 +2631,7 @@ function popVotes(text, big) {
 function registerHit() {                       // chamado a cada torcedor adversário derrubado por você
   G.combo++;
   const m = comboMult(G.combo), pts = 100*m;
-  G.votes += pts;
+  G.votes += pts; WALLET += pts;
   renderCombo();
   popVotes(`+${fmtVotes(pts)}`, G.combo >= 3);
   const v = $("votes"); v.classList.remove("bump"); void v.offsetWidth; v.classList.add("bump");
@@ -2588,6 +2644,40 @@ function setClock(v) {
   if (v===lastClock) return; lastClock = v;
   const el = $("matchClock"); el.textContent = v===Infinity ? "∞" : v; el.classList.toggle("low", v<=10 && G.phase==="battle");
 }
+/* ---- skills em batalha ---- */
+const umbGroup = new THREE.Group(); scene.add(umbGroup);
+function makeUmbrella() {
+  const g = new THREE.Group();
+  const cn = new THREE.Mesh(new THREE.ConeGeometry(.5,.32,12), new THREE.MeshLambertMaterial({color:0xd7191c})); cn.position.y = .72; g.add(cn);
+  const ring = new THREE.Mesh(new THREE.CylinderGeometry(.5,.5,.04,12), LM(0xffffff)); ring.position.y = .58; g.add(ring);
+  g.add(cyl(.025,.025,.7,0x555555, 0,.35,0,6));
+  return g;
+}
+function clearUmbrellas() { while (umbGroup.children.length) umbGroup.remove(umbGroup.children[0]); G.umbrellas = {}; }
+function breakUmbrella(r, c) {
+  const key = r+","+c, m = G.umbrellas[key], p = tilePos(0, r, c);
+  if (m) { umbGroup.remove(m); delete G.umbrellas[key]; }
+  burst(p, [0xd7191c, 0xffffff, 0xffd23a], 20, 4);
+  tone(900,.1,"triangle",.08); tone(500,.18,"triangle",.07,-200,.08);
+  toast("☂️ GUARDA-CHUVA QUEBROU!", "#ff9a3a");
+  log("☂️ Um guarda-chuva da sua torcida foi quebrado (o torcedor se salvou desta vez).");
+}
+function setupSkills() {
+  clearUmbrellas();
+  COST.radar = skillOn("instituto") ? 1 : 2;
+  G.energy[0] = skillOn("folego") ? 4 : 1; lastEnergy = G.energy[0];
+  G.superLeft = 3; G.empoLeft = 3; G.empoBonus = false; G.bonusPending = false;
+  if (skillOn("guardachuva")) {
+    const cells = []; G.fleets[0].forEach(sh => sh.cells.forEach(c => cells.push(c)));
+    for (let i=0; i<3 && cells.length; i++) {
+      const [r,c] = cells.splice(rand(cells.length),1)[0], m = makeUmbrella(), p = tilePos(0,r,c);
+      m.position.set(p.x, 0, p.z); umbGroup.add(m); G.umbrellas[r+","+c] = m; G.boards[0][r][c].umbrella = true;
+    }
+  }
+  if (OWNED.size) log("⭐ Skills ativas: " + SKILLS.filter(k => skillOn(k.id)).map(k => k.icon+" "+k.name).join(" · "));
+}
+const superActive = () => skillOn("supertiro") && G.superLeft > 0;
+
 /* ---- itens: Remédio (reviver), Fúria (turnos contínuos) e Reforço (alto-falante) ---- */
 const ITEM_DEFS = [
   { id:"revive",  name:"Remédio",  desc:"revive 1 torcedor caído", key:"5",
@@ -2717,6 +2807,7 @@ cv.addEventListener("pointerdown", e => {
 });
 addEventListener("keydown", e => {
   const k = e.key.toLowerCase();
+  if (k === "escape" && !$("shop").classList.contains("hidden")) { closeShop(); return; }
   if (k === "escape" && !$("coffeeModal").classList.contains("hidden")) return;
   if (k === "escape" && (G.phase==="battle" || G.phase==="place")) { G.paused ? resumeGame() : pauseGame(); return; }
   if (G.paused) return;
@@ -2965,6 +3056,60 @@ addEventListener("keydown", e => { if (e.key === "Escape" && !$("coffeeModal").c
 $("copyKey").onclick = () => copyText(PIX_KEY, "Chave Pix copiada! ☕");
 $("copyCode").onclick = () => copyText(PIX_CODE, "Código Pix copiado! Cole no app do seu banco. ☕");
 
+/* ---- loja ---- */
+let shopTab = "items";
+function refreshShopButtons() {
+  const w = fmtVotes(WALLET);
+  $("menuShop").textContent = `🛒 Loja · 🗳️ ${w}`;
+  $("menuSkills").textContent = `⭐ Skills (${OWNED.size}/${SKILLS.length})`;
+  $("endShop").textContent = `🛒 Loja · 🗳️ ${w}`;
+}
+function renderShop(msg, ok) {
+  $("shopWallet").textContent = `🗳️ ${fmtVotes(WALLET)} votos`;
+  $("tabItems").classList.toggle("on", shopTab === "items"); $("tabSkills").classList.toggle("on", shopTab === "skills");
+  let h = '<div class="grid">';
+  if (shopTab === "items") {
+    ITEM_DEFS.forEach(d => {
+      const have = ITEMS[d.id], full = have >= ITEM_MAX[d.id], price = ITEM_PRICE[d.id];
+      h += `<div class="card2"><div class="ic">${d.svg}</div><b>${d.name}</b><div class="dsc">${d.desc}<br>Limite por fase: ${ITEM_CAP[d.id]}</div>
+        <div>Você tem <b>×${have}</b> (máx. ${ITEM_MAX[d.id]})</div><div class="pr">🗳️ ${fmtVotes(price)}</div>
+        <button class="btn primary" data-buy="item:${d.id}" ${full || WALLET < price ? "disabled" : ""}>${full ? "Estoque cheio" : WALLET < price ? "Votos insuficientes" : "Comprar +1"}</button></div>`;
+    });
+  } else {
+    SKILLS.forEach(k => {
+      const own = skillOn(k.id);
+      h += `<div class="card2 ${own ? "owned" : ""}"><div class="ic">${k.icon}</div><b>${k.name}</b><div class="dsc">${k.desc}</div>
+        <div class="pr">${own ? "✔ Comprada" : "🗳️ " + fmtVotes(k.price)}</div>
+        <button class="btn primary" data-buy="skill:${k.id}" ${own || WALLET < k.price ? "disabled" : ""}>${own ? "Ativa" : WALLET < k.price ? "Votos insuficientes" : "Desbloquear"}</button></div>`;
+    });
+  }
+  $("shopBody").innerHTML = h + "</div>" + (shopTab === "skills" ? '<div class="note">Dica: quanto mais skills você tem, mais vida o chefão final ganha (2 skills: +1, 5 skills: +2).</div>' : "");
+  const m = $("shopMsg"); m.textContent = msg || ""; m.style.color = ok === false ? "#ff8a7a" : "#4cd964";
+}
+function openShop(tab) { shopTab = tab || shopTab; renderShop(); $("shop").classList.remove("hidden"); }
+function closeShop() { $("shop").classList.add("hidden"); refreshShopButtons(); }
+function buy(kind, id) {
+  if (kind === "item") {
+    if (ITEMS[id] >= ITEM_MAX[id] || WALLET < ITEM_PRICE[id]) return;
+    WALLET -= ITEM_PRICE[id]; ITEMS[id]++; tone(660,.1,"square",.07); tone(990,.15,"square",.07,0,.09);
+    renderShop(`Comprou +1 ${ITEM_DEFS.find(d => d.id === id).name}!`, true);
+  } else {
+    const k = SKILLS.find(x => x.id === id); if (!k || skillOn(id) || WALLET < k.price) return;
+    WALLET -= k.price; OWNED.add(id); [523,659,784,1047].forEach((f,i) => tone(f,.15,"triangle",.09,0,i*.07));
+    renderShop(`Skill desbloqueada: ${k.name}!`, true);
+  }
+  refreshShopButtons();
+}
+$("shopBody").addEventListener("click", e => { const b = e.target.closest("[data-buy]"); if (!b) return; const [k,i] = b.dataset.buy.split(":"); buy(k, i); });
+$("tabItems").onclick = () => { shopTab = "items"; renderShop(); };
+$("tabSkills").onclick = () => { shopTab = "skills"; renderShop(); };
+$("shopClose").onclick = closeShop;
+$("shop").addEventListener("pointerdown", e => { if (e.target === $("shop")) closeShop(); });
+$("menuShop").onclick = () => openShop("items");
+$("menuSkills").onclick = () => openShop("skills");
+$("endShop").onclick = () => openShop("items");
+refreshShopButtons();
+
 /* ---- pausa: congela animações, tempo e callbacks agendados ---- */
 const _setTimeout = window.setTimeout.bind(window);
 window.setTimeout = (fn, ms, ...a) => _setTimeout(function tick() { if (G.paused) _setTimeout(tick, 120); else fn(...a); }, ms);
@@ -2980,6 +3125,7 @@ function resumeGame() {
 }
 function restoreLevelStart() {                    // desfaz o que foi ganho/gasto na fase em andamento
   if (G.levelStartVotes !== undefined) G.votes = G.levelStartVotes;
+  if (G.walletSnap !== undefined) WALLET = G.walletSnap;
   if (G.itemsSnap) Object.assign(ITEMS, G.itemsSnap);
 }
 $("pauseBtn").onclick = pauseGame;
@@ -2989,7 +3135,7 @@ $("pExit").onclick = () => { resumeGame(); restoreLevelStart(); showMenu(); };
 function refreshDevBtn() {
   $("devBtn").textContent = DEV_MODE ? "🛠 Modo desenvolvedor: ATIVO (todas as fases liberadas)" : "🛠 Modo desenvolvedor: desligado";
 }
-$("devBtn").onclick = () => { DEV_MODE = !DEV_MODE; refreshDevBtn(); buildMenu(); };
+$("devBtn").onclick = () => { DEV_MODE = !DEV_MODE; if (DEV_MODE) WALLET = Math.max(WALLET, 99999); refreshDevBtn(); buildMenu(); refreshShopButtons(); };
 refreshDevBtn();
 
 const hexCss = n => "#" + n.toString(16).padStart(6,"0");
@@ -3008,6 +3154,7 @@ function faceSVG(ch, size, boss) {
 }
 
 function buildMenu() {
+  refreshShopButtons();
   document.querySelectorAll(".card").forEach(c => c.classList.toggle("sel", c.dataset.side === menuSide));
   const wrap = $("levelsWrap"), grid = $("levelGrid");
   if (!menuSide) { wrap.classList.add("hidden"); return; }
@@ -3029,7 +3176,7 @@ function buildMenu() {
          <span class="info"><span class="tg">FASE ${i+1} · ${L.diff.toUpperCase()}</span><b>🔒 ???</b><small>Vença a fase ${i} para liberar</small></span>`
       : `<span class="face">${faceSVG(en, 54, L.boss)}</span>
          <span class="info"><span class="tg">FASE ${i+1} · ${L.diff.toUpperCase()}</span><b>${en.name}</b>
-         <small>${en.party} · ${sc.name}<br>${L.boss ? `❤ Chefão único: ${BOSS_HP} pontos de vida · sem torcida` : `👥 ${total} torcedores para dispersar`}${L.hazard === "bala" ? "<br>⚠️ Bala perdida a cada turno" : L.hazard === "fogo" ? "<br>🔥 Fogo queima 4 casas de cada arena a cada 2 turnos" : L.hazard === "flechas" ? `<br>🏹 ${ARROWS_PER_TURN} flechas por turno` : L.calm ? "<br>🏖️ Cenário sem danos" : ""}</small></span>
+         <small>${en.party} · ${sc.name}<br>${L.boss ? `❤ Chefão único: ${bossHp()} pontos de vida · sem torcida` : `👥 ${total} torcedores para dispersar`}${L.hazard === "bala" ? "<br>⚠️ Bala perdida a cada turno" : L.hazard === "fogo" ? "<br>🔥 Fogo queima 4 casas de cada arena a cada 2 turnos" : L.hazard === "flechas" ? `<br>🏹 ${ARROWS_PER_TURN} flechas por turno` : L.calm ? "<br>🏖️ Cenário sem danos" : ""}</small></span>
          ${fresh ? '<span class="badge">NOVA!</span>' : cleared ? '<span class="badge">✔ VENCIDA</span>' : ""}`;
     if (!locked) d.onclick = () => startLevel(i);
     grid.appendChild(d);
@@ -3077,17 +3224,17 @@ function newGame(playerKey, levelIdx = 0) {
   const L = LEVELS[levelIdx];
   G.side = [playerKey, other];
   G.levelIdx = levelIdx; G.level = levelIdx + 1; G.lastWin = false;
-  if (G.runOver) { G.votes = 0; G.runOver = false; resetItems(); }          // game over / campanha zerada: nova jornada
+  if (G.runOver) { G.votes = 0; G.runOver = false; }          // game over / campanha zerada: nova jornada
   G.combo = 0; shownVotes = G.votes; $("votesNum").textContent = fmtVotes(G.votes); renderCombo();
   G.enemy = { ...CHARS[TRACKS[playerKey][levelIdx]], boss: !!L.boss };
   G.defs = [FLEET, L.def.map(i => FLEET[i])];
-  G.boss = L.boss ? { hp:BOSS_HP, max:BOSS_HP, r:0, c:0, minions:new Set(), kind: G.enemy.camp === "lula" ? "lula" : "flavio" } : null;
+  G.boss = L.boss ? { hp:bossHp(), max:bossHp(), r:0, c:0, minions:new Set(), kind: G.enemy.camp === "lula" ? "lula" : "flavio" } : null;
   if (G.boss) G.defs[1] = [];                                      // chefão: sem torcida
   G.phase = "place"; G.turn = 0; G.busy = false; G.horiz = true; G.power = "normal";
   G.energy = [1,1]; G.hover = null;
   applyScenario(SCENARIOS.find(x => x.id === L.scn) || SCENARIOS[0]);
   musicStart(G.scn.id);
-  $("action").classList.add("hidden"); clearMarkers(); resetFleet(0); resetFleet(1); randomFleet(1);
+  $("action").classList.add("hidden"); clearMarkers(); clearUmbrellas(); resetFleet(0); resetFleet(1); randomFleet(1);
   if (G.boss) placeBoss();
   for (let b=0;b<2;b++) {
     frames[b].material.color.setHex(SIDES[G.side[b]].main);
@@ -3114,6 +3261,7 @@ function animate() {
   requestAnimationFrame(animate);
   const dt = G.paused ? 0 : Math.min(clock.getDelta(), .05), t = clock.elapsedTime;
 
+  umbGroup.children.forEach((u,i) => { u.position.y = Math.sin(t*3+i*2)*.05; });
   // torcedores
   for (let b=0;b<2;b++) fanGroups[b].children.forEach(f => {
     const u = f.userData;
