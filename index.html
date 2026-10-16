@@ -430,11 +430,12 @@
   </div>
   <div class="shoprow"><button class="btn" id="menuShop">🛒 Loja</button><button class="btn" id="menuSkills">⭐ Skills</button></div>
   <button class="coffee-btn" id="menuCoffee">☕ Me pague um café</button>
+  <button class="btn" id="resetSaveBtn" style="margin-top:6px;font-size:12px;opacity:.8">🗑 Apagar progresso salvo</button>
   <button class="btn" id="devBtn" style="margin-top:6px;font-size:12px;opacity:.85"></button>
   <p id="musicHint" class="rules" style="margin:6px 0 0">🎵 Toque ou clique em qualquer lugar para ouvir o tema</p>
   <div class="rules">
     Jogo apartidário e imparcial: os dois lados têm as mesmas regras. Obra de paródia e ficção: personagens estilizados inspirados em figuras públicas, sem vínculo com partidos, campanhas ou pessoas citadas. Ninguém se machuca: quem é "atingido" só senta, cansado de tanto gritar. 🎺<br>
-    Atire com o mouse/toque · R gira a torcida · 1–4 poderes · 5–7 itens · Esc cancela · O progresso fica só nesta aba (atualizou, recomeça)
+    Atire com o mouse/toque · R gira a torcida · 1–4 poderes · 5–7 itens · Esc cancela · O progresso é salvo automaticamente neste navegador
   </div>
 </div>
 
@@ -482,7 +483,7 @@
     <div class="tabs"><button class="btn tab" id="tabItems">🎒 Itens</button><button class="btn tab" id="tabSkills">⭐ Skills</button></div>
     <div id="shopBody"></div>
     <div class="msg" id="shopMsg"></div>
-    <div class="note">Os votos que você ganha acertando alvos viram moeda. Itens gastam e acabam; skills ficam para sempre (nesta aba).</div>
+    <div class="note">Os votos que você ganha acertando alvos viram moeda. Itens gastam e acabam; skills ficam para sempre (salvas neste navegador).</div>
   </div>
 </div>
 
@@ -578,7 +579,7 @@ const LEVELS = [
   { scn:"brasilia", diff:"CHEFÃO",  ai:4, def:[0,1,2,3,4], boss:true },
   { scn:"apocalipse", diff:"NG+ · Extremo", ai:4, defs:NG_DEFS, hazard:"bombas", ng:true, cpuBonus:true },
 ];
-/* progresso só em memória: recarregar a página recomeça */
+/* progresso: salvo no navegador (localStorage), veja saveGame()/loadGame() */
 /* modo desenvolvedor: todas as fases desbloqueadas (desligado por padrão; abra com ?dev=1 para ligar) */
 let DEV_MODE = (() => { try { const v = new URLSearchParams(location.search).get("dev"); return v === "1"; } catch (e) { return false; } })();
 const PROG = { flavio:1, lula:1 };               // fases liberadas por trilha
@@ -2713,6 +2714,7 @@ function finish(winner, reason) {
     text += ` Votos nesta fase: ${fmtVotes(levelVotes)} · Total acumulado: ${fmtVotes(G.votes)}.`;
   }
   G.lastWin = youWin;
+  saveGame();
   $("coffeeNudge").classList.toggle("hidden", !youWin);
   setTimeout(() => {
     $("endTitle").textContent = title; $("endText").textContent = text; $("btnAgain").textContent = btn;
@@ -3037,8 +3039,8 @@ $("btnUndo").onclick = () => {
 };
 $("btnRandom").onclick = () => { randomFleet(0); refreshAll(); ui(); updateHoverPreview(); sfx.place(); };
 $("btnStart").onclick = startBattle;
-$("mute").onclick = () => { muted = !muted; $("mute").textContent = muted ? "🔇" : "🔊"; musicVol(); };
-$("musicBtn").onclick = () => { Music.on = !Music.on; $("musicBtn").classList.toggle("off", !Music.on); musicVol(); };
+$("mute").onclick = () => { muted = !muted; setTimeout(saveGame, 0); $("mute").textContent = muted ? "🔇" : "🔊"; musicVol(); };
+$("musicBtn").onclick = () => { Music.on = !Music.on; setTimeout(saveGame, 0); $("musicBtn").classList.toggle("off", !Music.on); musicVol(); };
 cv.addEventListener("contextmenu", e => { e.preventDefault(); if (G.phase==="place") { G.horiz = !G.horiz; ui(); updateHoverPreview(); } });
 /* ================================================================
    Final de cada trilha: ilustração 2D, votos/recorde, créditos e Pix
@@ -3300,6 +3302,7 @@ function renderShop(msg, ok) {
 function openShop(tab) { shopTab = tab || shopTab; renderShop(); $("shop").classList.remove("hidden"); }
 function closeShop() { $("shop").classList.add("hidden"); refreshShopButtons(); }
 function buy(kind, id) {
+  setTimeout(saveGame, 0);
   if (kind === "item") {
     if (ITEMS[id] >= ITEM_MAX[id] || WALLET < ITEM_PRICE[id]) return;
     WALLET -= ITEM_PRICE[id]; ITEMS[id]++; tone(660,.1,"square",.07); tone(990,.15,"square",.07,0,.09);
@@ -3347,8 +3350,62 @@ function refreshDevBtn() {
   $("devBtn").classList.toggle("hidden", new URLSearchParams(location.search).get("dev") === null);   // botão só aparece com ?dev= na URL
   $("devBtn").textContent = DEV_MODE ? "🛠 Modo desenvolvedor: ATIVO (todas as fases liberadas)" : "🛠 Modo desenvolvedor: desligado";
 }
+$("resetSaveBtn").onclick = () => {
+  if (!confirm("Apagar todo o progresso salvo (fases desbloqueadas, skills, itens e votos da loja)? O recorde de votos é mantido.")) return;
+  resetSave(); buildMenu(); refreshShopButtons(); $("mute").textContent = muted ? "🔇" : "🔊"; alert("Progresso apagado.");
+};
 $("devBtn").onclick = () => { DEV_MODE = !DEV_MODE; if (DEV_MODE) WALLET = Math.max(WALLET, 99999); refreshDevBtn(); buildMenu(); refreshShopButtons(); };
 refreshDevBtn();
+
+/* ================================================================
+   Salvamento local (localStorage): progresso, loja e preferências
+   - salva entre as fases (nunca no meio de uma partida) e ao fechar a aba
+   - o modo desenvolvedor nunca grava nem lê o saldo de teste
+   ================================================================ */
+const SAVE_KEY = "spb_save_v1", SAVE_VERSION = 1;
+const storage = {
+  get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } },
+  del(k) { try { localStorage.removeItem(k); } catch (e) {} },
+};
+function snapshotForSave() {
+  const inLevel = G.phase === "battle";                 // no meio da fase vale o estado do início dela
+  return {
+    v: SAVE_VERSION,
+    wallet: inLevel && G.walletSnap !== undefined ? G.walletSnap : WALLET,
+    skills: [...OWNED],
+    items: inLevel && G.itemsSnap ? { ...G.itemsSnap } : { ...ITEMS },
+    prog: { flavio: PROG.flavio, lula: PROG.lula },
+    cleared: { flavio: CLEARED.flavio.map(Boolean), lula: CLEARED.lula.map(Boolean) },
+    prefs: { muted, music: Music.on },
+  };
+}
+function saveGame() {
+  if (DEV_MODE) return;                                 // testes não contaminam o jogo real
+  storage.set(SAVE_KEY, JSON.stringify(snapshotForSave()));
+}
+function loadGame() {
+  const raw = storage.get(SAVE_KEY); if (!raw) return false;
+  try {
+    const d = JSON.parse(raw); if (!d || d.v !== SAVE_VERSION) return false;
+    const num = (x, max) => Math.max(0, Math.min(max, Math.floor(Number(x) || 0)));
+    WALLET = num(d.wallet, 1e9);
+    OWNED.clear(); (d.skills || []).forEach(id => { if (SKILLS.some(k => k.id === id)) OWNED.add(id); });
+    Object.keys(ITEM_MAX).forEach(id => { ITEMS[id] = num(d.items && d.items[id], ITEM_MAX[id]); });
+    ["flavio","lula"].forEach(sd => {
+      PROG[sd] = Math.max(1, num(d.prog && d.prog[sd], LEVELS.length));
+      CLEARED[sd] = LEVELS.map((_, i) => !!(d.cleared && d.cleared[sd] && d.cleared[sd][i]));
+    });
+    muted = !!(d.prefs && d.prefs.muted); Music.on = !(d.prefs && d.prefs.music === false);
+    return true;
+  } catch (e) { return false; }
+}
+function resetSave() {
+  storage.del(SAVE_KEY);
+  resetItems(); WALLET = 0; OWNED.clear();
+  PROG.flavio = PROG.lula = 1; CLEARED.flavio = []; CLEARED.lula = [];
+}
+["pagehide","visibilitychange"].forEach(ev => addEventListener(ev, () => { if (ev !== "visibilitychange" || document.hidden) saveGame(); }));
 
 const hexCss = n => "#" + n.toString(16).padStart(6,"0");
 /* rosto estilizado do personagem para os cartões de fase */
@@ -3398,6 +3455,7 @@ function buildMenu() {
   grid.appendChild(soon);
 }
 function showMenu() {
+  saveGame();
   musicStart("menu"); G.phase = "menu"; $("pauseBtn").classList.add("hidden");
   ["endscreen","placePanel","battlePanel","focusTag","action","ending"].forEach(id => $(id).classList.add("hidden"));
   $("ending").classList.remove("on"); endTimers.forEach(clearTimeout); endTimers = []; endActive = false;
@@ -3429,6 +3487,10 @@ document.querySelectorAll(".card").forEach(card => card.onclick = () => {
   actx && actx.state==="suspended" && actx.resume();
   menuSide = card.dataset.side; buildMenu();
 });
+const hadSave = loadGame();
+if (DEV_MODE) WALLET = Math.max(WALLET, 99999);
+$("mute").textContent = muted ? "🔇" : "🔊"; $("musicBtn").classList.toggle("off", !Music.on);
+refreshShopButtons();
 buildMenu();
 
 function newGame(playerKey, levelIdx = 0) {

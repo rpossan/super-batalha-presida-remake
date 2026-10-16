@@ -146,7 +146,7 @@ No celular os itens ficam num botão único **🎒 Itens** que abre a lista.
 
 ### ⭐ Skills
 Compra única. Depois de desbloqueada, a skill vale em **todas as fases e cenários**, das duas trilhas, e fica ativa sozinha.
-Vale enquanto a aba do navegador estiver aberta (atualizar a página recomeça).
+Ficam salvas no navegador (veja [Salvamento](#-salvamento-local)).
 
 | Skill | Preço | Efeito |
 |---|---|---|
@@ -193,10 +193,23 @@ Energia: **+1 por turno** e **+1 por torcedor atingido**. No celular, a câmera 
 
 - Arquivo único: [`index.html`](index.html), com [Three.js](https://threejs.org/) via CDN. Sem build, sem servidor.
 - Personagens, cenários, músicas, efeitos sonoros e ilustrações são **gerados por código** (3D, SVG e Web Audio).
-- Progresso da campanha só em memória (recarregar recomeça); o recorde fica no navegador.
+- Progresso salvo no navegador (`localStorage`), sem servidor: veja [Salvamento](#-salvamento-local).
 
 Para rodar localmente, abra o `index.html` no navegador. Para criar um cenário novo, adicione um objeto em
 `SCENARIOS` e uma fase em `LEVELS` (há um comentário `ADICIONE NOVOS CENÁRIOS AQUI`).
+
+---
+
+## 💾 Salvamento local
+
+O jogo **salva sozinho no seu navegador** (`localStorage`), mesmo hospedado no GitHub Pages. Nada vai para servidor nenhum.
+
+- **O que é salvo:** fases desbloqueadas e vencidas (nas duas trilhas), saldo de votos da loja, skills compradas, estoque de itens, recorde e as preferências de som e música.
+- **Quando salva:** entre as fases (ao terminar uma fase, comprar na loja ou voltar ao menu) e ao fechar a aba. Não salva no meio de uma partida: se você fechar durante uma fase, volta ao estado do início dela.
+- **Onde fica:** só naquele navegador e aparelho; não sincroniza entre computador e celular. Limpar os dados do site, usar aba anônima ou trocar de navegador perde o progresso.
+- **Apagar:** botão **"🗑 Apagar progresso salvo"** no menu principal.
+- **Modo desenvolvedor:** nunca grava nem usa o saldo de teste.
+- Se o navegador bloquear o armazenamento, o jogo funciona normalmente, só não salva.
 
 ---
 
