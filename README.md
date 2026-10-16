@@ -1,51 +1,188 @@
-# Super Presida Batalha
+<p align="center">
+  <img src="logo.svg" alt="Super Presida Batalha" width="520">
+</p>
 
-> **Posicione a torcida. Acerte o adversário. Domine a avenida!**
+<h3 align="center">Posicione a torcida. Acerte o adversário. Domine a avenida!</h3>
 
-Batalha naval das eleições 2026, em 3D, direto no navegador. Flávio Bolsonaro (PL) contra Lula (PT):
-duas torcidas disputam o território, cada acerto derruba um torcedor do adversário. Paródia bem-humorada,
-sem violência: quem é "atingido" só senta, cansado de tanto gritar.
+<p align="center">
+  Batalha naval das <b>eleições 2026</b>, em 3D, direto no navegador.<br>
+  Uma campanha em 7 fases, 2 trilhas, 7 cenários do Brasil e um chefão final.
+</p>
 
-## Jogar
-Abra o `index.html` no navegador, ou acesse a versão publicada no GitHub Pages:
-https://rpossan.github.io/super-presida-batalha/
+<p align="center">
+  <a href="https://rpossan.github.io/super-presida-batalha/"><b>▶ JOGAR AGORA</b></a>
+  &nbsp;·&nbsp;
+  <a href="#-aviso-legal-e-isenção-de-uso-de-imagem">Aviso legal</a>
+  &nbsp;·&nbsp;
+  <a href="#-me-pague-um-café">☕ Apoie</a>
+</p>
 
-## Como funciona
-- Campanha em fases: escolha o lado (Flávio ou Lula) e vença uma fase por vez; cada vitória libera a próxima.
-- Cada fase tem um cenário, um adversário (figura política da trilha) e dificuldade crescente:
-  a torcida adversária começa pequena (8 torcedores) e chega a 17 no chefão, e a IA fica mais esperta.
-- O chefão final é sempre o líder do outro lado (Lula para quem joga com Flávio, Flávio para quem joga com Lula).
-- O progresso fica só em memória: recarregar a página recomeça.
-- Tabuleiros 10×10; posicione 5 grupos de torcedores (5, 4, 3, 3 e 2).
-- Em cada turno, arremesse um objeto de protesto (cone, tomate, bandeira, cavalete, chinelo, pedra ou ovo).
-- Energia: +1 por turno e +1 por torcedor atingido. Gaste em poderes:
-  📊 Pesquisa (2) · 📣 Buzinaço/Comício (3) · 🏍️ Motociata / 🚌 Caravana (6).
-- Votos: cada acerto vale 100 pontos × combo (2x, 3x, 4x e, no 5º acerto seguido, 50x). Errar o tiro zera o combo. O placar de votos acumula entre as fases até o *game over* ou até zerar o jogo, quando mostra o total.
-- Sem limite de tempo, contador de rodadas; vence quem dispersar toda a torcida adversária.
-- Música: cada cenário tem a sua e a tela inicial tem um tema de campanha (gerados por código, sem arquivos).
-- Controles: mouse/toque · `R` gira · `1–4` poderes · `Esc` cancela. No celular a câmera acompanha o turno.
+<p align="center">
+  <img src="docs/img/menu.png" alt="Tela inicial: escolha o lado e as fases" width="800">
+</p>
 
-## Trilhas
-| Fase | Cenário | Contra Flávio (PL) | Contra Lula (PT) | Dificuldade | Perigo do cenário |
+> ### 🟢🟡 Jogo apartidário e imparcial
+> **Super Presida Batalha é um jogo apartidário e imparcial.** Os dois lados são tratados da mesma forma:
+> mesmas regras, mesmos poderes, mesma quantidade de fases, adversários e chefão, e um final para cada trilha.
+> O jogo **não faz propaganda, não pede voto e não toma partido**. Nenhum lado é "o certo" ou "o errado":
+> é só uma brincadeira de estratégia com humor.
+
+---
+
+## 🗳️ A corrida é sua
+
+Duas torcidas tomaram o país. Você escolhe o lado, monta a sua campanha e vai de cidade em cidade
+até o chefão final. **A estratégia política é sua:** onde posicionar a torcida, quando gastar a energia,
+quando fazer uma pesquisa para descobrir onde o adversário se esconde e qual poder usar para virar o jogo.
+
+- 🎯 **Cada acerto é um voto.** Encadeie acertos para ativar o **combo** (2x, 3x, 4x e **50x** no quinto seguido).
+- 🧠 **Cada fase pede uma tática nova:** perigos do cenário, adversários mais espertos e um chefão que se esconde.
+- 🏁 **Dois lados, duas histórias:** o final muda conforme a trilha que você escolheu.
+
+> Dica de campanha: errar zera o combo e dá munição ao chefão. Faça uma **pesquisa** antes de arriscar.
+
+---
+
+## ✨ Destaques
+
+| | |
+|---|---|
+| 🎮 **Batalha naval reinventada** | Tabuleiros 10×10 em 3D, torcedores animados e objetos de protesto (cone, tomate, bandeira, cavalete, chinelo, pedra e ovo) que ficam espalhados pela arena. |
+| ⚡ **Poderes especiais** | Pesquisa, cruz (Buzinaço/Comício) e o poder final de cada lado: **Motociata** (linha inteira) e **Caravana** (coluna inteira), todos com animação própria. |
+| 🌎 **7 cenários do Brasil** | Av. Paulista, Aeroporto de Porto Alegre, Cristo Redentor, Sertão, Amazônia, Balneário Camboriú e Praça dos Três Poderes. |
+| ⚠️ **Perigos de cenário** | Bala perdida, fogo no sertão e chuva de flechas na floresta, em quantidade equilibrada ao nível. |
+| 👑 **Chefões únicos** | Sem torcida, com pontos de vida, que mudam de casa a cada acerto e reagem aos seus erros. |
+| 🏆 **Votos e recorde** | Placar acumulado entre as fases, com combo e recorde pessoal. |
+| 🎵 **Trilha sonora própria** | Uma música diferente por cenário (samba, baião, milonga, tambores, marcha…), gerada por código. |
+| 📱 **Funciona no celular** | A câmera acompanha o turno: na sua vez, só a arena do adversário, para dar precisão no toque. |
+
+---
+
+## 🗺️ A campanha
+
+Escolha o lado e vença uma fase por vez. Cada vitória libera a próxima e a dificuldade cresce.
+
+| Fase | Cenário | Contra o **Flávio** (PL) | Contra o **Lula** (PT) | Nível | Perigo |
 |---|---|---|---|---|---|
-| 1 | Av. Paulista (SP) | Boulos | Nikolas Ferreira | Fácil | — |
+| 1 | Av. Paulista (SP) | Guilherme Boulos | Nikolas Ferreira | Fácil | — |
 | 2 | Aeroporto Salgado Filho (RS) | Gleisi Hoffmann | Tarcísio de Freitas | Médio | — |
-| 3 | Cristo Redentor (RJ) | Alexandre de Moraes | Michelle Bolsonaro | Difícil | ⚠️ bala perdida, 1 por turno |
-| 4 | Sertão Nordestino | Felipe Neto | Luciano Hang | Muito difícil | 🔥 fogo: 4 casas de cada arena a cada 2 turnos |
-| 5 | Floresta Amazônica | Marina Silva | Ricardo Salles | Extremo | 🏹 4 flechas por turno na arena de quem joga |
+| 3 | Cristo Redentor (RJ) | Alexandre de Moraes | Michelle Bolsonaro | Difícil | ⚠️ bala perdida |
+| 4 | Sertão Nordestino | Felipe Neto | Luciano Hang | Muito difícil | 🔥 fogo |
+| 5 | Floresta Amazônica | Marina Silva | Ricardo Salles | Extremo | 🏹 flechas |
 | 6 | Balneário Camboriú (SC) | Anitta | Carlos Bolsonaro | Pré-chefão | 🏖️ sem danos |
-| 7 | Brasília · Praça dos Três Poderes (DF) | **Lula (chefão)** | **Flávio (chefão)** | Chefão | — |
+| 7 | Praça dos Três Poderes (DF) | **Lula (chefão)** | **Flávio (chefão)** | Chefão | 👑 luta final |
 
-**Chefão final (fase 7):** Lula e Flávio são únicos, sem torcida, com 2 pontos de vida. A cada acerto o chefão muda de casa, escondido. Cada tiro seu que erra faz surgir um seguidor visível na casa (dá para acertá-lo para eliminar). Com 6 seguidores: o Lula explode 4 casas da sua arena; o Flávio recarrega a vida toda. O chefão descansa (não ataca) em 25% dos turnos. Valores calibrados por simulação para ~60% de vitória de um jogador competente.
+### Cenários
 
-Perigos: na fase 3 uma bala perdida cai em 1 casa da arena de quem joga a cada turno; na fase 4 o sol incendeia 4 casas de cada arena a cada 2 turnos; na fase 5 caem 4 flechas por turno (cada uma pega 1 casa) na arena de quem joga. Cada casa atingida derruba o torcedor que estiver nela, sem dar votos.
+<table>
+  <tr>
+    <td align="center"><img src="docs/img/paulista.png" width="390"><br><b>Av. Paulista</b> · objetos de protesto espalhados</td>
+    <td align="center"><img src="docs/img/rio.png" width="390"><br><b>Cristo Redentor</b> · campo de futebol e favela nos morros</td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/img/sertao.png" width="390"><br><b>Sertão</b> · fogo queima casas da arena</td>
+    <td align="center"><img src="docs/img/amazonia.png" width="390"><br><b>Amazônia</b> · chuva de flechas</td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/img/camboriu.png" width="390"><br><b>Balneário Camboriú</b> · praia, sem danos</td>
+    <td align="center"><img src="docs/img/motociata.png" width="390"><br><b>Motociata</b> · poder final que varre uma linha</td>
+  </tr>
+</table>
 
-As fases e os adversários ficam em `LEVELS`, `TRACKS` e `CHARS` no `index.html`.
+---
 
-## Cenários
-Av. Paulista (SP), Aeroporto Salgado Filho (RS), Cristo Redentor (RJ), Sertão Nordestino, Floresta Amazônica, Balneário Camboriú e Brasília · Praça dos Três Poderes (DF).
-Para criar um novo, adicione um objeto em `SCENARIOS` no `index.html`
-(há um comentário `ADICIONE NOVOS CENÁRIOS AQUI`); depois inclua o cenário em `LEVELS` para virar uma fase.
+## 👑 O chefão final
 
-## Tecnologia
-Arquivo único (`index.html`) com [Three.js](https://threejs.org/) via CDN; sem build, sem servidor.
+<p align="center"><img src="docs/img/chefao.png" alt="Luta final contra o chefão" width="760"></p>
+
+O chefão é **único, sem torcida, e tem pontos de vida**. A cada acerto ele **muda de casa, escondido**.
+
+- 👤 **Cada erro seu** faz surgir um seguidor visível. Acerte-o para eliminá-lo.
+- 💥 **Lula:** com 6 petistas reunidos, eles **explodem 4 casas** da sua arena.
+- 💚 **Flávio:** com 6 bolsonaristas reunidos, ele **recarrega a vida toda**.
+- 📊 Use a **pesquisa** para descobrir em que área ele está.
+
+---
+
+## 🎬 Finais
+
+Zere a trilha e veja o final: tela escurece, ilustração em estilo anime, seus **votos e recorde**,
+créditos rolando e o QR code do Pix.
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/img/final_lula.png" width="390"><br><b>Trilha do Lula</b></td>
+    <td align="center"><img src="docs/img/final_flavio.png" width="390"><br><b>Trilha do Flávio</b></td>
+  </tr>
+</table>
+
+---
+
+## 🕹️ Como jogar
+
+1. Escolha o lado e a fase.
+2. **Posicione** sua torcida (5 grupos) no seu tabuleiro. `R` ou botão direito gira.
+3. Na sua vez, **clique numa casa** do tabuleiro adversário. Cada tiro arremessa um objeto de protesto.
+4. Acerte para ganhar **votos** e **energia**; gaste a energia nos poderes (`1`–`4`).
+5. Dispersse toda a torcida adversária (ou derrote o chefão) antes que ele faça o mesmo com a sua.
+
+| Poder | Custo | Efeito |
+|---|---|---|
+| 🎯 Tiro | 0 | uma casa |
+| 📊 Pesquisa | 2 | revela uma área 3×3 (grátis, não gasta o turno) |
+| 📣 Buzinaço / Comício | 3 | cruz de 5 casas |
+| 🏍️ Motociata / 🚌 Caravana | 6 | linha inteira / coluna inteira |
+
+Energia: **+1 por turno** e **+1 por torcedor atingido**. No celular, a câmera acompanha o turno.
+
+---
+
+## 🛠️ Tecnologia
+
+- Arquivo único: [`index.html`](index.html), com [Three.js](https://threejs.org/) via CDN. Sem build, sem servidor.
+- Personagens, cenários, músicas, efeitos sonoros e ilustrações são **gerados por código** (3D, SVG e Web Audio).
+- Progresso da campanha só em memória (recarregar recomeça); o recorde fica no navegador.
+
+Para rodar localmente, abra o `index.html` no navegador. Para criar um cenário novo, adicione um objeto em
+`SCENARIOS` e uma fase em `LEVELS` (há um comentário `ADICIONE NOVOS CENÁRIOS AQUI`).
+
+---
+
+## ☕ Me pague um café
+
+Curtiu? Ajude o desenvolvedor a continuar criando fases. Dentro do jogo há o botão **"Me pague um café"**
+com a chave Pix e o QR code:
+
+**Pix:** `9a706f09-753c-4143-b055-197c082e9201`
+
+---
+
+## ⚖️ Aviso legal e isenção de uso de imagem
+
+**Este é um jogo de paródia e de ficção, feito com fins de entretenimento e humor.**
+
+- **Apartidário e imparcial.** O jogo não é vinculado a nenhum partido, candidato ou campanha e trata os dois
+  lados de forma equivalente (mesmas regras, poderes, fases e finais). Não defende nem ataca nenhum lado.
+- **Não é propaganda eleitoral.** O jogo não pede voto, não apoia nem combate candidato, partido, coligação
+  ou campanha, e não deve ser usado como material de propaganda.
+- **Nenhuma imagem real é usada.** Não há fotografias, retratos, vozes ou gravações de qualquer pessoa.
+  Todos os personagens são **desenhos originais, estilizados e genéricos**, criados por código, que não
+  pretendem retratar fielmente nem representar ninguém.
+- **Nomes citados apenas para identificar a paródia.** Os nomes de figuras públicas aparecem em tom de sátira
+  e humor político. Falas, situações, poderes e finais são **fictícios** e não representam fatos, declarações,
+  posições ou opiniões reais dessas pessoas.
+- **Sem vínculo ou endosso.** Nenhuma pessoa, partido, candidato, instituição, órgão público ou empresa
+  citados participou, patrocinou, aprovou ou tem qualquer relação com este projeto. Siglas, nomes e marcas
+  pertencem aos seus respectivos titulares e são citados apenas de forma descritiva.
+- **Sem violência real.** Quem é "atingido" apenas senta, cansado de tanto gritar.
+- **Sem coleta de dados.** O jogo roda no seu navegador; o progresso e o recorde ficam apenas nele.
+- **Pedidos de ajuste ou remoção** podem ser feitos abrindo uma *issue* neste repositório ou contatando
+  o autor, e serão analisados com atenção.
+
+> Este texto é informativo e não constitui assessoria jurídica.
+
+---
+
+<p align="center">
+  Feito com ☕ e paciência por <b>rpossan</b> · <a href="https://github.com/rpossan/super-presida-batalha">github.com/rpossan/super-presida-batalha</a>
+</p>
