@@ -224,6 +224,21 @@
   .item .qty { position:absolute; top:-7px; right:-6px; background:var(--amarelo); color:#222; font-weight:900; font-size:12px; border-radius:999px; min-width:22px; padding:1px 6px; text-align:center; box-shadow:0 2px 6px #0008; }
   .item.empty { opacity:.35; text-decoration:line-through; }
   .item kbd { margin-left:2px; }
+  #quickBar { display:none; }
+  #qbPower { display:flex; align-items:center; gap:10px; padding:9px 14px; font-weight:800; border:2px solid var(--amarelo); background:#3a3510; }
+  #qbPower .qbMore { font-size:11px; opacity:.8; font-weight:600; }
+  #qbEnergy { font-weight:900; color:var(--amarelo); background:#0007; border-radius:999px; padding:5px 11px; }
+  #hidePowers { display:none; width:100%; margin-bottom:8px; padding:7px; font-weight:800; background:#3a3510; border:2px solid var(--amarelo); }
+  #qbPower { white-space:nowrap; flex-wrap:nowrap; }
+  #qbName { white-space:nowrap; }
+  /* celular: com um poder já escolhido o painel vira uma barra fina e a arena inteira fica livre */
+  body.mobile.pcollapsed #quickBar { display:flex; align-items:center; gap:8px; }
+  body.mobile.pcollapsed #energy, body.mobile.pcollapsed #powers { display:none; }
+  body.mobile.pcollapsed #battlePanel { display:flex; align-items:center; gap:8px; flex-wrap:nowrap; padding:7px 8px; }
+  body.mobile.pcollapsed #items { margin:0; padding:0; border:0; flex:none; }
+  body.mobile.pcollapsed #bottom { padding-bottom:8px; }
+  body.mobile:not(.pcollapsed) #hidePowers { display:block; }
+  @media (max-height:520px) { body.mobile:not(.pcollapsed) #hidePowers { width:auto; margin:0 0 6px; } }
   #items { position:relative; }
   #itemsToggle { display:none; align-items:center; gap:7px; padding:7px 12px; position:relative; }
   #itemsToggle .bag { font-size:20px; line-height:1; }
@@ -343,6 +358,11 @@
     <div style="margin-top:8px;font-size:12px;opacity:.8">Clique no <b>seu tabuleiro</b> para posicionar · <kbd>R</kbd> ou botão direito gira</div>
   </div>
   <div id="battlePanel" class="panel hidden">
+    <button class="btn" id="hidePowers">▼ Recolher e mirar</button>
+    <div id="quickBar">
+      <button class="btn" id="qbPower"><span id="qbName">🎯 Tiro</span><span class="qbMore">▲ Poderes</span></button>
+      <span id="qbEnergy">⚡ 0</span>
+    </div>
     <div id="energy"></div>
     <div id="powers"></div>
     <div id="items"></div>
@@ -524,7 +544,7 @@ const FLEET_TOTAL = FLEET.reduce((a,f) => a+f.len, 0);
    ================================================================ */
 let lastEnergy = 1;
 const G = {
-  round:1, votes:0, combo:0, boss:null, scn:null, level:1, levelIdx:0, enemy:null, defs:[FLEET,FLEET],
+  round:1, panelOpen:false, votes:0, combo:0, boss:null, scn:null, level:1, levelIdx:0, enemy:null, defs:[FLEET,FLEET],
   phase:"menu", side:[null,null], boards:[], fleets:[[],[]], fans:[{},{}],
   energy:[1,1], turn:0, busy:false, timeLeft:TURN_TIME, power:"normal",
   horiz:true, firstTurn:true, captains:[null,null], hover:null,
@@ -2012,7 +2032,7 @@ function startBattle() {
 function startTurn(repeat) {
   if (!G.firstTurn) G.energy[G.turn] = Math.min(MAX_ENERGY, G.energy[G.turn] + 1);
   G.firstTurn = false;
-  G.timeLeft = TURN_TIME; G.power = "normal";
+  G.timeLeft = TURN_TIME; G.power = "normal"; G.panelOpen = false;
   const begin = () => {
     if (G.phase !== "battle") return;
     if (G.turn===0) {
@@ -2484,6 +2504,12 @@ function ui() {
       $("powers").appendChild(b);
     });
     renderItems(myTurn);
+    const collapsed = isMobile() && !G.panelOpen && G.phase==="battle";
+    document.body.classList.toggle("pcollapsed", collapsed);
+    const names = { normal:"🎯 Tiro", radar:"📊 Pesquisa", cross:"📣 "+s0.cross, ultra:"🏍️ "+s0.ultra };
+    $("qbName").textContent = names[G.power] || "🎯 Tiro";
+    $("qbEnergy").textContent = `⚡ ${G.energy[0]}`;
+    $("qbPower").disabled = !myTurn;
     const fu = $("furia");
     fu.classList.toggle("hidden", !(G.furia > 0));
     if (G.furia > 0) fu.textContent = `🥫 FÚRIA +${G.furia}`;
@@ -2624,7 +2650,7 @@ document.addEventListener("pointerdown", e => {          // toque fora fecha a l
 function selectPower(id) {
   if (G.phase!=="battle" || G.turn!==0 || G.busy) return;
   if (G.energy[0] < COST[id]) return;
-  G.power = id; ui(); updateHoverPreview();
+  G.power = id; G.panelOpen = false; ui(); updateHoverPreview();
 }
 
 /* ================================================================
@@ -2969,6 +2995,11 @@ function startLevel(i) {
   newGame(menuSide, i);
 }
 $("btnMenu").onclick = showMenu;
+$("qbPower").onclick = () => { G.panelOpen = true; ui(); };
+$("hidePowers").onclick = () => { G.panelOpen = false; ui(); };
+document.addEventListener("pointerdown", e => {              // celular: toque fora dos poderes recolhe o painel
+  if (G.panelOpen && isMobile() && G.phase==="battle" && !e.target.closest("#battlePanel")) { G.panelOpen = false; ui(); }
+});
 /* os navegadores só liberam áudio após um gesto: o tema começa no primeiro toque/tecla */
 function ensureMenuMusic() {
   if (G.phase === "menu" && !Music.timer) musicStart("menu");
