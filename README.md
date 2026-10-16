@@ -2,7 +2,7 @@
   <img src="logo.svg" alt="Super Presida Batalha" width="520">
 </p>
 
-<h3 align="center">Posicione a torcida. Acerte o adversário. Domine a avenida!</h3>
+<h3 align="center">Use sua estratégia política para conquistar votos e vencer a corrida presidencial!</h3>
 
 <p align="center">
   Batalha naval das <b>eleições 2026</b>, em 3D, direto no navegador.<br>
