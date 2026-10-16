@@ -52,6 +52,7 @@ quando fazer uma pesquisa para descobrir onde o adversário se esconde e qual po
 | 🌎 **7 cenários do Brasil** | Av. Paulista, Aeroporto de Porto Alegre, Cristo Redentor, Sertão, Amazônia, Balneário Camboriú e Praça dos Três Poderes. |
 | ⚠️ **Perigos de cenário** | Bala perdida, fogo no sertão e chuva de flechas na floresta, em quantidade equilibrada ao nível. |
 | 👑 **Chefões únicos** | Sem torcida, com pontos de vida, que mudam de casa a cada acerto e reagem aos seus erros. |
+| 🎒 **Itens da campanha** | Remédio (revive um torcedor), Fúria (turnos seguidos) e Reforço (invoca um torcedor). Estoque limitado para o jogo todo: acabou, já era. |
 | 🏆 **Votos e recorde** | Placar acumulado entre as fases, com combo e recorde pessoal. |
 | 🎵 **Trilha sonora própria** | Uma música diferente por cenário (samba, baião, milonga, tambores, marcha…), gerada por código. |
 | 📱 **Funciona no celular** | A câmera acompanha o turno: na sua vez, só a arena do adversário, para dar precisão no toque. |
@@ -123,7 +124,7 @@ créditos rolando e o QR code do Pix.
 1. Escolha o lado e a fase.
 2. **Posicione** sua torcida (5 grupos) no seu tabuleiro. `R` ou botão direito gira.
 3. Na sua vez, **clique numa casa** do tabuleiro adversário. Cada tiro arremessa um objeto de protesto.
-4. Acerte para ganhar **votos** e **energia**; gaste a energia nos poderes (`1`–`4`).
+4. Acerte para ganhar **votos** e **energia**; gaste a energia nos poderes (`1`–`4`) e use os **itens** (`5`–`7`) com sabedoria.
 5. Dispersse toda a torcida adversária (ou derrote o chefão) antes que ele faça o mesmo com a sua.
 
 | Poder | Custo | Efeito |
@@ -134,6 +135,24 @@ créditos rolando e o QR code do Pix.
 | 🏍️ Motociata / 🚌 Caravana | 6 | linha inteira / coluna inteira |
 
 Energia: **+1 por turno** e **+1 por torcedor atingido**. No celular, a câmera acompanha o turno.
+
+### 🎒 Itens da campanha
+
+Além dos poderes, você carrega itens que valem para a **campanha toda**. O estoque é único e limitado:
+o que acabou, acabou, e só volta se você recomeçar a jornada (game over ou campanha zerada).
+Usar um item **não gasta o turno**.
+
+<p align="center"><img src="docs/img/itens.png" alt="Painel de itens" width="760"></p>
+
+| Item | Atalho | Efeito | Estoque na campanha | Limite por fase |
+|---|---|---|---|---|
+| 💊 **Remédio** (cruz vermelha) | `5` | revive 1 torcedor caído da sua torcida | **4** | 2 |
+| 🥫 **Fúria** (energético) | `6` | turnos contínuos: você joga **3 turnos seguidos** (o atual + 2), sem o adversário agir | **2** | 1 |
+| 📢 **Reforço** (alto-falante) | `7` | invoca 1 torcedor aleatório na sua arena (+1 de vida) | **3** | 1 |
+
+Os números foram calibrados por simulação para os itens ajudarem sem tirar o desafio: no chefão final,
+um jogador competente passa de ~60% para ~70% de vitória usando tudo o que a fase permite.
+A Fúria é o item mais forte, por isso é o mais raro. O perigo do cenário não se repete nos turnos extras.
 
 ---
 

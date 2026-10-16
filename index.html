@@ -214,6 +214,18 @@
   #endFinal .keyline { font:700 14px ui-monospace,Consolas,monospace; opacity:.9; margin-bottom:10px; word-break:break-all; }
   #endFinal .row { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:6px; }
   #endSkip { position:absolute; right:14px; bottom:14px; z-index:3; background:#0008; border:1px solid #fff5; color:#fff; border-radius:999px; padding:8px 14px; cursor:pointer; opacity:.8; }
+  #items { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; padding-top:8px; border-top:1px dashed #fff3; align-items:center; }
+  #items .ilabel { font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:var(--amarelo); font-weight:800; margin-right:2px; }
+  .item { position:relative; display:flex; align-items:center; gap:8px; padding:6px 10px 6px 6px; min-width:150px; text-align:left; }
+  .item svg { width:34px; height:34px; flex:none; }
+  .item .itx { display:flex; flex-direction:column; line-height:1.2; }
+  .item .itx b { font-size:13px; }
+  .item .itx small { font-size:10.5px; opacity:.8; font-weight:500; }
+  .item .qty { position:absolute; top:-7px; right:-6px; background:var(--amarelo); color:#222; font-weight:900; font-size:12px; border-radius:999px; min-width:22px; padding:1px 6px; text-align:center; box-shadow:0 2px 6px #0008; }
+  .item.empty { opacity:.35; text-decoration:line-through; }
+  .item kbd { margin-left:2px; }
+  #furia { font:900 17px/1.15 Impact,"Arial Black",sans-serif; padding:3px 12px; border-radius:10px; color:#fff; white-space:nowrap;
+           background:linear-gradient(#32a8ff,#1c4fd6); border:2px solid #fff; text-shadow:0 2px 0 #0007; box-shadow:0 0 14px #32a8ff99; animation:comboPulse .35s ease-in-out infinite alternate; }
   .hidden { display:none !important; }
   .rules { font-size:13px; opacity:.75; max-width:640px; }
   @media (max-width:700px) {
@@ -229,6 +241,8 @@
     #center { min-width:100px; }
     #matchClock { font-size:30px; min-width:62px; }
     #votes { padding:1px 8px; } #votes b { font-size:17px; } #votes small { font-size:9px; }
+    #furia { font-size:14px; padding:2px 8px; }
+    .item { min-width:0; flex:1 1 30%; padding:5px 8px 5px 5px; } .item .itx small { display:none; }
     #combo { font-size:15px; padding:2px 8px; position:absolute; top:100%; left:0; right:0; margin:2px auto 0; width:max-content; z-index:4; }
     #combo.max { font-size:17px; }
     .hp { height:20px; border-width:2px; }
@@ -279,6 +293,7 @@
     <div id="scoreRow">
       <span id="votes"><small>Votos</small> <b id="votesNum">0</b></span>
       <span id="combo" class="hidden"></span>
+      <span id="furia" class="hidden"></span>
     </div>
     <div id="turn"><div id="roundText"></div><b id="turnText"></b><div id="timerbar"><div id="timerfill"></div></div></div>
   </div>
@@ -310,6 +325,7 @@
   <div id="battlePanel" class="panel hidden">
     <div id="energy"></div>
     <div id="powers"></div>
+    <div id="items"></div>
   </div>
 </div>
 
@@ -354,7 +370,7 @@
   <p id="musicHint" class="rules" style="margin:6px 0 0">🎵 Toque ou clique em qualquer lugar para ouvir o tema</p>
   <div class="rules">
     Jogo apartidário e imparcial: os dois lados têm as mesmas regras. Obra de paródia e ficção: personagens estilizados inspirados em figuras públicas, sem vínculo com partidos, campanhas ou pessoas citadas. Ninguém se machuca: quem é "atingido" só senta, cansado de tanto gritar. 🎺<br>
-    Atire com o mouse/toque · R gira a torcida · 1–4 escolhem poderes · Esc cancela · O progresso fica só nesta aba (atualizou, recomeça)
+    Atire com o mouse/toque · R gira a torcida · 1–4 poderes · 5–7 itens · Esc cancela · O progresso fica só nesta aba (atualizou, recomeça)
   </div>
 </div>
 
@@ -470,6 +486,12 @@ const LEVELS = [
 const PROG = { flavio:1, lula:1 };               // fases liberadas por trilha
 const CLEARED = { flavio:[], lula:[] };          // fases já vencidas
 let menuSide = null, justUnlocked = -1;
+/* itens da campanha (estoque único para o jogo todo; acabou, já era) e limite de uso por fase */
+const ITEM_START = { revive:4, furia:2, reforco:3 };
+const ITEM_CAP   = { revive:2, furia:1, reforco:1 };
+const FURIA_EXTRA = 2;                       // turnos seguidos além do atual
+const ITEMS = { ...ITEM_START };
+const resetItems = () => Object.assign(ITEMS, ITEM_START);
 const ARROWS_PER_TURN = 4;
 const COST = { normal:0, radar:2, cross:3, ultra:6 };
 const MAX_ENERGY = 9;
@@ -1952,7 +1974,8 @@ function doRadar(targetB, r, c, who, cb) {
 function startBattle() {
   G.phase = "battle"; G.turn = 0; G.round = 1; G.power = "normal"; G.firstTurn = true;
   G.finished = false; G.matchEnd = Date.now() + MATCH_TIME*1000;
-  if (G.runOver) { G.votes = 0; G.runOver = false; }       // nova jornada: placar recomeça do zero
+  G.furia = 0; G.itemUse = { revive:0, furia:0, reforco:0 };
+  if (G.runOver) { G.votes = 0; G.runOver = false; resetItems(); }       // nova jornada: placar e itens recomeçam
   G.combo = 0; G.levelStartVotes = G.votes; shownVotes = G.votes;
   $("votesNum").textContent = fmtVotes(G.votes); renderCombo();
   G.energy = [1, 1]; lastEnergy = 1; $("log").innerHTML = "";
@@ -1966,15 +1989,21 @@ function startBattle() {
   $("battlePanel").classList.remove("hidden");
   startTurn();
 }
-function startTurn() {
+function startTurn(repeat) {
   if (!G.firstTurn) G.energy[G.turn] = Math.min(MAX_ENERGY, G.energy[G.turn] + 1);
   G.firstTurn = false;
   G.timeLeft = TURN_TIME; G.power = "normal";
   const begin = () => {
     if (G.phase !== "battle") return;
     if (G.turn===0) {
-      G.busy = false; toast("SUA VEZ!", SIDES[G.side[0]].cssAlt);
-      setAction("🎯 SUA VEZ", SIDES[G.side[0]].cssAlt, "Clique numa casa do tabuleiro adversário · +1 ⚡ por turno");
+      G.busy = false;
+      if (repeat) {
+        toast("FÚRIA! DE NOVO!", "#32a8ff");
+        setAction("🥫 FÚRIA: SUA VEZ DE NOVO!", "#32a8ff", `Turnos contínuos · restam ${G.furia} extra${G.furia===1?"":"s"}`);
+      } else {
+        toast("SUA VEZ!", SIDES[G.side[0]].cssAlt);
+        setAction("🎯 SUA VEZ", SIDES[G.side[0]].cssAlt, "Clique numa casa do tabuleiro adversário · +1 ⚡ por turno");
+      }
     } else {
       G.busy = true;
       if (G.boss && Math.random() < BOSS_REST) {                       // o chefão descansa: não ataca neste turno
@@ -1988,7 +2017,7 @@ function startTurn() {
     }
     ui();
   };
-  const hz = LEVELS[G.levelIdx].hazard;
+  const hz = repeat ? null : LEVELS[G.levelIdx].hazard;       // o perigo do cenário não repete nos turnos da Fúria
   if (hz === "bala") {                                  // Rio: bala perdida cai na arena de quem vai jogar
     G.busy = true; ui();
     hazardDrop(G.turn === 0 ? 0 : 1, begin);
@@ -2184,7 +2213,15 @@ function hazardImpact(b, r, c) {
   ui();
   if (allSunk(b)) finish(1 - b);                                               // a bala perdida pode decidir o jogo
 }
-function nextTurn() { if (G.phase!=="battle") return; G.turn = 1-G.turn; if (G.turn===0) G.round++; startTurn(); }
+function nextTurn() {
+  if (G.phase!=="battle") return;
+  if (G.turn === 0 && G.furia > 0) {                                  // Fúria: você joga de novo, o adversário não age
+    G.furia--;
+    log(`🥫 Fúria! Você joga de novo (${G.furia} turno${G.furia===1?"":"s"} extra${G.furia===1?"":"s"} restante${G.furia===1?"":"s"}).`);
+    startTurn(true); return;
+  }
+  G.turn = 1-G.turn; if (G.turn===0) G.round++; startTurn();
+}
 
 function playerFire(r,c) {
   if (G.phase!=="battle" || G.turn!==0 || G.busy) return;
@@ -2426,6 +2463,10 @@ function ui() {
       b.onclick = () => selectPower(id);
       $("powers").appendChild(b);
     });
+    renderItems(myTurn);
+    const fu = $("furia");
+    fu.classList.toggle("hidden", !(G.furia > 0));
+    if (G.furia > 0) fu.textContent = `🥫 FÚRIA +${G.furia}`;
     $("fleetA").classList.remove("hidden"); $("fleetB").classList.remove("hidden");
     const row = (b) => G.fleets[b].map(sh =>
       `<div class="${sh.sunk?"sunk":""}">${"●".repeat(sh.len-sh.hits)}${"○".repeat(sh.hits)} ${sh.name}</div>`).join("");
@@ -2475,6 +2516,76 @@ function setClock(v) {
   if (v===lastClock) return; lastClock = v;
   const el = $("matchClock"); el.textContent = v===Infinity ? "∞" : v; el.classList.toggle("low", v<=10 && G.phase==="battle");
 }
+/* ---- itens: Remédio (reviver), Fúria (turnos contínuos) e Reforço (alto-falante) ---- */
+const ITEM_DEFS = [
+  { id:"revive",  name:"Remédio",  desc:"revive 1 torcedor caído", key:"5",
+    svg:`<svg viewBox="0 0 40 40"><rect x="11" y="4" width="18" height="7" rx="2" fill="#d9dde6" stroke="#1a1a1a" stroke-width="2"/><rect x="7" y="10" width="26" height="27" rx="5" fill="#fff" stroke="#1a1a1a" stroke-width="2.4"/><path d="M17 17h6v5h5v6h-5v5h-6v-5h-5v-6h5z" fill="#e0242a"/></svg>` },
+  { id:"furia",   name:"Fúria",    desc:`+${FURIA_EXTRA} turnos seguidos`, key:"6",
+    svg:`<svg viewBox="0 0 40 40"><rect x="9" y="5" width="22" height="31" rx="5" fill="url(#gCan)" stroke="#1a1a1a" stroke-width="2.4"/><rect x="9" y="5" width="22" height="5" rx="2" fill="#c9ced8"/><path d="M22 12l-8 12h6l-2 9 9-13h-6z" fill="#ffe14a" stroke="#1a1a1a" stroke-width="1.4" stroke-linejoin="round"/><defs><linearGradient id="gCan" x1="0" x2="1"><stop offset="0" stop-color="#2f7bff"/><stop offset="1" stop-color="#143c9c"/></linearGradient></defs></svg>` },
+  { id:"reforco", name:"Reforço",  desc:"invoca 1 torcedor", key:"7",
+    svg:`<svg viewBox="0 0 40 40"><path d="M6 15h8l14-8v26l-14-8H6z" fill="#ffd23a" stroke="#1a1a1a" stroke-width="2.4" stroke-linejoin="round"/><rect x="9" y="26" width="6" height="9" rx="2" fill="#555" stroke="#1a1a1a" stroke-width="2"/><path d="M32 14q5 6 0 12M35 10q9 10 0 20" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round"/></svg>` },
+];
+function canUseItem(id) {
+  return G.phase==="battle" && G.turn===0 && !G.busy && ITEMS[id] > 0 && G.itemUse[id] < ITEM_CAP[id] && !(id==="furia" && G.furia>0);
+}
+function fallenFans() {
+  const out = [];
+  G.fleets[0].forEach((sh, i) => sh.cells.forEach(([r,c]) => { if (G.boards[0][r][c].shot && G.boards[0][r][c].ship === i) out.push([i,r,c]); }));
+  return out;
+}
+function useItem(id) {
+  if (!canUseItem(id)) return;
+  if (id === "revive") {
+    const f = fallenFans();
+    if (!f.length) { toast("NINGUÉM CAÍDO PARA REVIVER", "#cfd8e3"); return; }
+    const [i,r,c] = f[rand(f.length)], sh = G.fleets[0][i], cell = G.boards[0][r][c];
+    cell.shot = false; sh.hits = Math.max(0, sh.hits-1); sh.sunk = false;
+    const fan = G.fans[0][r+","+c]; if (fan) { fan.userData.fall = -1; fan.rotation.z = 0; fan.position.y = 0; fan.userData.flag.visible = true; fan.visible = true; }
+    refreshTile(0, r, c);
+    burst(tilePos(0,r,c), [0xffffff, 0xe0242a, 0x4cd964], 26, 4.5);
+    [523,659,784].forEach((fq,k) => tone(fq,.16,"triangle",.09,0,k*.08));
+    toast("💊 REVIVEU UM TORCEDOR!", "#4cd964");
+    log("💊 Remédio: um torcedor caído da sua torcida se levantou!");
+    setAction("💊 Remédio da Cruz Vermelha!", "#4cd964", "Um torcedor caído foi revivido");
+  } else if (id === "furia") {
+    G.furia = FURIA_EXTRA;
+    tone(180,.5,"sawtooth",.1,500); tone(900,.18,"square",.07,0,.3);
+    toast("🥫 FÚRIA ATIVADA!", "#32a8ff");
+    log(`🥫 Fúria: você joga ${FURIA_EXTRA+1} turnos seguidos, sem o adversário agir.`);
+    setAction("🥫 FÚRIA ATIVADA!", "#32a8ff", `${FURIA_EXTRA+1} turnos contínuos, contando este`);
+  } else if (id === "reforco") {
+    const free = [];
+    for (let r=0;r<N;r++) for (let c=0;c<N;c++) { const k = G.boards[0][r][c]; if (k.ship < 0 && !k.shot) free.push([r,c]); }
+    if (!free.length) { toast("SEM ESPAÇO PARA REFORÇO", "#cfd8e3"); return; }
+    const [r,c] = free[rand(free.length)];
+    G.defs[0] = [...G.defs[0], { name:"Reforço", len:1 }];                 // +1 torcedor na vida total
+    G.fleets[0].push({ name:"Reforço", len:1, idx:-1, cells:[[r,c]], hits:0, sunk:false });
+    G.boards[0][r][c].ship = G.fleets[0].length - 1;
+    addFan(0, r, c);
+    const fan = G.fans[0][r+","+c]; fan.scale.setScalar(.01);
+    addFx(.5, (t) => fan.scale.setScalar(Math.min(1, .01 + t*2.4 + Math.sin(t*10)*.05)), () => fan.scale.setScalar(1));
+    refreshTile(0, r, c);
+    burst(tilePos(0,r,c), [SIDES[G.side[0]].main, SIDES[G.side[0]].alt, 0xffffff], 30, 5);
+    tone(660,.1,"square",.08); tone(990,.2,"square",.08,0,.1);
+    toast("📢 REFORÇO CHEGOU!", SIDES[G.side[0]].cssAlt);
+    log("📢 Reforço: o alto-falante chamou um novo torcedor para a sua torcida!");
+    setAction("📢 Reforço no alto-falante!", SIDES[G.side[0]].cssAlt, "Um novo torcedor entrou na sua arena");
+  }
+  ITEMS[id]--; G.itemUse[id]++;
+  ui();
+}
+function renderItems(myTurn) {
+  const box = $("items"); box.innerHTML = '<span class="ilabel">Itens</span>';
+  ITEM_DEFS.forEach(d => {
+    const b = document.createElement("button");
+    const left = ITEMS[d.id], cap = ITEM_CAP[d.id] - G.itemUse[d.id];
+    b.className = "btn item" + (left <= 0 ? " empty" : "");
+    b.innerHTML = `${d.svg}<span class="itx"><b>${d.name} <kbd>${d.key}</kbd></b><small>${d.desc}${left>0 ? ` · limite ${Math.max(0,cap)}/fase` : ""}</small></span><span class="qty">×${left}</span>`;
+    b.disabled = !myTurn || !canUseItem(d.id);
+    b.onclick = () => useItem(d.id);
+    box.appendChild(b);
+  });
+}
 function selectPower(id) {
   if (G.phase!=="battle" || G.turn!==0 || G.busy) return;
   if (G.energy[0] < COST[id]) return;
@@ -2522,6 +2633,8 @@ addEventListener("keydown", e => {
   if (G.phase==="battle") {
     const map = {"1":"normal","2":"radar","3":"cross","4":"ultra"};
     if (map[k]) selectPower(map[k]);
+    const itm = {"5":"revive","6":"furia","7":"reforco"};
+    if (itm[k]) useItem(itm[k]);
     if (k==="escape") selectPower("normal");
   }
 });
@@ -2842,7 +2955,7 @@ function newGame(playerKey, levelIdx = 0) {
   const L = LEVELS[levelIdx];
   G.side = [playerKey, other];
   G.levelIdx = levelIdx; G.level = levelIdx + 1; G.lastWin = false;
-  if (G.runOver) { G.votes = 0; G.runOver = false; }          // game over / campanha zerada: nova jornada
+  if (G.runOver) { G.votes = 0; G.runOver = false; resetItems(); }          // game over / campanha zerada: nova jornada
   G.combo = 0; shownVotes = G.votes; $("votesNum").textContent = fmtVotes(G.votes); renderCombo();
   G.enemy = { ...CHARS[TRACKS[playerKey][levelIdx]], boss: !!L.boss };
   G.defs = [FLEET, L.def.map(i => FLEET[i])];
