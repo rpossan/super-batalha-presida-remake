@@ -28,6 +28,23 @@
   #center { display:flex; flex-direction:column; align-items:center; min-width:150px; }
   #matchClock { font:900 42px/1 Impact,"Arial Black",sans-serif; min-width:86px; text-align:center; padding:4px 10px 2px; border-radius:10px;
                 background:linear-gradient(#1b2433,#0b0f17); border:3px solid #fff; box-shadow:0 3px 12px #000a; text-shadow:0 2px 0 #000; margin-top:-2px; }
+  #scoreRow { display:flex; align-items:center; justify-content:center; gap:8px; margin-top:5px; position:relative; min-height:34px; }
+  #votes { display:flex; align-items:baseline; gap:6px; padding:2px 12px; background:rgba(0,0,0,.72); border:2px solid var(--amarelo); border-radius:10px;
+           font-weight:900; text-shadow:0 2px 0 #000; }
+  #votes small { font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:var(--amarelo); }
+  #votes b { font:900 22px/1.1 Impact,"Arial Black",sans-serif; color:#fff; min-width:34px; text-align:right; }
+  #votes.bump { animation:bump2 .25s ease-out; }
+  @keyframes bump2 { 50% { transform:scale(1.18); } }
+  #combo { font:900 19px/1.15 Impact,"Arial Black",sans-serif; letter-spacing:.5px; padding:3px 12px; border-radius:10px; color:#fff; white-space:nowrap;
+           background:linear-gradient(#ff8a1a,#d7191c); border:2px solid #fff; text-shadow:0 2px 0 #0007; box-shadow:0 0 14px #ff7a1a99;
+           animation:comboPulse .45s ease-in-out infinite alternate; }
+  #combo.max { font-size:23px; color:#2a1a00; background:linear-gradient(#fff27a,#ffb300); border-color:#fff; box-shadow:0 0 24px #ffdf00;
+               animation:comboPulse .28s ease-in-out infinite alternate; }
+  @keyframes comboPulse { from { transform:scale(1); } to { transform:scale(1.16); } }
+  .vpop { position:absolute; left:50%; top:-2px; transform:translateX(-50%); font:900 24px/1 Impact,"Arial Black",sans-serif; color:#fff;
+          text-shadow:0 2px 0 #000, 0 0 10px #000; pointer-events:none; animation:vpop .95s ease-out forwards; white-space:nowrap; z-index:6; }
+  .vpop.big { color:#ffe600; font-size:30px; }
+  @keyframes vpop { from { opacity:1; transform:translate(-50%,0) scale(.8); } 20% { transform:translate(-50%,-8px) scale(1.25); } to { opacity:0; transform:translate(-50%,-46px) scale(1); } }
   #matchClock.low { color:#ff5a4a; border-color:#ff5a4a; animation:clockpulse .5s infinite alternate; }
   @keyframes clockpulse { to { transform:scale(1.12); } }
   #topBtns { display:flex; gap:6px; }
@@ -165,6 +182,9 @@
     #topBtns { grid-column:1 / -1; justify-content:flex-end; margin-top:-4px; }
     #center { min-width:100px; }
     #matchClock { font-size:30px; min-width:62px; }
+    #votes { padding:1px 8px; } #votes b { font-size:17px; } #votes small { font-size:9px; }
+    #combo { font-size:15px; padding:2px 8px; position:absolute; top:100%; left:0; right:0; margin:2px auto 0; width:max-content; z-index:4; }
+    #combo.max { font-size:17px; }
     .hp { height:20px; border-width:2px; }
     #top .side { font-size:12px; padding:3px 7px; }
     #turnText { display:none; }
@@ -179,6 +199,9 @@
   @media (max-height:520px) and (pointer:coarse), (max-height:520px) and (max-width:700px) {
     #top { padding:4px 8px 6px; }
     #matchClock { font-size:24px; min-width:52px; padding:2px 8px 0; }
+    #scoreRow { min-height:26px; margin-top:2px; }
+    #votes b { font-size:15px; }
+    #combo { position:absolute; top:100%; left:0; right:0; margin:2px auto 0; width:max-content; z-index:4; font-size:13px; padding:1px 8px; }
     .hp { height:14px; } .fhead { margin-bottom:2px; }
     #roundText { font-size:9px; } #turnText { font-size:11px !important; }
     #topBtns { grid-column:auto; margin-top:0; }
@@ -190,7 +213,7 @@
     .power .ptxt small, .shape, .power kbd { display:none; }
     .power .ptxt b { font-size:12px; }
     #action { display:none; }
-    #focusTag { top:56px; font-size:11px; padding:3px 10px; }
+    #focusTag { top:94px; font-size:11px; padding:3px 10px; }
     .fleetlist { display:none !important; }
     #placePanel .btn { padding:6px 8px; font-size:12px; }
     #shipChips, #placePanel > div:last-child { display:none; }
@@ -207,6 +230,10 @@
   </div>
   <div id="center">
     <div id="matchClock">∞</div>
+    <div id="scoreRow">
+      <span id="votes"><small>Votos</small> <b id="votesNum">0</b></span>
+      <span id="combo" class="hidden"></span>
+    </div>
     <div id="turn"><div id="roundText"></div><b id="turnText"></b><div id="timerbar"><div id="timerfill"></div></div></div>
   </div>
   <div class="fighter right">
@@ -354,7 +381,7 @@ const FLEET_TOTAL = FLEET.reduce((a,f) => a+f.len, 0);
    ================================================================ */
 let lastEnergy = 1;
 const G = {
-  round:1, scn:null, level:1, levelIdx:0, enemy:null, defs:[FLEET,FLEET],
+  round:1, votes:0, combo:0, scn:null, level:1, levelIdx:0, enemy:null, defs:[FLEET,FLEET],
   phase:"menu", side:[null,null], boards:[], fleets:[[],[]], fans:[{},{}],
   energy:[1,1], turn:0, busy:false, timeLeft:TURN_TIME, power:"normal",
   horiz:true, firstTurn:true, captains:[null,null], hover:null,
@@ -1409,13 +1436,13 @@ function allSunk(b) { return G.fleets[b].every(s => s.sunk); }
 /* dispara uma lista de células; who = atirador */
 function resolveShots(targetB, cells, who, powerLabel, opts = {}) {
   G.busy = true; clearPreview(); ui();
-  let hits = 0, sunkNames = [], maxT = 0;
+  let hits = 0, gained = 0, sunkNames = [], maxT = 0;
   cells.forEach(([r,c], i) => {
     const tm = (opts.delay||0) + (opts.time ? opts.time(r,c) : i*90);
     maxT = Math.max(maxT, tm);
     setTimeout(() => {
       const res = applyShot(targetB, r, c, opts.noCone);
-      if (res !== "miss") hits++;
+      if (res !== "miss") { hits++; if (who === 0) gained += registerHit(); }
       if (res === "sunk") {
         const sh = G.boards[targetB][r][c].ship; sunkNames.push(G.fleets[targetB][sh].name);
       }
@@ -1424,13 +1451,14 @@ function resolveShots(targetB, cells, who, powerLabel, opts = {}) {
   const total = maxT + 250;
   setTimeout(() => {
     const target = sname(targetB);
+    if (who === 0 && hits === 0) resetCombo();        // errou o tiro inteiro: combo zera
     if (hits>0) {
       G.energy[who] = Math.min(MAX_ENERGY, G.energy[who] + hits);
       captainReact(who,"jump"); captainReact(targetB,"shake");
       log(`<b style="color:${SIDES[G.side[who]].cssAlt}">${sname(who)}</b>: ${powerLabel} acertou <b>${hits}</b> torcedor${hits>1?"es":""} de ${target}!`);
       const phrase = pickPhrase(hits>1 ? MULTI_PHRASES : HIT_PHRASES);
       toast(phrase, SIDES[G.side[who]].cssAlt);
-      setAction(`✅ ${phrase}`, "#4cd964", `${powerLabel} derrubou ${hits} torcedor${hits>1?"es":""} de ${target} · +${hits} ⚡ de energia`);
+      setAction(`✅ ${phrase}`, "#4cd964", `${powerLabel} derrubou ${hits} torcedor${hits>1?"es":""} de ${target} · +${hits} ⚡${who===0 ? ` · +${fmtVotes(gained)} votos${G.combo>=2 ? ` (combo ${comboMult(G.combo)}x)` : ""}` : ""}`);
     } else {
       const phrase = pickPhrase(MISS_PHRASES);
       log(`${sname(who)}: ${powerLabel} errou o alvo. 🚧`);
@@ -1474,6 +1502,7 @@ function doRadar(targetB, r, c, who, cb) {
 function startBattle() {
   G.phase = "battle"; G.turn = 0; G.round = 1; G.power = "normal"; G.firstTurn = true;
   G.finished = false; G.matchEnd = Date.now() + MATCH_TIME*1000;
+  G.votes = 0; G.combo = 0; shownVotes = 0; $("votesNum").textContent = "0"; renderCombo();
   G.energy = [1, G.level>=4 ? 3 : 1]; lastEnergy = 1; $("log").innerHTML = "";
   log(`⚔️ Fase ${G.level}: <b>${sname(0)}</b> contra <b>${G.enemy.name}</b> (${LEVELS[G.levelIdx].diff}).`);
   if (LEVELS[G.levelIdx].boss) setTimeout(() => toast(`CHEFÃO: ${G.enemy.short.toUpperCase()}!`, "#ff5a4a"), 300);
@@ -1643,6 +1672,7 @@ function finish(winner, reason) {
     text = `${G.enemy.name} (${G.enemy.party}) dominou a disputa ${G.scn.of} em ${rounds}. Reorganize a torcida e tente de novo!`;
     btn = "Tentar de novo ↻";
   }
+  text += ` Você somou ${fmtVotes(G.votes)} votos.`;
   G.lastWin = youWin;
   setTimeout(() => {
     $("endTitle").textContent = title; $("endText").textContent = text; $("btnAgain").textContent = btn;
@@ -1737,6 +1767,33 @@ function shapeHTML(id, side) {
   const set = new Set(on[id]);
   return `<span class="shape">${Array.from({length:25},(_,i)=>`<i class="${set.has(i)?"on":""}"></i>`).join("")}</span>`;
 }
+/* votos (pontos) e combo: cada acerto vale 100 × multiplicador; 2x, 3x, 4x e, no 5º acerto seguido, 50x */
+let shownVotes = 0;
+const comboMult = n => n >= 5 ? 50 : Math.max(1, n);
+const fmtVotes = n => Math.round(n).toLocaleString("pt-BR");
+function renderCombo() {
+  const el = $("combo"), m = comboMult(G.combo);
+  if (G.combo < 2) { el.classList.add("hidden"); el.classList.remove("max"); return; }
+  el.classList.remove("hidden");
+  el.classList.toggle("max", G.combo >= 5);
+  el.textContent = G.combo >= 5 ? `🔥 COMBO MÁX ${m}x` : `COMBO ${m}x`;
+}
+function popVotes(text, big) {
+  const el = document.createElement("span");
+  el.className = "vpop" + (big ? " big" : ""); el.textContent = text;
+  $("scoreRow").appendChild(el); setTimeout(() => el.remove(), 1000);
+}
+function registerHit() {                       // chamado a cada torcedor adversário derrubado por você
+  G.combo++;
+  const m = comboMult(G.combo), pts = 100*m;
+  G.votes += pts;
+  renderCombo();
+  popVotes(`+${fmtVotes(pts)}`, G.combo >= 3);
+  const v = $("votes"); v.classList.remove("bump"); void v.offsetWidth; v.classList.add("bump");
+  if (G.combo === 5) toast("COMBO MÁXIMO 50x!", "#ffe600");
+  return pts;
+}
+function resetCombo() { if (G.combo > 0) { G.combo = 0; renderCombo(); } }
 let lastClock = -1;
 function setClock(v) {
   if (v===lastClock) return; lastClock = v;
@@ -1938,6 +1995,13 @@ function animate() {
     p.v.y -= 9*dt; p.m.position.addScaledVector(p.v, dt);
     p.m.rotation.x += p.spin*dt; p.m.rotation.y += p.spin*dt;
     if (p.life<=0 || p.m.position.y < 0) { scene.remove(p.m); p.m.material.dispose(); particles.splice(i,1); }
+  }
+
+  // placar de votos: sobe contando
+  if (Math.round(shownVotes) !== G.votes) {
+    shownVotes += (G.votes - shownVotes) * Math.min(1, dt*9);
+    if (Math.abs(G.votes - shownVotes) < 1) shownVotes = G.votes;
+    $("votesNum").textContent = fmtVotes(shownVotes);
   }
 
   // cronômetro da partida (120 s)
