@@ -354,17 +354,20 @@ const CHARS = {
   nikolas: { name:"Nikolas Ferreira",    short:"Nikolas",  party:"PL",           camp:"flavio", skin:0xf2c9a5, hair:0x2b1d14, hairStyle:"short" },
   tarcisio:{ name:"Tarcísio de Freitas", short:"Tarcísio", party:"Republicanos", camp:"flavio", skin:0xe8b48c, hair:0x2b2018, hairStyle:"short", glasses:true },
   michelle:{ name:"Michelle Bolsonaro",  short:"Michelle", party:"PL",           camp:"flavio", skin:0xf2c9a5, hair:0xd9b36a, hairStyle:"long" },
+  camilo:  { name:"Camilo Santana",      short:"Camilo",   party:"PT",           camp:"lula",   skin:0xc68a62, hair:0x1d1510, hairStyle:"short" },
+  ciro:    { name:"Ciro Nogueira",       short:"Ciro",     party:"PP",           camp:"flavio", skin:0xe0ac82, hair:0x9a9a9a, hairStyle:"short" },
 };
 /* adversários por fase, conforme o lado que você escolheu (o chefão é sempre o líder do outro lado) */
 const TRACKS = {
-  flavio: ["boulos","gleisi","moraes","lula"],
-  lula:   ["nikolas","tarcisio","michelle","flavio"],
+  flavio: ["boulos","gleisi","moraes","camilo","lula"],
+  lula:   ["nikolas","tarcisio","michelle","ciro","flavio"],
 };
 /* fases: cenário, dificuldade, tamanho da torcida adversária (índices de FLEET) e nível da IA */
 const LEVELS = [
   { scn:"paulista", diff:"Fácil",   ai:1, def:[4,3,2] },
   { scn:"poa",      diff:"Médio",   ai:2, def:[1,2,3,4] },
   { scn:"rio",      diff:"Difícil", ai:3, def:[0,1,2,4], hazard:"bala" },
+  { scn:"sertao",   diff:"Muito difícil", ai:3, def:[0,1,2,3], hazard:"fogo" },
   { scn:"brasilia", diff:"CHEFÃO",  ai:4, def:[0,1,2,3,4], boss:true },
 ];
 /* progresso só em memória: recarregar a página recomeça */
@@ -520,6 +523,13 @@ const SONGS = {
     melody: bars([67,0,67,0,69,0,67,0,72,0,0,0,67,0,64,0],[71,0,71,0,72,0,71,0,74,0,0,0,71,0,67,0],
                  [69,0,69,0,72,0,69,0,76,0,0,0,72,0,69,0],[72,0,72,0,77,0,76,0,74,0,72,0,72,0,0,0]),
     harmony: null },
+  /* Sertão: baião (zabumba, triângulo e sanfona em Ré mixolídio) */
+  sertao: { bpm:104, chords:[38,43,45,38], kick:{f:105,g:55,d:.26,v:1}, lead:{type:"sawtooth", filter:2300, dur:.2, vol:.11},
+    k:[1,0,0,0,0,0,1,0,1,0,0,0,0,0,1,0], s:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], h:[.5,.3,.6,.3,.5,.3,.6,.3,.5,.3,.6,.3,.5,.3,.6,.3],
+    x:[0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0],
+    bass:[1,0,0,0,2,0,0,0,1,0,0,0,2,0,0,0],
+    melody: bars([74,0,76,78,79,0,78,0,76,0,74,0,71,0,74,0],[79,0,81,0,79,78,76,0,74,0,76,0,79,0,0,0],
+                 [81,0,81,79,78,0,76,0,74,0,76,78,76,0,0,0],[78,0,76,74,72,0,74,0,71,0,69,0,74,0,0,0]) },
   /* Brasília: marcha solene com fanfarra em Dó maior */
   brasilia: { bpm:108, chords:[48,53,55,48], kick:{f:130,g:50,d:.22,v:1}, lead:{type:"sawtooth", filter:2000, dur:.2, vol:.12},
     k:[1,0,0,0,0,0,1,0,1,0,0,0,0,0,1,0], s:[0,0,0,0,1,0,0,.5,0,0,0,0,1,0,.5,.5], h:[0,0,.7,0,0,0,.7,0,0,0,.7,0,0,0,.7,0], x:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -817,6 +827,47 @@ const SCENARIOS = [
         E(cyl(.06,.06,7.5,0xeeeeee, x,3.75,-20,6));
         const f = new THREE.Mesh(new THREE.PlaneGeometry(2.6,1.85), new THREE.MeshBasicMaterial({map:tex, side:THREE.DoubleSide})); f.position.set(x+1.3,6.3,-20); E(f);
       });
+    } },
+
+  /* ---------- Nordeste: Sertão ---------- */
+  { id:"sertao", name:"Sertão Nordestino", short:"Sertão", of:"do Sertão", emoji:"🌵", city:"Nordeste · Caatinga",
+    thumb:"linear-gradient(170deg,#ffd27a,#c9893a 75%)", sky:0xf7c97a, fog:[0xf6d08c,55,150], tiles:[0xb8925a,0xa98349],
+    build() {
+      groundPlane(340,240,0xc9a05e,-.12,-24);                          // terra seca
+      for (let i=0;i<90;i++) {                                         // rachaduras do solo ressecado
+        const w = 1.2 + Math.random()*3.2, cr = box(w,.02,.07, 0x6f4f28, -50+Math.random()*100, -.1, -34+Math.random()*52);
+        cr.rotation.y = Math.random()*Math.PI; E(cr);
+      }
+      const sun = new THREE.Mesh(new THREE.SphereGeometry(5.5,28,18), new THREE.MeshBasicMaterial({color:0xfff6c8})); sun.position.set(18,14,-78); E(sun);
+      [[9,.28],[14,.16],[20,.09]].forEach(([r,o]) => {                 // halo do sol escaldante
+        const h = new THREE.Mesh(new THREE.SphereGeometry(r,20,14), new THREE.MeshBasicMaterial({color:0xffd470, transparent:true, opacity:o, depthWrite:false}));
+        h.position.copy(sun.position); E(h);
+      });
+      [[-62,-70,17],[-18,-92,20],[40,-86,18],[78,-60,15],[-96,-48,16]].forEach(([x,z,r]) => {   // serras ao longe
+        const m = ball(r,0xa8693a, x,-4,z); m.scale.y = .62; E(m);
+      });
+      const cactus = (x,z,h) => {                                      // mandacaru
+        const g = new THREE.Group(), gr = 0x3f7a3a;
+        g.add(cyl(.34,.4,h,gr, 0,h/2,0,10));
+        [[-1,.55],[1,.7]].forEach(([sx,k]) => {
+          const arm = cyl(.22,.22,1.3,gr, sx*.85,h*k,0,8); arm.rotation.z = Math.PI/2; g.add(arm);   // braço horizontal
+          g.add(cyl(.22,.22,h*.38,gr, sx*1.45,h*k+h*.19,0,8));                                      // braço vertical
+        });
+        g.position.set(x,0,z); E(g);
+      };
+      [[-17,-9,6],[-24,-16,7],[-33,-8,5.5],[-41,-18,6.5],[17,-9,6.5],[26,-17,7],[35,-7,5.5],[44,-19,6],[-30,10,5],[31,11,5.5],[-52,-4,6],[53,-5,6.5]].forEach(a => cactus(...a));
+      [[-14,12],[-22,13],[15,13],[23,12],[-38,3],[40,3]].forEach(([x,z]) => {          // xique-xique
+        for (let i=0;i<4;i++) E(cyl(.13,.17,.9+Math.random()*.7,0x5a8a45, x+(Math.random()-.5)*1.4,.5,z+(Math.random()-.5)*1.4,7));
+      });
+      [[-30,-12],[31,-13],[0,-21]].forEach(([x,z]) => {                // árvores secas (galhos retorcidos)
+        E(cyl(.18,.28,3.6,0x5d4023, x,1.8,z,7));
+        for (let k=0;k<4;k++) { const br = cyl(.07,.11,1.8,0x5d4023, x+Math.cos(k*1.7)*.7,3.5+k*.15,z+Math.sin(k*1.7)*.7,6); br.rotation.z = (k%2?1:-1)*.8; br.rotation.y = k*1.7; E(br); }
+      });
+      E(box(.9,.45,.55,0xf2eadb, -21,.25,8));                           // caveira de boi
+      [-1,1].forEach(sx => { const h = new THREE.Mesh(new THREE.ConeGeometry(.08,.7,6), LM(0xf2eadb)); h.rotation.z = sx*1.2; h.position.set(-21+sx*.7,.55,8); E(h); });
+      E(box(5,3,4,0xdcc79c, 30,1.5,-24));                               // casa de taipa
+      const roof = new THREE.Mesh(new THREE.ConeGeometry(4.2,2.2,4), LM(0x8a6a3a)); roof.rotation.y = Math.PI/4; roof.position.set(30,4.1,-24); E(roof);
+      E(box(1,1.8,.1,0x5d4023, 30,.9,-21.95));
     } },
 
   /* ---------- Brasília: Esplanada dos Ministérios ---------- */
@@ -1517,16 +1568,17 @@ function startBattle() {
   if (G.runOver) { G.votes = 0; G.runOver = false; }       // nova jornada: placar recomeça do zero
   G.combo = 0; G.levelStartVotes = G.votes; shownVotes = G.votes;
   $("votesNum").textContent = fmtVotes(G.votes); renderCombo();
-  G.energy = [1, G.level>=4 ? 3 : 1]; lastEnergy = 1; $("log").innerHTML = "";
+  G.energy = [1, LEVELS[G.levelIdx].ai >= 4 ? 3 : 1]; lastEnergy = 1; $("log").innerHTML = "";
   log(`⚔️ Fase ${G.level}: <b>${sname(0)}</b> contra <b>${G.enemy.name}</b> (${LEVELS[G.levelIdx].diff}).`);
   if (LEVELS[G.levelIdx].boss) setTimeout(() => toast(`CHEFÃO: ${G.enemy.short.toUpperCase()}!`, "#ff5a4a"), 300);
   if (LEVELS[G.levelIdx].hazard === "bala") log("⚠️ Perigo do cenário: uma bala perdida cai do céu a cada turno, na arena de quem joga.");
+  if (LEVELS[G.levelIdx].hazard === "fogo") log("🔥 Perigo do cenário: a cada 2 turnos o sol escaldante incendeia 4 casas de cada arena.");
   $("placePanel").classList.add("hidden");
   $("battlePanel").classList.remove("hidden");
   startTurn();
 }
 function startTurn() {
-  if (!G.firstTurn) G.energy[G.turn] = Math.min(MAX_ENERGY, G.energy[G.turn] + 1 + (G.turn===1 && G.level>=4 ? 1 : 0));   // chefão ganha energia extra
+  if (!G.firstTurn) G.energy[G.turn] = Math.min(MAX_ENERGY, G.energy[G.turn] + 1 + (G.turn===1 && LEVELS[G.levelIdx].ai >= 4 ? 1 : 0));   // chefão ganha energia extra
   G.firstTurn = false;
   G.timeLeft = TURN_TIME; G.power = "normal";
   const begin = () => {
@@ -1540,9 +1592,13 @@ function startTurn() {
     }
     ui();
   };
-  if (LEVELS[G.levelIdx].hazard === "bala") {          // fase 3: bala perdida cai na arena de quem vai jogar
+  const hz = LEVELS[G.levelIdx].hazard;
+  if (hz === "bala") {                                  // Rio: bala perdida cai na arena de quem vai jogar
     G.busy = true; ui();
     hazardDrop(G.turn === 0 ? 0 : 1, begin);
+  } else if (hz === "fogo" && G.turn === 0 && G.round >= 2) {   // Sertão: a cada 2 turnos (uma vez por rodada), nas duas arenas
+    G.busy = true; ui();
+    fireBurn(begin);
   } else begin();
 }
 
@@ -1577,6 +1633,66 @@ function hazardDrop(b, done) {
     scene.remove(ret); scene.remove(bullet); bullet.position.y = .12; markerGroup.add(bullet);   // a bala fica cravada na casa
     if (G.phase === "battle") setTimeout(done, 350); 
   });
+}
+/* Sertão: a cada 2 turnos o calor incendeia 4 casas aleatórias em CADA arena (mesmo dano da bala: derruba o torcedor da casa) */
+function fireBurn(done) {
+  const picks = [[],[]];
+  for (const b of [0,1]) {
+    const free = [];
+    for (let r=0;r<N;r++) for (let c=0;c<N;c++) if (!G.boards[b][r][c].shot) free.push([r,c]);
+    while (picks[b].length < 4 && free.length) picks[b].push(free.splice(rand(free.length),1)[0]);
+  }
+  setAction("🔥 FOGO NO SERTÃO!", "#ff7a1a", "4 casas de cada arena vão pegar fogo…");
+  log("🔥 O sol escaldante incendeia a caatinga: 4 casas de cada arena vão queimar.");
+  const root = new THREE.Group(), rings = [], flames = []; scene.add(root);
+  [0,1].forEach(b => picks[b].forEach(([r,c]) => {
+    const p = tilePos(b,r,c), ring = makeRing(0xff7a1a); ring.position.set(p.x,.09,p.z); ring.scale.setScalar(.55); root.add(ring); rings.push(ring);
+  }));
+  tone(520,.12,"square",.06); tone(520,.12,"square",.06,0,.22);
+  let ignited = false;
+  addFx(2.4, (t) => {
+    if (t < .9) rings.forEach(rg => { rg.material.opacity = .55 + Math.abs(Math.sin(t*14))*.4; rg.scale.setScalar(.5 + .08*Math.sin(t*14)); });
+    else {
+      if (!ignited) {
+        ignited = true; rings.forEach(rg => rg.material.opacity = 0);
+        tone(260,.8,"sawtooth",.08,-170); tone(90,.5,"sawtooth",.07,-30);
+        fireImpact(picks, flames, root);
+      }
+      flames.forEach(f => { const ph = f.userData.ph; f.scale.y = 1 + .4*Math.sin(t*18+ph); f.scale.x = f.scale.z = 1 + .15*Math.sin(t*23+ph); });
+      if (flames.length && Math.random() < .6) burst(flames[rand(flames.length)].position, [0xff7a1a,0xffd23a,0xff3b30,0x555555], 1, 1.4);
+    }
+  }, () => {
+    scene.remove(root);
+    if (G.phase === "battle") setTimeout(done, 300);
+  });
+}
+function fireImpact(picks, flames, root) {
+  const hit = [0,0], sunk = [0,0];
+  [0,1].forEach(b => picks[b].forEach(([r,c]) => {
+    const p = tilePos(b,r,c), cell = G.boards[b][r][c];
+    if (cell.ship >= 0 && !cell.shot) {
+      const res = applyShot(b, r, c, true);
+      hit[b]++; if (res === "sunk") sunk[b]++;
+    } else if (!cell.shot) { cell.shot = true; refreshTile(b, r, c); }
+    addDecal(p.x, p.z, 0x1b120a, .42, .03);                                   // chão carbonizado
+    const fl = new THREE.Group();
+    const big = new THREE.Mesh(new THREE.ConeGeometry(.3,.85,8), new THREE.MeshBasicMaterial({color:0xff6a10}));
+    big.position.y = .42; fl.add(big);
+    const mid = new THREE.Mesh(new THREE.ConeGeometry(.2,.6,8), new THREE.MeshBasicMaterial({color:0xffc21a}));
+    mid.position.y = .32; fl.add(mid);
+    const core = new THREE.Mesh(new THREE.ConeGeometry(.1,.35,8), new THREE.MeshBasicMaterial({color:0xfff3a0}));
+    core.position.y = .22; fl.add(core);
+    fl.position.set(p.x, 0, p.z); fl.userData.ph = Math.random()*6; root.add(fl); flames.push(fl);
+    burst(p, [0xff7a1a,0xffd23a,0xff3b30], 10, 3);
+  }));
+  captainReact(0, hit[0] ? "shake" : "jump"); captainReact(1, hit[1] ? "shake" : "jump");
+  const mine = hit[0], his = hit[1];
+  log(`🔥 O fogo queimou ${mine} torcedor${mine===1?"":"es"} seu${mine===1?"":"s"} e ${his} de ${sname(1)}.`);
+  toast(mine+his > 0 ? "FOGO NA CAATINGA!" : "O FOGO SÓ PEGOU O CHÃO!", "#ff7a1a");
+  setAction(`🔥 Fogo: ${mine} seu${mine===1?"":"s"} · ${his} de ${sname(1)}`, "#ff7a1a", "Casas queimadas ficam marcadas");
+  if (sunk[0] || sunk[1]) { sfx.sunk(); log("🎺 O fogo dispersou um grupo inteiro!"); }
+  ui();
+  if (allSunk(0)) finish(1); else if (allSunk(1)) finish(0);
 }
 function hazardImpact(b, r, c) {
   const p = tilePos(b, r, c), cell = G.boards[b][r][c], who = b===0 ? "da sua arena" : `da arena de ${sname(1)}`;
@@ -1628,7 +1744,7 @@ function playerFire(r,c) {
 function cpuPlay() {
   if (G.phase!=="battle") return;
   const B = G.boards[0], me = SIDES[G.side[1]];
-  const lvl = G.level || 3, eName = G.enemy ? G.enemy.short : me.short;
+  const lvl = LEVELS[G.levelIdx].ai || 3, eName = G.enemy ? G.enemy.short : me.short;
   const unshot = [];
   for (let r=0;r<N;r++) for (let c=0;c<N;c++) if (!B[r][c].shot) unshot.push([r,c]);
   // acertos pendentes (navio atingido e ainda não afundado)
@@ -1985,7 +2101,7 @@ function buildMenu() {
          <span class="info"><span class="tg">FASE ${i+1} · ${L.diff.toUpperCase()}</span><b>🔒 ???</b><small>Vença a fase ${i} para liberar</small></span>`
       : `<span class="face">${faceSVG(en, 54, L.boss)}</span>
          <span class="info"><span class="tg">FASE ${i+1} · ${L.diff.toUpperCase()}</span><b>${en.name}</b>
-         <small>${en.party} · ${sc.name}<br>👥 ${total} torcedores para dispersar${L.hazard ? "<br>⚠️ Bala perdida a cada turno" : ""}</small></span>
+         <small>${en.party} · ${sc.name}<br>👥 ${total} torcedores para dispersar${L.hazard === "bala" ? "<br>⚠️ Bala perdida a cada turno" : L.hazard === "fogo" ? "<br>🔥 Fogo queima 4 casas de cada arena a cada 2 turnos" : ""}</small></span>
          ${fresh ? '<span class="badge">NOVA!</span>' : cleared ? '<span class="badge">✔ VENCIDA</span>' : ""}`;
     if (!locked) d.onclick = () => startLevel(i);
     grid.appendChild(d);

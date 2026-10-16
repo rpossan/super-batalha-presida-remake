@@ -26,19 +26,21 @@ https://rpossan.github.io/super-presida-batalha/
 - Controles: mouse/toque · `R` gira · `1–4` poderes · `Esc` cancela. No celular a câmera acompanha o turno.
 
 ## Trilhas
-| Fase | Cenário | Contra Flávio (PL) | Contra Lula (PT) | Dificuldade |
-|---|---|---|---|---|
-| 1 | Av. Paulista (SP) | Boulos | Nikolas Ferreira | Fácil |
-| 2 | Aeroporto Salgado Filho (RS) | Gleisi Hoffmann | Tarcísio de Freitas | Médio |
-| 3 | Cristo Redentor (RJ) ⚠️ bala perdida | Alexandre de Moraes | Michelle Bolsonaro | Difícil |
-| 4 | Esplanada dos Ministérios (DF) | **Lula (chefão)** | **Flávio (chefão)** | Chefão |
+| Fase | Cenário | Contra Flávio (PL) | Contra Lula (PT) | Dificuldade | Perigo do cenário |
+|---|---|---|---|---|---|
+| 1 | Av. Paulista (SP) | Boulos | Nikolas Ferreira | Fácil | — |
+| 2 | Aeroporto Salgado Filho (RS) | Gleisi Hoffmann | Tarcísio de Freitas | Médio | — |
+| 3 | Cristo Redentor (RJ) | Alexandre de Moraes | Michelle Bolsonaro | Difícil | ⚠️ bala perdida, 1 por turno |
+| 4 | Sertão Nordestino | Camilo Santana | Ciro Nogueira | Muito difícil | 🔥 fogo: 4 casas de cada arena a cada 2 turnos |
+| 5 | Esplanada dos Ministérios (DF) | **Lula (chefão)** | **Flávio (chefão)** | Chefão | — |
 
-Na fase 3 uma bala perdida cai do céu a cada turno, em 1 casa aleatória da arena de quem joga (pode derrubar um torcedor seu ou do adversário).
+Na fase 3, uma bala perdida cai do céu em 1 casa aleatória da arena de quem joga a cada turno.
+Na fase 4, a cada 2 turnos (uma vez por rodada) o sol escaldante incendeia 4 casas aleatórias de cada arena; o fogo derruba o torcedor da casa, como a bala.
 
 As fases e os adversários ficam em `LEVELS`, `TRACKS` e `CHARS` no `index.html`.
 
 ## Cenários
-Av. Paulista (SP), Aeroporto Salgado Filho (RS), Cristo Redentor (RJ) e Esplanada dos Ministérios (DF).
+Av. Paulista (SP), Aeroporto Salgado Filho (RS), Cristo Redentor (RJ), Sertão Nordestino e Esplanada dos Ministérios (DF).
 Para criar um novo, adicione um objeto em `SCENARIOS` no `index.html`
 (há um comentário `ADICIONE NOVOS CENÁRIOS AQUI`); depois inclua o cenário em `LEVELS` para virar uma fase.
 
