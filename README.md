@@ -5,7 +5,7 @@
 <h3 align="center">Use sua estratégia política para conquistar votos e vencer a corrida presidencial!</h3>
 
 <p align="center">
-  Batalha naval das <b>eleições 2026</b>, em 3D, direto no navegador.<br>
+  Batalha naval das <b>eleições 2026</b>, em 2.5D isométrico, direto no navegador.<br>
   Uma campanha em 7 fases, 2 trilhas, 7 cenários do Brasil, um chefão final e um modo NG+ apocalíptico.
 </p>
 
@@ -47,7 +47,7 @@ quando fazer uma pesquisa para descobrir onde o adversário se esconde e qual po
 
 | | |
 |---|---|
-| 🎮 **Batalha naval reinventada** | Tabuleiros 10×10 em 3D, torcedores animados e objetos de protesto (cone, tomate, bandeira, cavalete, chinelo, pedra e ovo) que ficam espalhados pela arena. |
+| 🎮 **Batalha naval reinventada** | Tabuleiros 10×10 isométricos, torcedores animados e objetos de protesto (cone, tomate, bandeira, cavalete, chinelo, pedra e ovo) que ficam espalhados pela arena. |
 | ⚡ **Poderes especiais** | Pesquisa, cruz (Buzinaço/Comício) e o poder final de cada lado: **Motociata** (linha inteira) e **Caravana** (coluna inteira), todos com animação própria. |
 | 🌎 **7 cenários do Brasil** | Av. Paulista, Aeroporto de Porto Alegre, Cristo Redentor, Sertão, Amazônia, Balneário Camboriú e Praça dos Três Poderes. |
 | ⚠️ **Perigos de cenário** | Bala perdida, fogo no sertão e chuva de flechas na floresta, em quantidade equilibrada ao nível. |
@@ -228,8 +228,8 @@ Energia: **+1 por turno** e **+1 por torcedor atingido**. No celular, a câmera 
 
 ## 🛠️ Tecnologia
 
-- Arquivo único: [`index.html`](index.html), com [Three.js](https://threejs.org/) via CDN. Sem build, sem servidor.
-- Personagens, cenários, músicas, efeitos sonoros e ilustrações são **gerados por código** (3D, SVG e Web Audio).
+- [`index.html`](index.html) (lógica e interface) + [`js/`](js) (`gfx.js` renderer, `art.js` sprites, `scenery.js` cenários), renderizados com [Phaser 4](https://phaser.io/) via CDN. Sem build, sem servidor.
+- Personagens, cenários, músicas, efeitos sonoros e ilustrações são **gerados por código** (canvas 2D, SVG e Web Audio).
 - Progresso salvo no navegador (`localStorage`), sem servidor: veja [Salvamento](#-salvamento-local).
 
 Para rodar localmente, abra o `index.html` no navegador. Para criar um cenário novo, adicione um objeto em
