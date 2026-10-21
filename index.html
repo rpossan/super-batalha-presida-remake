@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-<title>Super Presida Batalha</title>
+<title>Super Presida Batalha · REMAKE</title>
 <meta name="description" content="Super Presida Batalha: batalha naval das eleições 2026 em 2.5D isométrico. Use sua estratégia política para conquistar votos e vencer a corrida presidencial!">
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2212%22%20fill%3D%22%2310151c%22/%3E%3Cpath%20d%3D%22M10%2044%20L6%2018%20L20%2030%20L32%2010%20L44%2030%20L58%2018%20L54%2044%20Z%22%20fill%3D%22%23ffd23a%22%20stroke%3D%22%233b2600%22%20stroke-width%3D%223%22%20stroke-linejoin%3D%22round%22/%3E%3Cpolygon%20points%3D%2232.0%2C21.0%2033.9%2C26.3%2039.6%2C26.5%2035.1%2C30.0%2036.7%2C35.5%2032.0%2C32.3%2027.3%2C35.5%2028.9%2C30.0%2024.4%2C26.5%2030.1%2C26.3%22%20fill%3D%22%23d7191c%22/%3E%3Crect%20x%3D%2210%22%20y%3D%2246%22%20width%3D%2244%22%20height%3D%227%22%20rx%3D%222%22%20fill%3D%22%23009c3b%22/%3E%3C/svg%3E">
 <style>
@@ -419,6 +419,11 @@
   </g></g>
   <text x="320" y="326" font-size="23" font-weight="700" fill="#ffffff" stroke="#000" stroke-width="5" paint-order="stroke" text-anchor="middle" font-family="'Segoe UI',Arial,sans-serif" textLength="560" lengthAdjust="spacingAndGlyphs">Use sua estratégia política para conquistar votos</text>
   <text x="320" y="354" font-size="23" font-weight="700" fill="#ffffff" stroke="#000" stroke-width="5" paint-order="stroke" text-anchor="middle" font-family="'Segoe UI',Arial,sans-serif" textLength="400" lengthAdjust="spacingAndGlyphs">e vencer a corrida presidencial!</text>
+  <g transform="translate(548 78) rotate(8)" font-family="Impact,'Arial Black','Segoe UI',sans-serif" text-anchor="middle" stroke-linejoin="round">
+    <rect x="-66" y="-20" width="132" height="40" rx="7" fill="#0a1a0e" transform="translate(3 4)"/>
+    <rect x="-66" y="-20" width="132" height="40" rx="7" fill="url(#gf)" stroke="#fff" stroke-width="3.5"/>
+    <text x="0" y="10" font-size="28" font-weight="900" letter-spacing="3" fill="#fff" stroke="#3a0605" stroke-width="3" paint-order="stroke">REMAKE</text>
+  </g>
 </svg></div>
   <p class="tag">Eleições 2026 em modo campanha: escolha seu lado, vença uma fase por vez e chegue ao chefão final.</p>
   <div class="step">1 · Escolha o seu lado</div>
@@ -518,8 +523,11 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/phaser@4.2.1/dist/phaser.min.js"></script>
+<script src="js/music.js"></script>
 <script src="js/art.js"></script>
+<script src="js/people.js"></script>
 <script src="js/gfx.js"></script>
+<script src="js/materials.js"></script>
 <script src="js/scenery.js"></script>
 <script>
 "use strict";
@@ -548,20 +556,20 @@ const SIDES = {
 /* personagens: os dois líderes e os adversários de cada trilha */
 const CHARS = {
   flavio:  { name:"Flávio Bolsonaro",    short:"Flávio",   party:"PL",           camp:"flavio", skin:0xf2c9a5, hair:0x2b1d14, hairStyle:"short" },
-  lula:    { name:"Lula Molusco",                short:"Molusco",     party:"PT",           camp:"lula",   skin:0xe8b48c, hair:0xf2f2f2, hairStyle:"short", beard:true },
+  lula:    { name:"Lula Molusco",                short:"Molusco",     party:"PT",           camp:"lula",   skin:0xe8b48c, hair:0xf2f2f2, hairStyle:"short", beard:true, age:.9 },
   boulos:  { name:"Guilherme Bolos",    short:"Bolos",   party:"PSOL",         camp:"lula",   skin:0xe0ac82, hair:0x1d1510, hairStyle:"short", beard:true, beardColor:0x3a2a20 },
-  gleisi:  { name:"G. Rofman",     short:"Rofman",   party:"PT",           camp:"lula",   skin:0xf2c9a5, hair:0x6b4a2a, hairStyle:"bob" },
-  moraes:  { name:"Alexandre sem Moral", short:"Sem Moral",   party:"STF",          camp:"lula",   skin:0xe8b48c, hair:0x222222, hairStyle:"bald", glasses:true },
+  gleisi:  { name:"G. Rofman",     short:"Rofman",   party:"PT",           camp:"lula",   skin:0xf2c9a5, hair:0x6b4a2a, hairStyle:"bob", fem:true, age:.3 },
+  moraes:  { name:"Alexandre sem Moral", short:"Sem Moral",   party:"STF",          camp:"lula",   skin:0xe8b48c, hair:0x222222, hairStyle:"bald", glasses:true, age:.4 },
   nikolas: { name:"Niko Ferrado",    short:"Niko",  party:"PL",           camp:"flavio", skin:0xf2c9a5, hair:0x2b1d14, hairStyle:"short" },
-  tarcisio:{ name:"Tarcizinho", short:"Tarcizinho", party:"Republicanos", camp:"flavio", skin:0xe8b48c, hair:0x2b2018, hairStyle:"short", glasses:true },
-  michelle:{ name:"Michela",  short:"Michela", party:"PL",           camp:"flavio", skin:0xf2c9a5, hair:0xd9b36a, hairStyle:"long" },
+  tarcisio:{ name:"Tarcizinho", short:"Tarcizinho", party:"Republicanos", camp:"flavio", skin:0xe8b48c, hair:0x2b2018, hairStyle:"short", glasses:true, age:.3 },
+  michelle:{ name:"Michela",  short:"Michela", party:"PL",           camp:"flavio", skin:0xf2c9a5, hair:0xd9b36a, hairStyle:"long", fem:true, age:.2 },
   felipe:  { name:"Felipe Feto",         short:"Feto",   party:"Influencer",   camp:"lula",   skin:0xf2c9a5, hair:0x1d1510, hairStyle:"short" },
-  hang:    { name:"Véio da Avon",        short:"Véio",     party:"Empresário",   camp:"flavio", skin:0xf2c9a5, hair:0xdcdcdc, hairStyle:"short" },
-  marina:  { name:"Marina Sílvia",        short:"Sílvia",   party:"Rede",         camp:"lula",   skin:0xe0ac82, hair:0x3a2a1a, hairStyle:"bob" },
+  hang:    { name:"Véio da Avon",        short:"Véio",     party:"Empresário",   camp:"flavio", skin:0xf2c9a5, hair:0xdcdcdc, hairStyle:"short", age:.85 },
+  marina:  { name:"Marina Sílvia",        short:"Sílvia",   party:"Rede",         camp:"lula",   skin:0xe0ac82, hair:0x3a2a1a, hairStyle:"bob", fem:true, age:.5 },
   salles:  { name:"Ricardo Venddas",      short:"Venddas",   party:"PL",           camp:"flavio", skin:0xf2c9a5, hair:0x2b1d14, hairStyle:"short" },
   anitta:  { name:"Pablo Vital",              short:"Vital",   party:"Cantora",      camp:"lula",   skin:0xe0ac82, hair:0x5a2f1c, hairStyle:"long" },
-  ditador: { name:"Generalíssimo Tirano", short:"Tirano", party:"Regime", camp:"regime", skin:0xd9b08c, hair:0x151515, hairStyle:"bald", military:true, glasses:true },
-  carlos:  { name:"Carlucho",    short:"Carlucho",   party:"PL",           camp:"flavio", skin:0xf2c9a5, hair:0x2b1d14, hairStyle:"short", beard:true, beardColor:0x3a2a20 },
+  ditador: { name:"Generalíssimo Tirano", short:"Tirano", party:"Regime", camp:"regime", skin:0xd9b08c, hair:0x151515, hairStyle:"bald", military:true, glasses:true, age:.5 },
+  carlos:  { name:"Carlucho",    short:"Carlucho",   party:"PL",           camp:"flavio", skin:0xf2c9a5, hair:0x2b1d14, hairStyle:"short", beard:true, beardColor:0x3a2a20, age:.1 },
 };
 /* adversários por fase, conforme o lado que você escolheu (o chefão é sempre o líder do outro lado) */
 const TRACKS = {
@@ -675,15 +683,7 @@ const inb = (r,c) => r>=0 && c>=0 && r<N && c<N;
 let actx = null, muted = false;
 function tone(freq, dur=0.15, type="square", vol=0.07, slide=0, delay=0) {
   if (muted) return;
-  try {
-    actx = actx || new (window.AudioContext||window.webkitAudioContext)();
-    const t = actx.currentTime + delay;
-    const o = actx.createOscillator(), g = actx.createGain();
-    o.type = type; o.frequency.setValueAtTime(freq, t);
-    if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(30,freq+slide), t+dur);
-    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t+dur);
-    o.connect(g).connect(actx.destination); o.start(t); o.stop(t+dur+0.02);
-  } catch(e) {}
+  try { Sfx.tone(freq, dur, type, vol, slide, delay); } catch(e) {}
 }
 /* ---- sons de fim de jogo: gol da torcida (vitória) e vexame (derrota) ---- */
 let sfxNoise = null;
@@ -727,7 +727,7 @@ function voiceTone(c, t, dur, f0, f1, type, vol, lp, vib) {
   }
   o.connect(fl); fl.connect(g); g.connect(c.destination); o.start(t); o.stop(t+dur+.05);
 }
-function duckMusic() { if (Music.gain && !muted) Music.gain.gain.value = .12; }
+function duckMusic() { if (Music.gain && !muted) Music.gain.gain.value = Music.player.level*.2; }
 
 /* GOOOOL! torcida explodindo, vuvuzela, buzinas e bombos */
 function sfxGoal() {
@@ -761,138 +761,18 @@ function sfxFail() {
 }
 
 const sfx = {
-  hit:  () => { tone(220,.22,"sawtooth",.09,-150); tone(660,.1,"square",.05,0,.05); },
-  miss: () => tone(380,.18,"sine",.08,-200),
-  sunk: () => { [392,523,659,784].forEach((f,i)=>tone(f,.18,"square",.07,0,i*.09)); },
-  power:() => { tone(200,.5,"sawtooth",.08,900); },
-  radar:() => { tone(900,.12,"sine",.06); tone(1200,.12,"sine",.06,0,.14); },
+  hit:  () => { if (!muted) try { Sfx.hit(); } catch(e) {} },
+  miss: () => { if (!muted) try { Sfx.miss(); } catch(e) {} },
+  sunk: () => { if (!muted) try { Sfx.sunk(); } catch(e) {} },
+  power:() => { if (!muted) try { Sfx.power(); } catch(e) {} },
+  radar:() => { if (!muted) try { Sfx.radar(); } catch(e) {} },
   win:  () => sfxGoal(),
   lose: () => sfxFail(),
-  place:() => tone(500,.08,"square",.05),
+  place:() => { if (!muted) try { Sfx.place(); } catch(e) {} },
 };
 
 
-/* ================================================================
-   Música procedural por cenário (WebAudio, sem arquivos)
-   ================================================================ */
-const midiF = n => 440*Math.pow(2,(n-69)/12);
-const bars = (...b) => [].concat(...b);
-const arpBar = (n) => [0,1,2,1,0,1,2,1].flatMap(i => [n[i%3], 0]);
-const SONGS = {
-  /* Paulista: pop eletrônico urbano em Lá menor */
-  paulista: { bpm:118, chords:[45,41,48,43], kick:{f:150,g:45,d:.18,v:.9}, lead:{type:"sawtooth", filter:2400, dur:.16, vol:.11},
-    k:[1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0], s:[0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0], h:[0,0,.8,0,0,0,.8,0,0,0,.8,0,0,0,.8,.4], x:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    bass:[1,0,1,0,2,0,1,0,1,0,1,0,2,0,1,0],
-    melody: bars(arpBar([69,72,76]), arpBar([65,69,72]), arpBar([67,72,76]), arpBar([67,71,74])) },
-  /* Rio: samba em Lá menor (surdo, tamborim, cavaquinho) */
-  rio: { bpm:100, chords:[45,50,52,45], kick:{f:115,g:60,d:.3,v:1}, lead:{type:"triangle", filter:4200, dur:.11, vol:.2},
-    k:[.5,0,0,0,1,0,0,0,.5,0,0,0,1,0,0,0], s:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], h:[1,.3,.6,.3,1,.3,.6,.3,1,.3,.6,.3,1,.3,.6,.3], x:[1,0,0,1,0,0,1,0,1,0,1,0,1,0,0,0],
-    bass:[1,0,0,0,0,0,2,0,1,0,0,0,0,0,2,0],
-    melody: bars([76,0,0,74,72,0,69,0,72,0,74,0,76,0,0,0],[74,0,0,72,69,0,0,0,74,0,77,0,76,0,74,0],
-                 [76,0,0,79,76,0,74,0,71,0,74,0,76,0,0,0],[72,0,74,0,76,0,74,72,69,0,0,0,69,0,0,0]) },
-  /* Menu: hino de campanha (Dó maior, I–V–vi–IV), refrão repetitivo, bumbo marcado e harmonia em terças */
-  menu: { bpm:124, chords:[48,43,45,41], kick:{f:140,g:45,d:.2,v:1}, lead:{type:"square", filter:3200, dur:.2, vol:.14},
-    k:[1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,1], s:[0,0,0,0,1,0,0,0,0,0,0,0,1,0,.6,.6], h:[0,0,.8,0,0,0,.8,0,0,0,.8,0,0,0,.8,.5],
-    x:[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    bass:[1,0,1,0,2,0,1,0,1,0,1,0,2,0,1,0],
-    melody: bars([67,0,67,0,69,0,67,0,72,0,0,0,67,0,64,0],[71,0,71,0,72,0,71,0,74,0,0,0,71,0,67,0],
-                 [69,0,69,0,72,0,69,0,76,0,0,0,72,0,69,0],[72,0,72,0,77,0,76,0,74,0,72,0,72,0,0,0]),
-    harmony: null },
-  /* Sertão: baião (zabumba, triângulo e sanfona em Ré mixolídio) */
-  sertao: { bpm:104, chords:[38,43,45,38], kick:{f:105,g:55,d:.26,v:1}, lead:{type:"sawtooth", filter:2300, dur:.2, vol:.11},
-    k:[1,0,0,0,0,0,1,0,1,0,0,0,0,0,1,0], s:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], h:[.5,.3,.6,.3,.5,.3,.6,.3,.5,.3,.6,.3,.5,.3,.6,.3],
-    x:[0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0],
-    bass:[1,0,0,0,2,0,0,0,1,0,0,0,2,0,0,0],
-    melody: bars([74,0,76,78,79,0,78,0,76,0,74,0,71,0,74,0],[79,0,81,0,79,78,76,0,74,0,76,0,79,0,0,0],
-                 [81,0,81,79,78,0,76,0,74,0,76,78,76,0,0,0],[78,0,76,74,72,0,74,0,71,0,69,0,74,0,0,0]) },
-  /* Amazônia: tambores e flauta pentatônica em Lá menor */
-  amazonia: { bpm:96, chords:[45,43,45,40], kick:{f:95,g:48,d:.32,v:1}, lead:{type:"triangle", filter:3600, dur:.3, vol:.2},
-    k:[1,0,0,1,0,0,0,0,1,0,0,0,0,1,0,0], s:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], h:[.4,0,.5,.3,.4,0,.5,.3,.4,0,.5,.3,.4,0,.5,.3],
-    x:[0,0,0,0,1,0,0,.6,0,0,0,0,1,0,0,0],
-    bass:[1,0,0,0,0,0,2,0,1,0,0,0,0,0,2,0],
-    melody: bars([69,0,0,72,74,0,72,0,69,0,0,0,67,0,69,0],[72,0,74,0,76,0,0,74,72,0,0,0,69,0,0,0],
-                 [76,0,0,79,76,0,74,0,72,0,74,0,76,0,0,0],[74,0,72,0,69,0,67,0,69,0,0,0,69,0,0,0]) },
-  /* Balneário Camboriú: pop de verão, bossa leve em Sol maior */
-  camboriu: { bpm:112, chords:[43,40,48,50], kick:{f:120,g:50,d:.2,v:.9}, lead:{type:"triangle", filter:4200, dur:.16, vol:.2},
-    k:[1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0], s:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], h:[0,0,.7,0,0,0,.7,0,0,0,.7,0,0,0,.7,.4],
-    x:[1,0,0,1,0,0,1,0,0,0,1,0,0,1,0,0],
-    bass:[1,0,0,1,0,0,2,0,1,0,0,1,0,0,2,0],
-    melody: bars([74,0,71,0,74,0,79,0,76,0,74,0,71,0,69,0],[71,0,67,0,71,0,76,0,74,0,71,0,67,0,0,0],
-                 [72,0,76,0,79,0,76,0,72,0,76,0,74,0,72,0],[74,0,78,0,81,0,78,0,74,0,71,0,69,0,0,0]) },
-  /* Apocalipse: marcha sombria em Ré menor, bumbo pesado e sirene */
-  apocalipse: { bpm:134, chords:[38,38,41,36], kick:{f:130,g:42,d:.26,v:1}, lead:{type:"sawtooth", filter:1300, dur:.22, vol:.13},
-    k:[1,0,0,1,1,0,0,0,1,0,0,1,1,0,1,0], s:[0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,.8], h:[.8,0,.5,.5,.8,0,.5,.5,.8,0,.5,.5,.8,0,.9,.5],
-    x:[1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0],
-    bass:[1,0,1,0,2,0,1,0,1,0,1,0,2,0,1,0],
-    melody: bars([62,0,0,65,0,0,64,0,62,0,0,0,61,0,62,0],[65,0,0,68,0,0,67,0,65,0,0,0,64,0,0,0],
-                 [62,0,0,65,0,0,69,0,68,0,0,0,65,0,62,0],[61,0,0,64,0,0,62,0,58,0,0,0,57,0,0,0]) },
-  /* Brasília: marcha solene com fanfarra em Dó maior */
-  brasilia: { bpm:108, chords:[48,53,55,48], kick:{f:130,g:50,d:.22,v:1}, lead:{type:"sawtooth", filter:2000, dur:.2, vol:.12},
-    k:[1,0,0,0,0,0,1,0,1,0,0,0,0,0,1,0], s:[0,0,0,0,1,0,0,.5,0,0,0,0,1,0,.5,.5], h:[0,0,.7,0,0,0,.7,0,0,0,.7,0,0,0,.7,0], x:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    bass:[1,0,0,0,2,0,0,0,1,0,0,0,2,0,0,0],
-    melody: bars([72,0,0,76,79,0,0,0,76,0,79,0,84,0,0,0],[77,0,0,81,84,0,0,0,81,0,77,0,79,0,0,0],
-                 [79,0,0,83,86,0,0,0,83,0,79,0,86,0,0,0],[84,0,79,0,76,0,79,0,72,0,0,0,72,0,0,0]) },
-  /* Porto Alegre: milonga/gaúcha em Sol maior (bombo, acordeão) */
-  poa: { bpm:92, chords:[43,48,50,43], kick:{f:100,g:55,d:.26,v:1}, lead:{type:"sawtooth", filter:1700, dur:.24, vol:.1},
-    k:[1,0,0,1,0,0,1,0,1,0,0,1,0,0,1,0], s:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], h:[0,0,.7,0,0,0,.7,0,0,0,.7,0,0,0,.7,0], x:[0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,.6],
-    bass:[1,0,0,2,0,0,1,0,1,0,0,2,0,0,1,0],
-    melody: bars([74,0,71,0,67,0,71,0,74,0,0,71,72,0,71,0],[72,0,76,0,72,0,67,0,71,0,72,0,76,0,0,0],
-                 [74,0,78,0,74,0,69,0,72,0,74,0,78,0,74,0],[74,0,71,0,67,0,0,71,74,0,0,0,67,0,0,0]) },
-};
-const thirdBelow = n => n ? n - ({0:3,2:3,4:4,5:3,7:3,9:4,11:4}[n%12] || 4) : 0;
-SONGS.menu.harmony = SONGS.menu.melody.map(thirdBelow);
-const Music = { gain:null, timer:null, step:0, next:0, song:null, noise:null, on:true };
-function musicVol() { if (Music.gain) Music.gain.gain.value = (muted || !Music.on) ? 0 : .55; }
-function mOsc(t, type, f, dur, vol, glide, filt) {
-  const c = actx, o = c.createOscillator(), g = c.createGain();
-  o.type = type; o.frequency.setValueAtTime(f, t);
-  if (glide) o.frequency.exponentialRampToValueAtTime(Math.max(20,glide), t+dur);
-  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t+dur);
-  if (filt) { const fl = c.createBiquadFilter(); fl.type = "lowpass"; fl.frequency.value = filt; o.connect(fl); fl.connect(g); } else o.connect(g);
-  g.connect(Music.gain); o.start(t); o.stop(t+dur+.02);
-}
-function mNoise(t, dur, vol, hp) {
-  const c = actx, n = c.createBufferSource(), g = c.createGain(), f = c.createBiquadFilter();
-  n.buffer = Music.noise; f.type = "highpass"; f.frequency.value = hp;
-  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t+dur);
-  n.connect(f); f.connect(g); g.connect(Music.gain); n.start(t); n.stop(t+dur+.02);
-}
-function musicStep(i, t) {
-  const S = Music.song, bar = ((i/16)|0)%4, st = i%16;
-  if (S.k[st]) mOsc(t, "sine", S.kick.f, S.kick.d, S.kick.v*S.k[st], S.kick.g);
-  if (S.s[st]) mNoise(t, .13, .3*S.s[st], 1500);
-  if (S.h[st]) mNoise(t, .05, .13*S.h[st], 7000);
-  if (S.x[st]) mOsc(t, "square", 2300, .05, .06*S.x[st]);
-  if (S.bass[st]) mOsc(t, "triangle", midiF(S.chords[bar] + (S.bass[st]===2 ? 7 : 0)), .22, .45, 0, 700);
-  if (S.harmony) { const h = S.harmony[i%64]; if (h) mOsc(t, "triangle", midiF(h), S.lead.dur, S.lead.vol*.9, 0, 2600); }
-  const n = S.melody[i%64];
-  if (n) mOsc(t, S.lead.type, midiF(n), S.lead.dur, S.lead.vol, 0, S.lead.filter);
-}
-function musicTick() {
-  if (!Music.song || !actx) return;
-  const sp = 60/Music.song.bpm/4;
-  while (Music.next < actx.currentTime + .15) { musicStep(Music.step, Music.next); Music.next += sp; Music.step++; }
-}
-function musicStop() {
-  clearInterval(Music.timer); Music.timer = null;
-  if (Music.gain) { try { Music.gain.disconnect(); } catch(e) {} Music.gain = null; }
-}
-function musicStart(id) {
-  try {
-    musicStop();
-    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
-    actx.state === "suspended" && actx.resume();
-    Music.song = SONGS[id] || SONGS.paulista;
-    Music.gain = actx.createGain(); Music.gain.connect(actx.destination); musicVol();
-    if (!Music.noise) {
-      const b = actx.createBuffer(1, actx.sampleRate*.5, actx.sampleRate), d = b.getChannelData(0);
-      for (let i=0;i<d.length;i++) d[i] = Math.random()*2-1;
-      Music.noise = b;
-    }
-    Music.step = 0; Music.next = actx.currentTime + .1;
-    Music.timer = setInterval(musicTick, 40);
-  } catch(e) {}
-}
+/* A trilha sonora e a API (musicStart, musicStop, musicVol, Music) ficam em js/music.js */
 
 /* ================================================================
    Cena isométrica em Phaser 4 (veja js/gfx.js, js/art.js e js/scenery.js)
@@ -984,7 +864,7 @@ function clearMarkers() { GFX.clearMarkers(); }
 const burst = (pos, colors, n=26, power=4) => GFX.burst(pos, colors, n, power);
 const addFx = (dur, update, end) => GFX.addFx(dur, update, end);
 const makeRing = GFX.makeRing;
-const addDecal = (x, z, color, r) => GFX.addDecal(x, z, color, r);
+const addDecal = (x, z, color, r, kind) => GFX.addDecal(x, z, color, r, kind);
 
 /* MOTOCIATA: motos cruzam a linha inteira */
 function fxMotociata(tb, r, s, dir) {
@@ -998,8 +878,9 @@ function fxMotociata(tb, r, s, dir) {
     motos.forEach((m,k) => {
       const tt = t - m.u.d; m.visible = tt>0 && tt<T+.2;
       m.x = BX[tb] - dir*L + dir*sp*tt;
-      m.y = Math.abs(Math.sin(t*22 + k))*.05;
-      if (k<3 && m.visible && Math.random()<.5) burst({ x:m.x, y:0, z:m.z }, [s.main,s.alt,0xffffff,0x888888], 1, 1.2);
+      m.y = Math.abs(Math.sin(t*22 + k))*.03; m.rot = Math.sin(t*19 + k*1.7)*.014;                    // suspensão
+      if (m.visible && Math.random()<.55) GFX.puff({ x:m.x - dir*.6, y:.05, z:m.z }, { color:0xa89a82, life:1, s0:.1, s1:.42, a:.3, vy:.25, vx:-dir*.4 });   // poeira da pista
+      if (k<3 && m.visible && Math.random()<.12) burst({ x:m.x, y:.4, z:m.z }, [s.main,s.alt,0xffffff], 2, 1.2);   // santinhos voando
     });
   }, () => motos.forEach(m => m.destroy()));
   return { delay:0, time:(rr,cc) => ((L + dir*(cc-(N-1)/2))/(2*L))*T*1000 };
@@ -1016,8 +897,9 @@ function fxCaravana(tb, c, s) {
   addFx(T + n*.24 + .25, (t) => {
     v.forEach((b,k) => {
       const tt = t - b.u.d; b.visible = tt>0 && tt<T+.2;
-      b.z = L - sp*tt; b.y = Math.abs(Math.sin(t*14+k))*.03;
-      if (k<2 && b.visible && Math.random()<.5) burst({ x:b.x, y:0, z:b.z }, [s.main,s.alt,0xffffff], 1, 1.2);
+      b.z = L - sp*tt; b.y = Math.abs(Math.sin(t*12+k))*.02; b.rot = Math.sin(t*9 + k)*.006;
+      if (b.visible && Math.random()<.5) GFX.puff({ x:b.x, y:.05, z:b.z + .8 }, { color:0xa89a82, life:1.2, s0:.14, s1:.55, a:.3, vy:.3, vz:.4 });
+      if (k<2 && b.visible && Math.random()<.1) burst({ x:b.x, y:.5, z:b.z }, [s.main,s.alt,0xffffff], 2, 1.2);
     });
   }, () => v.forEach(b => b.destroy()));
   return { delay:0, time:(rr) => ((L-(rr-(N-1)/2))/(2*L))*T*1000 };
@@ -1035,7 +917,8 @@ function fxSoundTruck(tb, r, c, s, dir) {
     if (t < A) { const k = 1-Math.pow(1-t/A,2); off = -dir*10*(1-k); }
     else if (t < H) off = 0;
     else { const k = (t-H)/(X-H); off = dir*10*k*k; }
-    truck.at(cx+off, Math.abs(Math.sin(t*18))*.03, cz);
+    truck.at(cx+off, Math.abs(Math.sin(t*18))*.02*(t>A&&t<H?.3:1), cz); truck.rot = Math.sin(t*14)*.01;
+    if ((t<A || t>H) && Math.random()<.5) GFX.puff({ x:truck.x - dir*1.1, y:.05, z:cz }, { color:0xa89a82, life:1, s0:.12, s1:.5, a:.3, vy:.3, vx:-dir*.5 });
     rings.forEach((m,i) => {
       const k = (t - (A+.05+i*.22))/.65;
       if (k>0 && k<1) { m.alpha = .85*(1-k); GFX.setRing(m, .4+k*3.0); } else m.alpha = 0;
@@ -1057,7 +940,8 @@ function fxRadar(tb, r, c, s, dir) {
     let off = 0;
     if (t < A) { const k = 1-Math.pow(1-t/A,2); off = -dir*9*(1-k); }
     else if (t > H) { const k = (t-H)/(X-H); off = dir*9*k*k; }
-    heli.at(cx+off, 3.4 + Math.sin(t*5)*.1, cz);
+    heli.at(cx+off, 3.4 + Math.sin(t*5)*.1, cz); heli.rot = Math.sin(t*3)*.03 + dir*(off !== 0 ? .06 : 0);
+    if (Math.random()<.5) { const a = Math.random()*6.28; GFX.puff({ x:heli.x + Math.cos(a)*.3, y:.05, z:cz + Math.sin(a)*.3 }, { color:0xb0a48e, life:.8, s0:.1, s1:.4, a:.25, vx:Math.cos(a)*2.2, vz:Math.sin(a)*2.2, vy:.1 }); }   // vento do rotor
     heli.u.rotor.scaleX = (1 + Math.sin(t*60)*.6)/Art.Q;
     beam.clear();
     if (t > A*.8 && t < H) {
@@ -1095,17 +979,19 @@ const THROWS = [
 function fxThrow(tb, r, c, who, th) {
   const s = SIDES[G.side[who]], dir = who===0 ? 1 : -1;
   const cp = G.captains[who];
-  const from = { x:cp.u.base.x + dir*1.1, y:3.0, z:cp.u.base.z + .4 };
+  const from = { x:cp.u.base.x + dir*.8, y:2.9, z:cp.u.base.z + .3 }, T0 = .3;      // T0: tempo do braço preparando o arremesso
   const to = { ...tilePos(tb, r, c), y:.15 };
-  const mesh = GFX.makeThrow(th.id, s.key); mesh.at(from.x, from.y, from.z);
+  const mesh = GFX.makeThrow(th.id, s.key); mesh.at(from.x, from.y, from.z); mesh.visible = false; GFX.captainThrow(cp);
   const post = th.id==="tomate"||th.id==="ovo"||th.id==="pedra" ? .25 : .7;
+  const gsh = GFX.makeGroundShadow(); gsh.visible = false;
   let impacted = false;
   tone(700,.35,"sine",.05,-450);                                    // assobio do arremesso
   const pos = k => ({ x:from.x+(to.x-from.x)*k, y:from.y+(to.y-from.y)*k + th.H*4*k*(1-k), z:from.z+(to.z-from.z)*k });
   const spin = { cone:9, tomate:5, bandeira:0, cavalete:5, chinelo:22, pedra:14, ovo:6 }[th.id];
-  addFx(th.dur + post, (t, dt) => {
+  addFx(T0 + th.dur + post, (t0, dt) => {
+    const t = t0 - T0; if (t < 0) return; mesh.visible = true;
     if (t < th.dur) {
-      const k = t/th.dur, p = pos(k); mesh.at(p.x, p.y, p.z);
+      const k = t/th.dur, p = pos(k); mesh.at(p.x, p.y, p.z); gsh.visible = true; gsh.at(p.x, 0, p.z); gsh.alpha = Math.max(.08, .32 - p.y*.05); GFX.setRing(gsh, .22 + p.y*.04);
       if (th.id==="bandeira") { const q = pos(Math.min(1,k+.04)), a = GFX.P(p.x,p.y,p.z), b = GFX.P(q.x,q.y,q.z); mesh.rot = Math.atan2(b[1]-a[1], b[0]-a[0]); }
       else mesh.rot += dt*spin*(dir);
       return;
@@ -1115,9 +1001,9 @@ function fxThrow(tb, r, c, who, th) {
       impacted = true; mesh.at(to.x, to.y, to.z);
       GFX.shake(90, .0025);
       switch (th.id) {
-        case "tomate": addDecal(to.x,to.z,0xc4180f,.42); burst(to,[0xe0261b,0xff5a3a,0x9b0f0a],24,4); mesh.fy = .35; mesh.fx = 1.6; mesh.y = 0; tone(140,.18,"sawtooth",.09,-80); break;
-        case "ovo":    addDecal(to.x,to.z,0xfdf4dc,.4); addDecal(to.x,to.z,0xffc400,.16); burst(to,[0xffffff,0xffc400,0xfff3dc],20,3.5); mesh.fy = .25; mesh.fx = 1.8; mesh.y = 0; tone(220,.1,"square",.06,-120); break;
-        case "pedra":  addDecal(to.x,to.z,0x24272c,.3); burst(to,[0x9aa0a8,0x6a7078,0xcfd3d8],22,4.5); mesh.y = 0; tone(90,.2,"sawtooth",.1,-40); break;
+        case "tomate": addDecal(to.x,to.z,0xc4180f,.5,"splat"); burst(to,[0xe0261b,0xff5a3a,0x9b0f0a],24,4); mesh.fy = .35; mesh.fx = 1.6; mesh.y = 0; tone(140,.18,"sawtooth",.09,-80); break;
+        case "ovo":    addDecal(to.x,to.z,0xfdf4dc,.46,"splat"); addDecal(to.x,to.z,0xffc400,.2,"splat"); burst(to,[0xffffff,0xffc400,0xfff3dc],20,3.5); mesh.fy = .25; mesh.fx = 1.8; mesh.y = 0; tone(220,.1,"square",.06,-120); break;
+        case "pedra":  addDecal(to.x,to.z,0x24272c,.34,"splat"); burst(to,[0x9aa0a8,0x6a7078,0xcfd3d8],22,4.5); mesh.y = 0; tone(90,.2,"sawtooth",.1,-40); break;
         case "bandeira": mesh.rot = (Math.random()-.5)*.8; mesh.y = 0; burst(to,[s.main,s.alt,0xffffff],16,3); tone(300,.1,"square",.05); break;
         case "chinelo": mesh.rot = Math.random()*3; mesh.fy = .5; mesh.y = 0; burst(to,[0x1e88e5,0xffffff],10,2.5); tone(260,.08,"square",.07,-100); break;
         case "cavalete": burst(to,[0xffffff,0xd32f2f,0xbbbbbb],14,3.5); tone(120,.2,"square",.08,-60); break;
@@ -1132,7 +1018,7 @@ function fxThrow(tb, r, c, who, th) {
     if (th.id==="chinelo") mesh.rot += dt*12*(1-k);
   }, () => {
     /* o objeto fica no chão onde caiu: a algazarra vai se acumulando */
-    mesh.bias = 0; mesh.y = 0; mesh.v.setOrigin(.5, .72);
+    gsh.destroy(); mesh.bias = 0; mesh.y = 0; mesh.v.setOrigin(.5, .72);
     switch (th.id) {
       case "cone":     mesh.rot = Math.random()<.5 ? Math.PI/2 : (Math.random()-.5)*.4; break;
       case "tomate": case "ovo": mesh.alpha = 0; break;
@@ -1144,7 +1030,7 @@ function fxThrow(tb, r, c, who, th) {
     mesh.x += (Math.random()-.5)*.12; mesh.z += (Math.random()-.5)*.12;
     GFX.fixed(mesh);
   });
-  return { delay: th.dur*1000, noCone: true };
+  return { delay: (th.dur + T0)*1000, noCone: true };
 }
 function pickThrow() { return THROWS[rand(THROWS.length)]; }
 
@@ -1233,7 +1119,10 @@ const sname = b => (b===1 && G.enemy) ? G.enemy.short : SIDES[G.side[b]].short;
 
 function captainReact(b, kind) {
   const cp = G.captains[b]; if (!cp) return;
-  if (kind==="jump") cp.u.jump = 1; else cp.u.shake = 1;
+  if (kind==="jump") {
+    cp.u.jump = 1; GFX.chantBoost(.4);                                           // a torcida inteira vibra
+    Object.values(G.fans[b]).forEach(f => { if (f.visible && f.u.fall < 0 && Math.random() < .6) f.u.cheer = .6 + Math.random()*.6; });
+  } else cp.u.shake = 1;
 }
 
 /* aplica um tiro numa célula. Retorna "hit" | "miss" | "sunk" */
@@ -2743,7 +2632,7 @@ function newGame(playerKey, levelIdx = 0) {
   for (let b=0;b<2;b++) {
     GFX.setFrameColor(b, b===1 && G.ng ? NG_SIDE.main : SIDES[G.side[b]].main);
     if (G.captains[b]) G.captains[b].destroy();
-    const cp = GFX.makeCaptain(G.side[b], b===0 ? CHARS[G.side[0]] : G.enemy);
+    const cp = GFX.makeCaptain(G.side[b], b===0 ? CHARS[G.side[0]] : G.enemy, b===0 ? 1 : -1);
     cp.u.base = { x:CAPPOS[b].x, y:0, z:CAPPOS[b].z }; cp.at(cp.u.base.x, 0, cp.u.base.z); G.captains[b] = cp;
   }
   refreshAll(); clearPreview();

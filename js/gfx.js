@@ -33,7 +33,7 @@ const GFX = (() => {
   function img(key, w) {
     const d = texInfo[key];
     const im = scene.add.image(0, 0, key).setOrigin(d.ox/d.w, d.oy/d.h);
-    im.setScale(w ? w/(d.w*Q) : 1/Q);
+    const q = d.q || Q; im.setScale(w ? w/(d.w*q) : 1/q);
     return im;
   }
   const flagKey = k => (tex("flag_" + k, () => Art.flag(k)), "flag_" + k);
@@ -66,117 +66,265 @@ const GFX = (() => {
   function drop(n) { if (n) n.destroy(); }
 
   /* ================================================================
-     Torcedores
+     Pessoas articuladas (js/people.js): pernas, tronco, cabeça e braços com pivôs.
+     Origem do nó = pés. Medidas em px lógicos (multiplicadas pela escala s).
      ================================================================ */
-  const SKINS = [0xf2c9a5, 0xe0ac82, 0xc68a62, 0x8d5a3b, 0x5e3a24];
-  const HAIRS = [0x2b1d14, 0x151515, 0x6b4a2a, 0xd9b36a, 0x3a2a1a];
-  function makeFan(sideKey, shirt, skin, withCap) {
-    const s = cfg.SIDES[sideKey];
-    shirt = shirt ?? s.shirts[rand(s.shirts.length)];
-    skin = skin ?? SKINS[rand(SKINS.length)];
-    withCap = withCap ?? (Math.random() < .6);
-    const hair = HAIRS[rand(HAIRS.length)];
-    const trim = shirt === s.alt ? s.main : s.alt;
-    const bk = ["fan", sideKey, shirt, skin, withCap ? 1 : 0, withCap ? 0 : hair].join("_");
-    tex(bk, () => Art.fanBody({ shirt, skin, trim, cap:withCap, capColor:s.main, hair }));
-    const ak = "fanarm_" + shirt + "_" + skin;
-    tex(ak, () => Art.fanArm({ shirt, skin }));
-    tex("shadow", () => Art.shadow());
+  const RIG = { neck:-67.5, hip:-40, sh:-64.3, up:15, fore:15.2 };
+  const SIGKEYS = ["fem","skin","hair","hairStyle","shirt","collar","stripe","sleeveStripe","pants","pantsType","shoes","beard","beardColor","glasses","eye","age","zombie","helmet","horns","longSleeve","jacket","tie","sash","military","undershirt","pocket","pin","sleeve","legLen","crest","torsoLen"];
+  const sigOf = spec => SIGKEYS.map(k => { const v = spec[k]; return Array.isArray(v) ? v.join(".") : (v ?? ""); }).join("|") + (spec.cap ? "c" + spec.cap.color + "_" + (spec.cap.logo || "") : "");
+  const sigHash = str => { let h = 5381; for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) | 0; return (h >>> 0).toString(36); };
+
+  /* sombra direcional (sol no alto-esquerdo da tela: a sombra cai para a direita-baixo) */
+  function shadowTex() { return tex("shadowdir", () => Art.shadowDir()); }
+
+  const easeOut = k => 1 - (1 - k)*(1 - k), easeIn = k => k*k, clamp01 = k => Math.max(0, Math.min(1, k));
+  let chant = 0;                                           // energia da torcida (0..1), sobe com acertos
+
+  /* o: s (escala), hold: "flag"|"rifle"|"none", flagKey, holder: "L"|"R", pose */
+  function buildPerson(spec, o = {}) {
+    const s = o.s || 1, hold = o.hold || "flag", holder = o.holder || "R";
+    const fem = !!spec.fem, sw = (spec.suit ? (fem ? 10.2 : 11.8) : (fem ? 9.6 : 11.2));
+    const k = sigHash(sigOf(spec)) + "_" + s;
+    const T = (name, make) => { const key = name + k; tex(key, make); return key; };
+    const kLegs = T("lg", () => People.legs(spec, s)), kTorso = T("to", () => (spec.jacket ? People.suit : People.torso)(spec, s)), kHead = T("hd", () => People.head(spec, s));
+    const kUp = T("ua", () => People.upperArm(spec, s)), kOpen = T("fo", () => People.foreArm(spec, "open", s)), kFist = T("ff", () => People.foreArm(spec, "fist", s));
+    shadowTex();
     const c = scene.add.container(0, 0);
-    const sh = img("shadow", 34); sh.setAlpha(.9);
-    const body = img(bk);
-    const arm = scene.add.container(12, -25);
-    const armImg = img(ak);
-    const fl = img(flagKey(sideKey), 21); fl.setOrigin(0, .1); fl.setPosition(3.6, -44);
-    arm.add([armImg, fl]);
-    c.add([sh, body, arm]);
-    const n = new Node(c); n.k = 1.3;
-    n.u = { kind:"fan", arm, flag:fl, shadow:sh, phase:Math.random()*6, fall:-1, dir:Math.random() < .5 ? 1 : -1, hop:0 };
+    const sh = img("shadowdir"); sh.setScale(s*.62/(texInfo.shadowdir.q || Q)*1.0);
+    const up = scene.add.container(0, RIG.hip*s);                // corpo superior (gira a partir do quadril)
+    const legs = img(kLegs); legs.setPosition(0, RIG.hip*s);
+    const torso = img(kTorso); torso.setPosition(0, (RIG.neck - RIG.hip)*s);
+    const headC = scene.add.container(0, (RIG.neck - RIG.hip)*s); const head = img(kHead); headC.add(head);
+    const arm = side => {
+      const g = scene.add.container(side*(sw - 1)*s, (RIG.sh - RIG.hip)*s), ua = img(kUp);
+      const fg = scene.add.container(0, RIG.up*s); const fo = img(side === (holder === "R" ? 1 : -1) && hold !== "none" ? kFist : kOpen); fg.add(fo);
+      g.add([ua, fg]); return { g, fg, side };
+    };
+    const L = arm(-1), R = arm(1), H = holder === "R" ? R : L, F = holder === "R" ? L : R;     // H = braço que segura, F = braço livre
+    // objeto segurado: mastro + bandeira (corda) ou fuzil
+    let item = null, rope = null, poleLen = 0, fw = 0, fh = 0;
+    if (hold === "flag") {
+      poleLen = Math.round(56*s);
+      const pk = "pole" + poleLen; tex(pk, () => People.pole(poleLen));
+      const pole = img(pk); pole.setOrigin(.5, (poleLen + 3 - 13*s)/(poleLen + 6));
+      const fk = flagKey(o.flagKey), d = texInfo[fk];
+      fw = 24*s; fh = fw*(55/80);
+      rope = scene.add.rope(0, 0, fk, undefined, 7, true); rope.setScale(fw/(d.w*(d.q || Q)));
+      item = scene.add.container(0, 0); item.add([pole, rope]); item.pole = pole;
+    } else if (hold === "rifle") {
+      tex("rifle", () => People.rifle());
+      const rf = img("rifle"); rf.setScale(s/(texInfo.rifle.q || Q));
+      item = scene.add.container(0, 0); item.add(rf); item.pole = rf;
+    }
+    up.add([L.g, torso, headC, R.g]); if (item) up.add(item);
+    c.add([sh, legs, up]);
+    const n = new Node(c);
+    n.u = { kind:"fan", s, sw, hold, holder, H, F, L, R, up, legs, torso, headC, shadow:sh, item, rope, poleLen, fw, fh, flag:item, arm:null,
+            phase:Math.random()*6, ph2:Math.random()*6, fall:-1, dir:Math.random() < .5 ? 1 : -1, pose:o.pose || "cheer", glance:0, nextGlance:rnd(2, 7), cheer:0, flagDropped:false, spec, sideKey:o.flagKey };
     return n;
   }
+  const rnd = (a, b) => a + Math.random()*(b - a);
+  const choose = a => a[Math.floor(Math.random()*a.length)];
+
+  function makeFan(sideKey, shirt) {
+    const side = cfg.SIDES[sideKey], spec = People.randomSpec(side, shirt != null ? { shirt } : {});
+    const n = buildPerson(spec, { s:1.0, hold:"flag", flagKey:sideKey, holder:"R", pose:"cheer" }); n.k = 1.0; return n;
+  }
+  function unitSpec(kind) {
+    if (kind === "zombie") return { fem:Math.random() < .35, skin:choose([0x93ad86, 0x8aa07c, 0xa0b090]), hair:0x2a2a22, hairStyle:choose(["short", "bald", "long"]), eye:0x802020, shirt:choose([0x5e6050, 0x6a5a4a, 0x4a5a5a]), pants:0x34362e, pantsType:"dark", shoes:0x2a2620, zombie:true, age:.8 };
+    if (kind === "monster") return { skin:0x8a5aae, hair:0x1a1020, hairStyle:"bald", eye:0x802020, shirt:0x3a1e52, pants:0x2a1a3a, pantsType:"dark", shoes:0x20182a, zombie:true, horns:true, age:.5 };
+    return { skin:choose(People.SKINS), hair:0x1a1a14, hairStyle:"short", eye:0x3a2418, shirt:choose([0x4e5d2e, 0x56633a, 0x46542a]), pants:0x4a5530, pantsType:"dark", shoes:0x1a1a18, helmet:true, glasses:false, collar:null };
+  }
   function makeUnit(kind) {
-    const k = "unit_" + kind;
-    tex(k, () => Art.unitBody(kind));
-    tex("shadow", () => Art.shadow());
-    const c = scene.add.container(0, 0);
-    const sh = img("shadow", 34); sh.setAlpha(.9);
-    c.add([sh, img(k)]);
-    const n = new Node(c); n.k = 1.3;
-    if (kind === "monster") n.sc = 1.3;
-    n.u = { kind:"fan", arm:null, flag:null, shadow:sh, phase:Math.random()*6, fall:-1, dir:Math.random() < .5 ? 1 : -1, unit:kind };
-    return n;
+    const spec = unitSpec(kind);
+    const n = buildPerson(spec, { s:kind === "monster" ? 1.3 : 1, hold:kind === "soldier" ? "rifle" : "none", holder:"R", pose:kind });
+    n.u.unit = kind; return n;
   }
   /* o "chefão" que aparece por um instante: torcedor gigante com coroa */
   function makeBossFan(sideKey) {
-    const n = makeFan(sideKey, null, null, false);
+    const n = makeFan(sideKey);
     const crown = scene.add.graphics();
     crown.fillStyle(0xffd23a, 1); crown.lineStyle(1.6, 0x14171c, 1);
-    crown.beginPath(); crown.moveTo(-9, -48); crown.lineTo(-11, -62); crown.lineTo(-4, -55); crown.lineTo(0, -66); crown.lineTo(4, -55); crown.lineTo(11, -62); crown.lineTo(9, -48); crown.closePath();
+    crown.beginPath(); crown.moveTo(-8, -86); crown.lineTo(-10, -100); crown.lineTo(-3.5, -93); crown.lineTo(0, -104); crown.lineTo(3.5, -93); crown.lineTo(10, -100); crown.lineTo(8, -86); crown.closePath();
     crown.fillPath(); crown.strokePath();
     n.v.add(crown);
     return n;
   }
+
+  /* mão (em coords do corpo superior) do braço g, com cotovelo a1 e antebraço a2 */
+  function handPos(u, A) {
+    const s = u.s, a1 = A.g.rotation, a2 = a1 + A.fg.rotation, L1 = RIG.up*s, L2 = (RIG.fore + 2)*s;
+    return [A.g.x - L1*Math.sin(a1) - L2*Math.sin(a2), A.g.y + L1*Math.cos(a1) + L2*Math.cos(a2), a2];
+  }
+  /* poses dos braços: cada função define a1/a2 de cada braço no instante t */
+  function setArm(A, a1, a2) { A.g.rotation = a1; A.fg.rotation = a2; }
+
+  const POSES = {
+    cheer(u, t, ph, ch) {                                   // torcedor: braço da bandeira erguido
+      const sd = u.holder === "R" ? 1 : -1, w = Math.sin(t*(2.2 + ch*3) + ph);
+      setArm(u.H, -sd*(2.3 + ch*.25) + .1*w, -sd*(.55) + sd*(-.2 - ch*.25)*Math.sin(t*(3 + ch*5) + ph));
+      setArm(u.F, sd*(.12 + .06*Math.sin(t*1.3 + ph) + ch*(.6 + .5*Math.max(0, Math.sin(t*5 + ph)))), sd*(.14 + .08*Math.sin(t*1.7 + ph)));
+    },
+    zombie(u, t, ph) {
+      const w = Math.sin(t*2.6 + ph);
+      setArm(u.L, 2.15 + .12*w, .5 + .2*Math.sin(t*3.1 + ph)); setArm(u.R, -2.15 - .12*w, -.5 - .2*Math.sin(t*3.3 + ph));
+    },
+    soldier(u, t, ph) {
+      setArm(u.R, -.5 + .03*Math.sin(t*1.5 + ph), -1.55 + .04*Math.sin(t*1.2 + ph)); setArm(u.L, .1 + .04*Math.sin(t*1.3 + ph), .2);
+    },
+    monster(u, t, ph) {
+      setArm(u.L, .45 + .15*Math.sin(t*1.7 + ph), .35); setArm(u.R, -.45 - .15*Math.sin(t*1.9 + ph), -.35);
+    },
+  };
+
+  /* animação de uma pessoa (torcedor, unidade ou capitão) */
   function updateFan(n, t, dt) {
-    const u = n.u;
-    if (u.fall >= 0) {
-      u.fall = Math.min(1, u.fall + dt*2.2);
-      n.rot = u.dir*u.fall*Math.PI/2; n.y = u.fall*.12;
-      if (u.flag) u.flag.setVisible(u.fall < .3);
-      if (u.arm) u.arm.setVisible(u.fall < .3);
-      u.shadow.setAlpha(.9*(1 - u.fall*.5));
-    } else if (n.visible) {
-      n.y = Math.abs(Math.sin(t*4 + u.phase))*.1;
-      if (u.arm) u.arm.setRotation(-.1 + Math.sin(t*6 + u.phase)*.35);
-      if (u.flag) u.flag.setScale(u.flag.scaleX, u.flag.scaleY);
-      u.shadow.setScale(34/(texInfo.shadow.w*Q)*(1 - n.y*.5));
+    const u = n.u, s = u.s, ph = u.phase;
+    const ch = chant;
+    if (u.fall >= 0) {                                       // queda realista: tropeça para trás, desaba e fica deitado
+      u.fall = Math.min(1, u.fall + dt*1.15);
+      const f = u.fall, dir = u.dir, fl = clamp01(f/.22), tp = clamp01((f - .12)/.88);
+      if (!u.flagDropped) { u.flagDropped = true; dropItem(n); }
+      const topple = easeIn(tp);
+      n.rot = dir*(Math.PI/2)*topple*(1 + .06*Math.sin(clamp01(tp)*Math.PI*1.2)*(1 - tp));
+      n.y = .02 + topple*.1;
+      u.up.rotation = -dir*.32*easeOut(fl)*(1 - tp);              // balança para trás antes de cair
+      u.headC.rotation = dir*.45*easeOut(fl)*(1 - tp*.5);
+      u.legs.x = 0;
+      const sdL = -1, sdR = 1;
+      setArm(u.L, sdL*(-.5 - 1.5*easeOut(fl)) + 0, .35); setArm(u.R, sdR*(-.5 - 1.4*easeOut(fl)), -.3);
+      if (tp > .85) { setArm(u.L, 1.1, .3); setArm(u.R, -1.2, -.2); }
+      if (u.item) u.item.setVisible(false);
+      u.shadow.setAlpha(.9 - .35*f);
+      return;
     }
+    if (u.flagDropped) { u.flagDropped = false; u.up.rotation = 0; u.headC.rotation = 0; if (u.item) u.item.setVisible(true); u.shadow.setAlpha(1); }
+    if (!n.visible) return;
+    // respiração e balanço do peso do corpo
+    const breath = Math.sin(t*1.9 + ph), sway = Math.sin(t*1.05 + ph*1.7);
+    const pose = u.pose;
+    let lean = 0, shake = 0;
+    if (pose === "zombie") { lean = .1 + .06*Math.sin(t*1.8 + ph); shake = Math.sin(t*5 + ph)*.012; }
+    else if (pose === "monster") lean = .12 + .04*Math.sin(t*1.2 + ph);
+    u.up.rotation = .022*sway + lean + shake;
+    u.up.scaleY = 1 + .011*breath; u.up.scaleX = 1 - .005*breath;
+    u.legs.x = .55*s*sway; u.up.x = -.25*s*sway;
+    // olhar em volta
+    u.nextGlance -= dt;
+    if (u.nextGlance <= 0) { u.glance = (Math.random() < .5 ? -1 : 1)*rnd(.1, .22); u.nextGlance = rnd(2.5, 8); u.glanceT = rnd(.6, 1.6); }
+    if (u.glanceT > 0) u.glanceT -= dt; else u.glance *= .94;
+    u.headC.rotation = .045*Math.sin(t*.8 + u.ph2) + u.glance + (pose === "zombie" ? .2*Math.sin(t*1.3 + ph) : 0) + (pose === "monster" ? .1 : 0);
+    // braços
+    (POSES[pose] || POSES.cheer)(u, t, ph, ch);
+    // reação de comemoração (pulo)
+    if (u.cheer > 0) { u.cheer = Math.max(0, u.cheer - dt); n.y = Math.abs(Math.sin((1 - u.cheer)*Math.PI*3))*.22*Math.min(1, u.cheer*3); }
+    else n.y = ch > .55 && pose === "cheer" ? Math.max(0, Math.sin(t*6 + ph))*.05*ch : 0;
+    n.rot = 0;
+    // objeto na mão
+    if (u.item) {
+      const [hx, hy, ang] = handPos(u, u.H), tilt = (u.hold === "flag" ? clamp01(0) : 0) + (ang + (u.holder === "R" ? 2.9 : -2.9))*.55 + (u.hold === "rifle" ? 0 : .05*Math.sin(t*2.1 + ph));
+      u.item.setPosition(hx, hy);
+      u.item.pole.setRotation(u.hold === "rifle" ? -.06 : tilt);
+      if (u.rope) {
+        const L = u.poleLen - 13*s, side = u.holder === "R" ? 1 : -1, ct = Math.cos(tilt), st = Math.sin(tilt);
+        const lx = side*u.fw/2, ly = u.fh*.5 - 1.5*s;                         // centro da bandeira em relação ao topo do mastro (eixo do mastro)
+        u.rope.setPosition(st*L + lx*ct - ly*st, -ct*L + lx*st + ly*ct);
+        u.rope.setRotation(tilt);
+        const pts = u.rope.points, N = pts.length, amp = (3.4 + ch*5)*s/u.rope.scaleX;
+        for (let i = 0; i < N; i++) { const q = side > 0 ? i/(N - 1) : 1 - i/(N - 1); pts[i].y = Math.sin(t*7 - q*5 + ph)*amp*q*1.1; }
+        u.rope.dirty = true;
+      }
+    }
+  }
+  /* o mastro cai no chão quando o torcedor é atingido */
+  function dropItem(n) {
+    const u = n.u; if (!u.item || u.hold !== "flag") return;
+    const [hx, hy] = handPos(u, u.H);
+    const sp = scene.add.container(0, 0);
+    const pk = "pole" + u.poleLen, pole = img(pk); pole.setOrigin(.5, .5);
+    const fk = flagKey(u.sideKey), fl = img(fk, u.fw); fl.setOrigin(0, 0); fl.setPosition(0, -u.poleLen*.5);
+    sp.add([pole, fl]);
+    const m = new Node(sp, "sort"); m.bias = 3;
+    const x0 = n.x, z0 = n.z, vx = (Math.random() - .5)*1.6 + u.dir*.8, rot0 = (Math.random() - .5)*.5;
+    const y = Math.max(.5, -(RIG.hip*u.s + hy)*n.k*n.sc/HY);
+    m.at(x0 + (u.holder === "R" ? .25 : -.25), y, z0); m.rot = rot0;
+    const vy0 = 1.2, land = .05;
+    addFx(.9, (t) => { const yy = Math.max(land, y + vy0*t - 6*t*t); m.y = yy; m.x = x0 + vx*t*.5; m.rot = rot0 + t*(3.2 + u.dir) * (yy > land + .01 ? 1 : 0); }, () => {
+      m.rot = rot0 + 1.5 + Math.random()*.6; m.y = .04; m.bias = 0; m.v.setScale(1, .6); fixed(m);
+    });
   }
 
   /* ================================================================
      Capitães
      ================================================================ */
-  function makeCaptain(sideKey, ch) {
+  function captainSpec(ch, s, fk) {
+    const mil = !!ch.military, fem = !!ch.fem;
+    return {
+      fem, skin:ch.skin, hair:ch.hair, hairStyle:ch.hairStyle || "short", beard:ch.beard ? true : false, beardColor:ch.beardColor ?? null, glasses:!!ch.glasses,
+      eye:0x3a2418, age:ch.age ?? 0, jacket:mil ? 0x4b5230 : (ch.suit ?? (fem ? s.main : 0x2c3d5c)), tie:s.main, tieStripe:s.alt, undershirt:fem ? s.alt : 0xf3f3f6,
+      pocket:s.alt, pin:[s.main, s.alt], military:mil, sash:mil ? null : [s.main, s.alt], longSleeve:true, sleeve:mil ? 0x4b5230 : (ch.suit ?? (fem ? s.main : 0x2c3d5c)),
+      pants:mil ? 0x3a4028 : (fem ? 0x1f2a3d : 0x1b2030), pantsType:"dark", shoes:0x15130f, legLen:38,
+    };
+  }
+  function makeCaptain(sideKey, ch, dirSign = 1) {
     const s = ch.military ? cfg.NG_SIDE : cfg.SIDES[sideKey];
     const fk = ch.military ? "regime" : sideKey;
-    const bk = "cap_" + [ch.name, sideKey].join("_");
-    tex(bk, () => Art.captainBody(ch, s, fk));
-    const ak = "caparm_" + s.key;
-    tex(ak, () => Art.captainArm(s));
-    tex("shadow", () => Art.shadow());
-    const c = scene.add.container(0, 0);
-    const sh = img("shadow", 100); sh.setAlpha(.95);
-    const body = img(bk);
-    const arm = scene.add.container(38, -88);
-    const armImg = img(ak);
-    const fl = img(flagKey(fk), 52); fl.setOrigin(0, .06); fl.setPosition(2.5, -100);
-    arm.add([armImg, fl]);
+    const spec = captainSpec(ch, s, fk);
+    const n = buildPerson(spec, { s:2.05, hold:"flag", flagKey:fk, holder:dirSign > 0 ? "L" : "R", pose:"captain" });
+    n.k = (ch.boss || ch.military) ? 1.08 : 1;
     const lk = "lbl_" + ch.short + ch.party + s.css;
     tex(lk, () => Art.label(ch.short + " · " + ch.party, s.css));
-    const lab = img(lk); lab.setPosition(0, -178);
-    c.add([sh, body, arm, lab]);
-    const n = new Node(c);
-    n.k = (ch.boss || ch.military) ? 1.3 : 1.12;
-    n.u = { kind:"captain", arm, flag:fl, jump:0, shake:0, base:{ x:0, y:0, z:0 }, bx:0 };
+    const lab = img(lk); lab.setPosition(0, (RIG.neck - 24)*1.75);
+    n.v.add(lab);
+    Object.assign(n.u, { kind:"captain", jump:0, shake:0, throwT:-1, base:{ x:0, y:0, z:0 }, dirSign, ch });
+    n.u.pose = "captain";
     return n;
   }
+  POSES.captain = function (u, t, ph) {
+    const sd = u.holder === "R" ? 1 : -1;
+    setArm(u.H, -sd*(2.2 + .05*Math.sin(t*1.4)), -sd*.3 + sd*.1*Math.sin(t*2.2));
+    if (u.throwT < 0 && u.jump <= 0 && u.shake <= 0) setArm(u.F, -sd*(.12 + .05*Math.sin(t*1.2 + ph)), -sd*(.15 + .06*Math.sin(t*1.5)));
+  };
   function updateCaptain(n, t, dt, b) {
     const u = n.u;
-    u.arm.setRotation(-.1 + Math.sin(t*3 + b)*.18);
-    let y = u.base.y, x = u.base.x;
-    if (u.jump > 0) { u.jump = Math.max(0, u.jump - dt*1.2); y += Math.sin(u.jump*Math.PI)*1.2; }
-    if (u.shake > 0) { u.shake = Math.max(0, u.shake - dt*1.5); x += Math.sin(t*50)*.13*u.shake; }
-    n.x = x; n.y = y; n.z = u.base.z;
-    n.alpha = 1;
+    updateFan(n, t, dt);                                     // respiração, olhar, bandeira
+    const sdF = u.holder === "R" ? -1 : 1;                   // lado do braço livre
+    let y = u.base.y, x = u.base.x, lean = 0;
+    if (u.jump > 0) {
+      u.jump = Math.max(0, u.jump - dt*1.1); const k = 1 - u.jump;
+      y += Math.abs(Math.sin(k*Math.PI*2))*.55*(u.jump > .05 ? 1 : 0);
+      setArm(u.F, sdF*(-2.5 + .2*Math.sin(t*14)), sdF*(-.4));
+      setArm(u.H, (u.holder === "R" ? -1 : 1)*(2.6 + .15*Math.sin(t*12)), 0);
+      u.headC.rotation = -.1;
+    }
+    if (u.shake > 0) {
+      u.shake = Math.max(0, u.shake - dt*1.4);
+      x += Math.sin(t*38)*.06*u.shake;
+      lean = -u.dirSign*.14*Math.sin(Math.min(1, u.shake*1.6)*Math.PI*.5);
+      setArm(u.F, sdF*(-.9*u.shake - .3), sdF*.6); u.headC.rotation = -u.dirSign*.3*u.shake;
+    }
+    if (u.throwT >= 0) {                                      // arremesso: prepara, lança, recolhe
+      u.throwT += dt; const k = u.throwT, W = .3, R = .5;
+      let a1, a2, lz;
+      if (k < W) { const q = easeOut(k/W); a1 = sdF*(-1.0 - 1.6*q); a2 = sdF*(.4 + 1.0*q); lz = -.1*q*u.dirSign; }
+      else if (k < R) { const q = (k - W)/(R - W); a1 = sdF*(-2.6 + 1.7*easeIn(q)); a2 = sdF*(1.4 - 1.8*q); lz = .2*q*u.dirSign - .1*u.dirSign*(1 - q); }
+      else { const q = clamp01((k - R)/.35); a1 = sdF*(-.9 + .8*q); a2 = sdF*(-.4 + .5*q); lz = .1*(1 - q)*u.dirSign; if (q >= 1) u.throwT = -1; }
+      setArm(u.F, a1, a2); lean = lz;
+    }
+    u.up.rotation += lean;
+    n.x = x; n.y += y; n.z = u.base.z; n.alpha = 1;
   }
+  function captainThrow(cp) { if (cp) cp.u.throwT = 0; }
+  function chantBoost(v = .5) { chant = Math.min(1, chant + v); }
+  function stepChant(dt) { chant = Math.max(0, chant - dt*.18); }
 
   /* ================================================================
      Veículos e peças arremessadas
      ================================================================ */
   function vehicleNode(key, make, w) {
-    tex(key, make);
-    tex("shadow", () => Art.shadow());
+    tex(key, make); shadowTex();
     const c = scene.add.container(0, 0);
-    const sh = img("shadow", w || 70); sh.setAlpha(.8);
+    const sh = img("shadowdir"); sh.setScale((w || 70)/70/(texInfo.shadowdir.q || Q)); sh.setAlpha(.9);
     c.add([sh, img(key)]);
     return new Node(c);
   }
@@ -185,26 +333,26 @@ const GFX = (() => {
     const s = cfg.SIDES[sideKey], shirt = s.shirts[rand(s.shirts.length)];
     const fl = tex("flag_" + sideKey, () => Art.flag(sideKey));
     const key = ["moto", sideKey, shirt, dir > 0 ? "R" : "L"].join("_");
-    const n = vehicleNode(key, () => Art.sheared(70, 56, 35, 50, -.5, dir < 0, x => Art.drawMoto(x, { main:s.main, alt:s.alt, shirt, flag:fl })), 52);
-    n.sc = 1.5; return n;
+    const n = vehicleNode(key, () => Art.sheared(96, 70, 48, 63, -.5, dir < 0, x => Art.drawMoto(x, { main:s.main, alt:s.alt, shirt, flag:fl })), 64);
+    n.sc = 1.0; return n;
   }
   /* ônibus que anda no sentido -z (desce a coluna: visual esquerda-cima) */
   function makeBus(sideKey, len) {
-    const s = cfg.SIDES[sideKey], L = Math.round(len*52);
+    const s = cfg.SIDES[sideKey], L = Math.round(len*68);
     const fl = tex("flag_" + sideKey, () => Art.flag(sideKey));
     const key = ["bus", sideKey, L].join("_");
-    const n = vehicleNode(key, () => Art.sheared(L, 56, L/2, 50, .5, true, x => Art.drawBus(x, { main:s.main, alt:s.alt, flag:fl }, L)), L*.7); n.sc = 1.3; return n;
+    const n = vehicleNode(key, () => Art.sheared(L + 6, 70, (L + 6)/2, 63, .5, true, x => Art.drawBus(x, { main:s.main, alt:s.alt, flag:fl }, L)), L*.7); n.sc = 1.3; return n;
   }
   function makeSoundTruck(sideKey, dir) {
     const s = cfg.SIDES[sideKey];
     const fl = tex("flag_" + sideKey, () => Art.flag(sideKey));
     const key = ["truck", sideKey, dir > 0 ? "R" : "L"].join("_");
-    const n = vehicleNode(key, () => Art.sheared(100, 80, 50, 56, -.5, dir < 0, x => Art.drawTruck(x, { main:s.main, alt:s.alt, flag:fl })), 90); n.sc = 1.3; return n;
+    const n = vehicleNode(key, () => Art.sheared(124, 90, 62, 70, -.5, dir < 0, x => Art.drawTruck(x, { main:s.main, alt:s.alt, flag:fl })), 90); n.sc = 1.3; return n;
   }
   function makeHeli(sideKey, dir) {
     const s = cfg.SIDES[sideKey];
     const key = ["heli", sideKey, dir > 0 ? "R" : "L"].join("_");
-    tex(key, () => Art.sheared(100, 70, 50, 38, -.5, dir < 0, x => { x.translate(46, 16); Art.drawHeli(x, { main:s.main, alt:s.alt }); }));
+    tex(key, () => Art.sheared(110, 70, 55, 40, -.5, dir < 0, x => { x.translate(54, 14); Art.drawHeli(x, { main:s.main, alt:s.alt }); }));
     tex("shadow", () => Art.shadow());
     const c = scene.add.container(0, 0);
     const sh = img("shadow", 64); sh.setAlpha(.6);
@@ -255,13 +403,20 @@ const GFX = (() => {
   }
   function setRing(n, r) { flatScale(n, r); }
   const decals = [];
-  function addDecal(x, z, color, r) {
-    tex("blob", () => Art.blob());
-    const im = img("blob"); im.setTint(color); im.setRotation(0);
-    const n = new Node(im, "flat"); n.u.tk = "blob"; n.at(x, 0, z); n.bias = 100 + decals.length*.01; n.alpha = .88;
-    flatScale(n, r*(.8 + Math.random()*.4));
-    n.rot = 0; n.v.setAngle(0);
+  function addDecal(x, z, color, r, kind) {
+    const tk = kind === "splat" ? "splat" : "blob";
+    tex(tk, () => tk === "splat" ? Art.splat() : Art.blob());
+    const im = img(tk); im.setTint(color);
+    const n = new Node(im, "flat"); n.u.tk = tk; n.at(x, 0, z); n.bias = 100 + decals.length*.01; n.alpha = kind === "splat" ? .92 : .88;
+    flatScale(n, r*(.8 + Math.random()*.4)*(kind === "splat" ? 1.15 : 1));
+    n.rot = Math.random()*6.28;
     decals.push(n); return n;
+  }
+  /* sombra projetada no chão por objetos no ar */
+  function makeGroundShadow() {
+    tex("blob", () => Art.blob());
+    const im = img("blob"); im.setTint(0x000000);
+    const n = new Node(im, "flat"); n.u.tk = "blob"; n.bias = 150; n.alpha = .3; flatScale(n, .2); return n;
   }
   function fixed(node) { markers.push(node); return node; }
   const markers = [];                                   // coisas que ficam na arena até a próxima rodada (cones, flechas, objetos)
@@ -274,17 +429,18 @@ const GFX = (() => {
   const parts = [], free = [];
   function burst(pos, colors, n = 26, power = 4) {
     tex("chip0", () => Art.chip(0)); tex("chip1", () => Art.chip(1)); tex("chip2", () => Art.chip(2));
-    for (let i = 0; i < n; i++) {
+    const m = Math.max(1, Math.round(n*.45));
+    for (let i = 0; i < m; i++) {
       let p = free.pop();
       if (!p) { p = { im:scene.add.image(0, 0, "chip0").setDepth(D_FX) }; }
-      const k = "chip" + rand(3);
-      p.im.setTexture(k); p.im.setTint(colors[rand(colors.length)]).setVisible(true).setAlpha(1);
+      p.im.setTexture("chip" + rand(3)); p.im.setTint(colors[rand(colors.length)]).setVisible(true).setAlpha(1);
       p.x = pos.x; p.y = (pos.y || 0) + .5; p.z = pos.z;
       p.vx = (Math.random() - .5)*power; p.vy = 2 + Math.random()*power; p.vz = (Math.random() - .5)*power;
-      p.life = p.max = 1 + Math.random()*.7; p.spin = (Math.random() - .5)*14; p.s = .5 + Math.random()*.5;
+      p.life = p.max = .8 + Math.random()*.6; p.spin = (Math.random() - .5)*14; p.s = .3 + Math.random()*.35;
       p.im.setBlendMode(0);
       parts.push(p);
     }
+    for (let i = 0, k = Math.min(4, Math.ceil(n/8)); i < k; i++) puff({ x:pos.x + (Math.random() - .5)*.4, y:(pos.y || 0) + .1, z:pos.z + (Math.random() - .5)*.4 }, { color:0x9a8e7c, life:.9 + Math.random()*.5, s0:.12, s1:.42, a:.35, vy:.35 });
   }
   /* brilho aditivo (faísca/explosão) */
   function flash(pos, color, size, dur = .35) {
@@ -303,6 +459,37 @@ const GFX = (() => {
       const sp = P(p.x, p.y, p.z);
       p.im.setPosition(sp[0], sp[1]).setRotation(p.im.rotation + p.spin*dt).setScale(p.s*.85).setAlpha(Math.min(1, p.life*2.2));
     }
+  }
+
+  /* ---------- fumaça e poeira: nuvens macias que sobem, crescem e somem ---------- */
+  const puffs = [], puffFree = [];
+  function puff(pos, o = {}) {
+    tex("glow", () => Art.glow());
+    let p = puffFree.pop(); if (!p) p = { im:scene.add.image(0, 0, "glow").setDepth(D_FX - 10) };
+    const sp = P(pos.x, pos.y || 0, pos.z);
+    Object.assign(p, { x:pos.x, y:pos.y || 0, z:pos.z, vx:(o.vx ?? (Math.random() - .5)*.5), vy:o.vy ?? (.6 + Math.random()*.6), vz:(o.vz ?? (Math.random() - .5)*.5), life:o.life ?? 1.6, max:o.life ?? 1.6, s0:o.s0 ?? .22, s1:o.s1 ?? .7, a:o.a ?? .35 });
+    p.im.setTint(o.color ?? 0x2a2420).setBlendMode(o.add ? 1 : 0).setVisible(true).setPosition(sp[0], sp[1]);
+    puffs.push(p);
+  }
+  const smoke = pos => puff(pos, { color:0x241e1a, life:2.4, s0:.18, s1:.9, a:.38, vy:1.1 });
+  function stepPuffs(dt) {
+    for (let i = puffs.length - 1; i >= 0; i--) {
+      const p = puffs[i]; p.life -= dt;
+      if (p.life <= 0) { p.im.setVisible(false); puffFree.push(p); puffs.splice(i, 1); continue; }
+      p.x += p.vx*dt; p.y += p.vy*dt; p.z += p.vz*dt; p.vy *= .985;
+      const k = 1 - p.life/p.max, sp = P(p.x, p.y, p.z);
+      p.im.setPosition(sp[0], sp[1]).setScale(p.s0 + (p.s1 - p.s0)*k).setAlpha(p.a*Math.sin(Math.min(1, k*5 + .15)*Math.PI*.5)*(1 - k));
+    }
+  }
+  /* ---------- correção de cor da câmera por cenário ---------- */
+  let cmFilter = null;
+  function grade(c = {}) {
+    try {
+      if (!cmFilter) cmFilter = cam.filters.internal.addColorMatrix();
+      const m = cmFilter.colorMatrix; m.reset();
+      m.saturate((c.sat ?? 1) - 1, true); m.contrast((c.con ?? 1) - 1, true); m.brightness(c.bri ?? 1, true);
+      if (c.tint) m.multiply([c.tint[0], 0, 0, 0, 0, 0, c.tint[1], 0, 0, 0, 0, 0, c.tint[2], 0, 0, 0, 0, 0, 1, 0], true);
+    } catch (e) { /* filtros indisponíveis */ }
   }
 
   /* ---------- efeitos temporizados ---------- */
@@ -488,7 +675,7 @@ const GFX = (() => {
      ================================================================ */
   let tAcc = 0;
   function frame(dt, t) {
-    stepParts(dt);
+    stepParts(dt); stepPuffs(dt); stepChant(dt);
     layoutGoal();
     const kf = 1 - Math.exp(-dt*5);
     view.cx += (view.goalCx - view.cx)*kf; view.cy += (view.goalCy - view.cy)*kf; view.zoom += (view.goalZoom - view.zoom)*kf;
@@ -505,16 +692,16 @@ const GFX = (() => {
     initBoards();
     resize();
     window.addEventListener("resize", resize);
-    try { cam.filters.external.addVignette(.5, .5, .9, .32); } catch (e) { /* filtros indisponíveis: segue sem vinheta */ }
+    try { cam.filters.external.addVignette(.5, .5, .95, .26); } catch (e) { /* filtros indisponíveis: segue sem vinheta */ }
   }
 
   return {
-    init, frame, pinToScreen, runFx, addFx, resize, setFocus, shake, pick, P, unproj, depthOf, tex, img, flagKey, texInfo,
+    init, frame, pinToScreen, grade, puff, smoke, runFx, addFx, resize, setFocus, shake, pick, P, unproj, depthOf, tex, img, flagKey, texInfo,
     get scene() { return scene; }, get cam() { return cam; }, get view() { return view; }, get cfg() { return cfg; },
     Node, nodes, drop, fixed, markers, tileCenter,
-    makeFan, makeUnit, makeBossFan, makeCaptain, updateFan, updateCaptain,
+    makeFan, makeUnit, makeBossFan, makeCaptain, updateFan, updateCaptain, captainThrow, chantBoost,
     makeMoto, makeBus, makeSoundTruck, makeHeli, makeThrow, makeBullet, makeArrow, makeBomb, makeUmbrella, makeConeMark,
-    makeRing, setRing, addDecal, clearMarkers, burst, flash, makeHint, makeFlame, flicker, flameKey,
+    makeRing, setRing, addDecal, makeGroundShadow, clearMarkers, burst, flash, makeHint, makeFlame, flicker, flameKey,
     setTile, setFrameColor, setPreview, clearPreview, D_GROUND, D_BOARD, D_FLAT, D_SORT, D_FX, D_HINT
   };
 })();

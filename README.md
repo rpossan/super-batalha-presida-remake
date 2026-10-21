@@ -5,7 +5,7 @@
 <h3 align="center">Use sua estratégia política para conquistar votos e vencer a corrida presidencial!</h3>
 
 <p align="center">
-  Batalha naval das <b>eleições 2026</b>, em 2.5D isométrico, direto no navegador.<br>
+  Batalha naval das <b>eleições 2026</b>, em 2.5D isométrico com visual realista, direto no navegador.<br>
   Uma campanha em 7 fases, 2 trilhas, 7 cenários do Brasil, um chefão final e um modo NG+ apocalíptico.
 </p>
 
@@ -47,7 +47,7 @@ quando fazer uma pesquisa para descobrir onde o adversário se esconde e qual po
 
 | | |
 |---|---|
-| 🎮 **Batalha naval reinventada** | Tabuleiros 10×10 isométricos, torcedores animados e objetos de protesto (cone, tomate, bandeira, cavalete, chinelo, pedra e ovo) que ficam espalhados pela arena. |
+| 🎮 **Batalha naval reinventada** | Tabuleiros 10×10 isométricos, torcedores como pessoas de verdade (corpo articulado, roupas, rostos, bandeiras de pano) e cenários com texturas, sombras projetadas e árvores ao vento, torcedores animados e objetos de protesto (cone, tomate, bandeira, cavalete, chinelo, pedra e ovo) que ficam espalhados pela arena. |
 | ⚡ **Poderes especiais** | Pesquisa, cruz (Buzinaço/Comício) e o poder final de cada lado: **Motociata** (linha inteira) e **Caravana** (coluna inteira), todos com animação própria. |
 | 🌎 **7 cenários do Brasil** | Av. Paulista, Aeroporto de Porto Alegre, Cristo Redentor, Sertão, Amazônia, Balneário Camboriú e Praça dos Três Poderes. |
 | ⚠️ **Perigos de cenário** | Bala perdida, fogo no sertão e chuva de flechas na floresta, em quantidade equilibrada ao nível. |
