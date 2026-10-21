@@ -6,11 +6,14 @@
 
 <p align="center">
   Batalha naval das <b>eleições 2026</b>, em 2.5D isométrico com visual realista, direto no navegador.<br>
-  Uma campanha em 7 fases, 2 trilhas, 7 cenários do Brasil, um chefão final e um modo NG+ apocalíptico.
+  Uma campanha em 7 fases, 2 trilhas, 7 cenários do Brasil, um chefão final, um final cinematográfico e um modo NG+ apocalíptico.<br>
+  <sub>Este é o <b>REMAKE</b> do <a href="https://github.com/rpossan/super-presida-batalha">Super Presida Batalha original</a>.</sub>
 </p>
 
 <p align="center">
-  <a href="https://rpossan.github.io/super-presida-batalha/"><b>▶ JOGAR AGORA</b></a>
+  <a href="https://rpossan.github.io/super-batalha-presida-remake/"><b>▶ JOGAR AGORA</b></a>
+  &nbsp;·&nbsp;
+  <a href="#-o-remake">🆕 O que mudou no remake</a>
   &nbsp;·&nbsp;
   <a href="#-aviso-legal-e-isenção-de-uso-de-imagem">Aviso legal</a>
   &nbsp;·&nbsp;
@@ -26,6 +29,26 @@
 > mesmas regras, mesmos poderes, mesma quantidade de fases, adversários e chefão, e uma conclusão para cada trilha.
 > O jogo **não faz propaganda, não pede voto e não toma partido**. Nenhum lado é "o certo" ou "o errado":
 > é só uma brincadeira de estratégia com humor.
+
+---
+
+## 🆕 O remake
+
+Tudo foi refeito sobre a mesma ideia do [jogo original](https://github.com/rpossan/super-presida-batalha), agora em **2.5D isométrico** com [Phaser 4](https://phaser.io/):
+
+| Original | Remake |
+|---|---|
+| Visual simples em 3D de blocos | **Pessoas realistas e articuladas**, cenários com texturas, sombras projetadas e árvores ao vento, veículos e efeitos melhores |
+| Câmera fixa | **Zoom** (roda, pinça, `+`/`-`), **arrastar** para mover e **giro da vista** em 4 ângulos (`Q`/`E`) |
+| Jogador sem progressão | **Progressão de RPG:** votos viram experiência (níveis 1 a 15), pontos de skill, grana e saque, com tela de resultados e *LEVEL UP!* |
+| Skills simples | **Skills com 3 níveis**, trava por fase vencida e ameaça que cresce com o seu poder |
+| 3 itens | **5 itens** (Remédio, Energético, Reforço, **Breja** e **Plano de Governo**), só na loja ou no saque |
+| Reações genéricas | **Vozes e gritos** de quem é atingido (falas em pt-BR) e gemidos nos zumbis |
+| Trilha única | **Uma música por cenário**, gerada por código |
+| Final curto | **Final cinematográfico** de mais de 2 minutos, com a câmera na festa, fogos, a cena da posse, a linha do tempo da campanha e créditos |
+| Sem cronômetro | **Cronômetro de jogo** que registra quanto tempo você levou para zerar, com melhor tempo e tempo por fase |
+
+<p align="center"><img src="docs/img/skills_batalha.png" alt="Batalha com skills e itens" width="800"></p>
 
 ---
 
@@ -52,8 +75,10 @@ quando fazer uma pesquisa para descobrir onde o adversário se esconde e qual po
 | 🌎 **7 cenários do Brasil** | Av. Paulista, Aeroporto de Porto Alegre, Cristo Redentor, Sertão, Amazônia, Balneário Camboriú e Praça dos Três Poderes. |
 | ⚠️ **Perigos de cenário** | Bala perdida, fogo no sertão e chuva de flechas na floresta, em quantidade equilibrada ao nível. |
 | 👑 **Chefões únicos** | Sem torcida, com pontos de vida, que mudam de casa a cada acerto e reagem aos seus erros. |
-| 🛒 **Loja, itens e skills** | Compre itens com a grana do saque e aprenda skills com pontos de nível (Empolgação, Super tiro, Guarda-chuva, Instituto de pesquisa, Fôlego). [Veja a seção](#-itens-e-skills). |
+| 🛒 **Loja, itens e skills** | Compre itens com a grana do saque e aprenda skills com pontos de nível (Empolgação, Super tiro, Guarda-chuva, Instituto de pesquisa, Fôlego). [Veja a seção](#️-níveis-grana-itens-e-skills). |
+| 🎬 **Final cinematográfico** | Ao vencer o chefão: câmera passeando pela festa com fogos e confete, a cena da posse, a **linha do tempo da sua campanha** (fase a fase, com o tempo de cada uma) e créditos. [Veja a seção](#-o-final). |
 | 🏆 **Nível, votos e recorde** | Votos são experiência (nunca zeram), com tela de resultados e *LEVEL UP!*; combo e recorde pessoal. |
+| ⏱️ **Cronômetro de jogo** | O relógio do topo conta o tempo jogado na trilha (pausa e menu não contam, e ele não encerra a partida). Ao zerar, o final mostra o tempo por fase e o melhor tempo. |
 | 🎵 **Trilha sonora própria** | Uma música diferente por cenário (samba, baião, milonga, tambores, marcha…), gerada por código. |
 | 📱 **Funciona no celular** | A câmera acompanha o turno: na sua vez, só a arena do adversário, para dar precisão no toque. |
 
@@ -106,6 +131,33 @@ O chefão é **único, sem torcida, e tem pontos de vida**. A cada acerto ele **
 
 ---
 
+## 🎬 O final
+
+Venceu o chefão? A campanha da sua trilha termina com um **final de mais de 2 minutos** (dá para pular com **Pular ▶**):
+
+1. **A festa na praça:** a câmera do jogo se aproxima da sua torcida, cruza a Praça dos Três Poderes e se afasta, com a torcida vibrando, confete, **fogos de artifício** (inclusive em forma de coração) e legendas.
+2. **A posse:** a cena animada no Planalto, com a rampa, a faixa presidencial (ou o abraço do Flávio com o pai) e fogos por cima.
+3. **A sua jornada:** a **linha do tempo da campanha**, com cada fase vencida, o adversário derrotado e o **tempo gasto em cada uma**, somando o **tempo total**.
+4. **O placar:** votos, recorde de votos e **melhor tempo** da trilha.
+5. **Os créditos**, e o desbloqueio do **NG+: Apocalipse**.
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/img/final_festa.png" width="390"><br><b>A festa na praça</b> · câmera, torcida e fogos</td>
+    <td align="center"><img src="docs/img/final_posse.png" width="390"><br><b>A posse</b> · cena animada no Planalto</td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/img/final_jornada.png" width="390"><br><b>A sua jornada</b> · tempo de cada fase</td>
+    <td align="center"><img src="docs/img/final_placar.png" width="390"><br><b>O placar</b> · votos e melhor tempo</td>
+  </tr>
+</table>
+
+### ⏱️ Cronômetro de jogo
+O relógio no topo da tela **conta o tempo jogado na trilha** (posicionando e batalhando). Pausa, menu e tela de resultados **não contam**, e o relógio **nunca encerra a partida**:
+ele existe para você medir em quanto tempo consegue zerar o jogo. O tempo de cada fase fica salvo junto com o progresso, e o **melhor tempo** de cada trilha é guardado no navegador.
+
+---
+
 ## ☢️ NG+: Apocalipse
 
 Zerou a campanha e viu os créditos? Um ditador surge das cinzas. **O NG+ é desbloqueado depois dos créditos** e é a fase mais difícil do jogo.
@@ -122,7 +174,7 @@ Zerou a campanha e viu os créditos? Um ditador surge das cinzas. **O NG+ é des
 
 <p align="center"><img src="docs/img/ng_batalha.png" alt="Batalha do NG+" width="760"></p>
 
-> A dificuldade acompanha a **ameaça** (veja [Ameaça e equilíbrio](#️-ameaça-e-equilíbrio)): quanto mais você investe em skills, mais exércitos, bombas e zumbis o Tirano manda.
+> A dificuldade acompanha a **ameaça** (veja [Ameaça](#️-ameaça)): quanto mais você investe em skills, mais exércitos, bombas e zumbis o Tirano manda.
 
 ---
 
@@ -134,6 +186,8 @@ A progressão é de RPG: **votos são experiência**, a **grana** vem do saque e
 - Cada torcedor adversário derrubado rende **votos** (com combo, até **8x**). Os votos **nunca zeram**, nem quando você perde.
 - Ao fim de cada batalha aparece a **tela de resultados** (estilo menu de vitória de RPG clássico): os votos contam, a barra enche,
   o jogador sobe de nível com a animação **LEVEL UP!** e ganha **pontos de skill**. Vencer dá ainda um **bônus de votos**.
+<p align="center"><img src="docs/img/resultados.png" alt="Tela de resultados estilo RPG" width="760"></p>
+
 - Níveis de 1 a 15, com experiência acumulada de **1.000, 3.000, 6.000, 10.000, 15.000…** votos (`500 × n × (n+1)`).
 - Cada nível dá **1 ponto de skill** (e **+1 extra** nos níveis 3, 6, 9, 12 e 15): são 20 pontos no total, e maximizar as 5 skills custa 30. É preciso escolher uma *build*.
 
@@ -150,12 +204,14 @@ mas **não há limite de uso por fase**. Usar um item **não gasta o turno**.
 | Item | Atalho | Efeito | Preço |
 |---|---|---|---|
 | 💊 **Remédio** (cruz vermelha) | `5` | revive 1 torcedor caído da sua torcida | R$ 400 |
-| 🥫 **Fúria** (energético) | `6` | turnos contínuos: joga 3 turnos seguidos (o atual + 2), sem o adversário agir | R$ 1.000 |
+| 🥫 **Energético** | `6` | turnos contínuos: joga 3 turnos seguidos (o atual + 2), sem o adversário agir | R$ 1.000 |
 | 📢 **Reforço** (alto-falante) | `7` | invoca 1 torcedor aleatório na sua arena (+1 de vida) | R$ 650 |
+| 🍺 **Breja** | `8` | +1 uso de **Super tiro** e **Empolgação** na fase atual (precisa ter aprendido uma delas) | R$ 500 |
+| 📜 **Plano de Governo** | `9` | ganha **1 ponto de skill** | R$ 2.500 |
 
 No celular os itens ficam num botão único **🎒 Itens** que abre a lista.
 
-<p align="center"><img src="docs/img/loja_skills.png" alt="Loja de skills" width="640"></p>
+<p align="center"><img src="docs/img/loja_itens.png" alt="Loja de itens" width="520">&nbsp;<img src="docs/img/loja_skills.png" alt="Loja de skills" width="520"></p>
 
 ### ⭐ Skills
 Aprendidas com **pontos de skill** e **liberadas pelo nível do jogador**. Depois de aprendida, a skill vale em **todas as fases e cenários**, das duas trilhas.
@@ -186,7 +242,7 @@ Como a progressão agora é mais lenta e o jogo começa sem itens, os números d
 1. Escolha o lado e a fase.
 2. **Posicione** sua torcida (5 grupos) no seu tabuleiro. `R` ou botão direito gira.
 3. Na sua vez, **clique numa casa** do tabuleiro adversário. Cada tiro arremessa um objeto de protesto.
-4. Acerte para ganhar **votos** e **energia**; gaste a energia nos poderes (`1`–`4`) e use os **itens** (`5`–`7`) com sabedoria. Veja [Itens e skills](#-itens-e-skills).
+4. Acerte para ganhar **votos** e **energia**; gaste a energia nos poderes (`1`–`4`) e use os **itens** (`5`–`9`) com sabedoria. Veja [Níveis, grana, itens e skills](#️-níveis-grana-itens-e-skills).
 5. Dispersse toda a torcida adversária (ou derrote o chefão) antes que ele faça o mesmo com a sua.
 
 | Poder | Custo | Efeito |
@@ -198,6 +254,8 @@ Como a progressão agora é mais lenta e o jogo começa sem itens, os números d
 
 Energia: **+1 por turno** e **+1 por torcedor atingido**. No celular, a câmera acompanha o turno.
 
+<p align="center"><img src="docs/img/mobile.png" alt="O jogo no celular" width="760"></p>
+
 ### ⏸ Pausa e modo desenvolvedor
 
 - **Pausa:** botão ⏸ no topo (ou `Esc`) congela o jogo e abre o menu com **Continuar**, **Reiniciar a fase** e
@@ -207,7 +265,7 @@ Energia: **+1 por turno** e **+1 por torcedor atingido**. No celular, a câmera 
 
 ## 🛠️ Tecnologia
 
-- [`index.html`](index.html) (lógica e interface) + [`js/`](js) (`gfx.js` renderer, `art.js` sprites, `scenery.js` cenários), renderizados com [Phaser 4](https://phaser.io/) via CDN. Sem build, sem servidor.
+- [`index.html`](index.html) (lógica e interface) + [`js/`](js) (`gfx.js` renderer, `art.js` sprites, `scenery.js` cenários), renderizados com [Phaser 4](https://phaser.io/) via CDN. Sem build e sem backend: é só servir arquivos estáticos (por exemplo, no GitHub Pages).
 - Personagens, cenários, músicas, efeitos sonoros e ilustrações são **gerados por código** (canvas 2D, SVG e Web Audio).
 - Progresso salvo no navegador (`localStorage`), sem servidor: veja [Salvamento](#-salvamento-local).
 
@@ -220,7 +278,7 @@ Para rodar localmente, abra o `index.html` no navegador. Para criar um cenário 
 
 O jogo **salva sozinho no seu navegador** (`localStorage`), mesmo hospedado no GitHub Pages. Nada vai para servidor nenhum.
 
-- **O que é salvo:** fases desbloqueadas e vencidas (nas duas trilhas), nível e votos, grana, pontos de skill, skills aprendidas, itens, recorde e as preferências de som e música.
+- **O que é salvo:** fases desbloqueadas e vencidas (nas duas trilhas), nível e votos, grana, pontos de skill, skills aprendidas, itens, **tempo de jogo de cada fase**, recorde (votos e melhor tempo) e as preferências de som e música.
 - **Quando salva:** entre as fases (ao terminar uma fase, comprar na loja ou voltar ao menu) e ao fechar a aba. Não salva no meio de uma partida: se você fechar durante uma fase, volta ao estado do início dela.
 - **Onde fica:** só naquele navegador e aparelho; não sincroniza entre computador e celular. Limpar os dados do site, usar aba anônima ou trocar de navegador perde o progresso.
 - **Apagar:** botão **"🗑 Apagar progresso salvo"** no menu principal.
@@ -265,5 +323,6 @@ com a chave Pix e o QR code:
 ---
 
 <p align="center">
-  Feito com ☕ e paciência por <b>rpossan</b> · <a href="https://github.com/rpossan/super-presida-batalha">github.com/rpossan/super-presida-batalha</a>
+  Feito com ☕ e paciência por <b>rpossan</b> · <a href="https://github.com/rpossan/super-batalha-presida-remake">github.com/rpossan/super-batalha-presida-remake</a><br>
+  <sub>Remake do <a href="https://github.com/rpossan/super-presida-batalha">Super Presida Batalha original</a></sub>
 </p>
