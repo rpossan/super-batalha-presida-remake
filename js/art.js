@@ -68,10 +68,31 @@ const Art = (() => {
   }
 
   /* ---------- bandeiras ---------- */
+  /* bandeiras declarativas das campanhas (veja CAMPANHAS.md): { bg, stripes:{dir:"h"|"v", colors:[...]}, shapes:[{type, ...}] } em 160×110 */
+  const FLAG_SPECS = {};
+  function registerFlag(key, spec) { FLAG_SPECS[key] = spec; }
+  function drawFlagSpec(x, sp) {
+    x.fillStyle = sp.bg || "#888888"; x.fillRect(0, 0, 160, 110);
+    if (sp.stripes && sp.stripes.colors && sp.stripes.colors.length) {
+      const cs = sp.stripes.colors, n = cs.length;
+      cs.forEach((c, i) => { x.fillStyle = c; if (sp.stripes.dir === "v") x.fillRect(160*i/n, 0, 160/n + 1, 110); else x.fillRect(0, 110*i/n, 160, 110/n + 1); });
+    }
+    (sp.shapes || []).forEach(h => {
+      x.fillStyle = h.color || "#ffffff"; x.strokeStyle = h.color || "#ffffff";
+      if (h.type === "circle") { x.beginPath(); x.arc(h.x ?? 80, h.y ?? 55, h.r ?? 24, 0, 7); x.fill(); }
+      else if (h.type === "ring") { x.lineWidth = h.w ?? 4; x.beginPath(); x.arc(h.x ?? 80, h.y ?? 55, h.r ?? 24, 0, 7); x.stroke(); }
+      else if (h.type === "star") { starPath(x, h.x ?? 80, h.y ?? 58, h.r ?? 38, h.inner ?? 15); x.fill(); }
+      else if (h.type === "diamond") { const cx = h.x ?? 80, cy = h.y ?? 55, w = h.w ?? 70, hh = h.h ?? 45; x.beginPath(); x.moveTo(cx, cy - hh); x.lineTo(cx + w, cy); x.lineTo(cx, cy + hh); x.lineTo(cx - w, cy); x.fill(); }
+      else if (h.type === "rect") x.fillRect(h.x ?? 0, h.y ?? 0, h.w ?? 40, h.h ?? 40);
+      else if (h.type === "cross") { const cx = h.x ?? 80, cy = h.y ?? 55, w = h.w ?? 74, t = h.t ?? 12; x.fillRect(cx - t/2, cy - w/2, t, w); x.fillRect(cx - w/2, cy - t/2, w, t); }
+      else if (h.type === "diagonal") { x.beginPath(); x.moveTo(0, 0); x.lineTo(h.w ?? 160, 0); x.lineTo(0, h.h ?? 110); x.fill(); }
+    });
+  }
   function flag(key) {
     return bake(80, 55, 0, 0, x => {
       x.save(); x.scale(.5, .5);
-      if (key === "regime") {
+      if (FLAG_SPECS[key]) drawFlagSpec(x, FLAG_SPECS[key]);
+      else if (key === "regime") {
         x.fillStyle = "#1b1b1b"; x.fillRect(0, 0, 160, 110);
         x.fillStyle = "#9b0f0f"; x.beginPath(); x.arc(80, 55, 34, 0, 7); x.fill();
         x.fillStyle = "#1b1b1b"; x.fillRect(74, 18, 12, 74); x.fillRect(43, 49, 74, 12);
@@ -88,10 +109,10 @@ const Art = (() => {
         x.fillStyle = "#ffdf00"; x.beginPath(); x.moveTo(80, 10); x.lineTo(150, 55); x.lineTo(80, 100); x.lineTo(10, 55); x.fill();
         x.fillStyle = "#1d3b8f"; x.beginPath(); x.arc(80, 55, 24, 0, 7); x.fill();
         x.strokeStyle = "#fff"; x.lineWidth = 4; x.beginPath(); x.arc(80, 60, 30, Math.PI*1.18, Math.PI*1.8); x.stroke();
-      } else {
+      } else if (key === "lula") {
         x.fillStyle = "#d7191c"; x.fillRect(0, 0, 160, 110);
         x.fillStyle = "#ffdf00"; starPath(x, 80, 58, 38, 15); x.fill();
-      }
+      } else { x.fillStyle = "#7a8794"; x.fillRect(0, 0, 160, 110); }
       x.restore();
       x.strokeStyle = "rgba(0,0,0,.35)"; x.lineWidth = 1.5; x.strokeRect(.75, .75, 78.5, 53.5);
       x.fillStyle = lin(x, 0, 0, 80, 55, [[0, "rgba(255,255,255,.28)"], [.5, "rgba(255,255,255,0)"], [1, "rgba(0,0,0,.22)"]]);
@@ -553,7 +574,10 @@ const Art = (() => {
   function itemIcon(id) {
     return bake(44, 44, 22, 22, x => {
       x.translate(22, 22);
-      if (id === "revive") {                                       // frasco de remédio
+      if (typeof id === "string" && id.startsWith("emoji:")) {                // item de campanha com ícone em emoji
+        x.fillStyle = "rgba(10,16,26,.85)"; x.beginPath(); x.arc(0, 0, 19, 0, 7); x.fill(); x.lineWidth = 2; x.strokeStyle = "#fff"; x.stroke();
+        x.font = "24px sans-serif"; x.textAlign = "center"; x.textBaseline = "middle"; x.fillText(id.slice(6), 0, 2);
+      } else if (id === "revive") {                                       // frasco de remédio
         x.fillStyle = lin(x, -12, -16, 12, 16, [[0, "#ffffff"], [1, "#c8ccd6"]]); rr(x, -12, -9, 24, 24, 5); x.fill(); x.lineWidth = 1.8; x.strokeStyle = INK; x.stroke();
         x.fillStyle = "#cfd3dc"; rr(x, -8, -16, 16, 8, 2.5); x.fill(); x.stroke();
         x.fillStyle = "#e0242a"; x.fillRect(-2.6, -2, 5.2, 14); x.fillRect(-7.5, 2.6, 15, 5.2);
@@ -629,5 +653,5 @@ const Art = (() => {
   return { Q, INK, HW, HH, HY, css, shade, mix, rgb, hex, rnd, make, bake, rr, lin, rad, ell, poly, ball, starPath,
            flag, shadow, shadowDir, fanBody, fanArm, unitBody, captainBody, captainArm,
            sheared, drawMoto, drawBus, drawTruck, drawHeli, rotor, throwIcon, bullet, arrow, bomb, umbrella, coneMark, flame,
-           blob, splat, coin, itemIcon, ring, glow, chip, label, hint };
+           blob, splat, coin, itemIcon, ring, glow, chip, label, hint, registerFlag };
 })();

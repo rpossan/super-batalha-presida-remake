@@ -21,12 +21,12 @@ create table if not exists public.players (
   level            int         not null default 0 check (level between 0 and 15),
   wins             int         not null default 0 check (wins >= 0),
   losses           int         not null default 0 check (losses >= 0),
-  best_time_flavio numeric     check (best_time_flavio > 0),                        -- segundos
-  best_time_lula   numeric     check (best_time_lula > 0),
+  best_times       jsonb       not null default '{}'::jsonb,                        -- melhor tempo (segundos) por campanha e lado: {"br2026/flavio": 4277.5}
   banned           boolean     not null default false,
   created_at       timestamptz not null default now(),
   updated_at       timestamptz not null default now()
 );
+alter table public.players add column if not exists best_times jsonb not null default '{}'::jsonb;
 alter table public.players add column if not exists friend_id text unique check (friend_id ~ '^[0-9a-f]{8}$');   -- (para quem já tinha rodado a versão anterior)
 create index if not exists players_votes_idx on public.players (votes desc, updated_at asc) where not banned;
 
@@ -119,14 +119,17 @@ begin
 end $$;
 
 -- envia o progresso: valida, nunca deixa os números diminuírem e limita o ganho por envio
+-- p_best: melhores tempos por campanha e lado, ex.: {"br2026/flavio": 4277.5, "br2026/lula": 5120}
+drop function if exists public.submit_progress(bigint, int, int, numeric, numeric, jsonb);
 create or replace function public.submit_progress(
-  p_votes bigint, p_wins int, p_losses int,
-  p_best_flavio numeric, p_best_lula numeric, p_save jsonb)
+  p_votes bigint, p_wins int, p_losses int, p_best jsonb, p_save jsonb)
 returns void language plpgsql security definer set search_path = public as $$
 declare
   uid uuid := auth.uid();
   cur public.players%rowtype;
   max_gain bigint;
+  merged jsonb;
+  k text; v jsonb;
 begin
   if uid is null then raise exception 'não autenticado'; end if;
   select * into cur from public.players where id = uid for update;
@@ -141,17 +144,24 @@ begin
   p_losses := greatest(coalesce(p_losses, 0), cur.losses);
   if p_wins - cur.wins > 50 or p_losses - cur.losses > 50 then raise exception 'estatística implausível'; end if;
 
-  if p_best_flavio between 120 and 360000 then p_best_flavio := least(p_best_flavio, coalesce(cur.best_time_flavio, p_best_flavio)); else p_best_flavio := cur.best_time_flavio; end if;
-  if p_best_lula   between 120 and 360000 then p_best_lula   := least(p_best_lula,   coalesce(cur.best_time_lula,   p_best_lula));   else p_best_lula   := cur.best_time_lula;   end if;
+  merged := coalesce(cur.best_times, '{}'::jsonb);
+  if p_best is not null and jsonb_typeof(p_best) = 'object' then
+    if (select count(*) from jsonb_object_keys(p_best)) > 40 then raise exception 'melhores tempos demais'; end if;
+    for k, v in select * from jsonb_each(p_best) loop
+      if k ~ '^[a-z0-9_-]{2,32}/[a-z0-9_-]{2,32}$' and jsonb_typeof(v) = 'number' and (v #>> '{}')::numeric between 120 and 360000 then   -- tempo da campanha: de 2 min a 100 h
+        if not (merged ? k) or (v #>> '{}')::numeric < (merged ->> k)::numeric then merged := merged || jsonb_build_object(k, v); end if;
+      end if;
+    end loop;
+  end if;
 
   update public.players set
     votes = p_votes, wins = p_wins, losses = p_losses,
     level = least(15, floor((-1 + sqrt(1 + 4 * p_votes / 500.0)) / 2))::int,        -- mesma curva do jogo: 500·n·(n+1) votos
-    best_time_flavio = p_best_flavio, best_time_lula = p_best_lula, updated_at = now()
+    best_times = merged, updated_at = now()
   where id = uid;
 
   if p_save is not null then
-    if jsonb_typeof(p_save) is distinct from 'object' or pg_column_size(p_save) > 20000 then raise exception 'save inválido'; end if;
+    if jsonb_typeof(p_save) is distinct from 'object' or pg_column_size(p_save) > 30000 then raise exception 'save inválido'; end if;
     insert into public.saves (player_id, data) values (uid, p_save)
     on conflict (player_id) do update set data = excluded.data, updated_at = now();
   end if;
@@ -245,16 +255,17 @@ language sql security definer set search_path = public as $$
 $$;
 
 revoke all on function public.nick_ok(text), public.upsert_profile(text, jsonb, text, text),
-  public.submit_progress(bigint, int, int, numeric, numeric, jsonb), public.delete_my_data(),
+  public.submit_progress(bigint, int, int, jsonb, jsonb), public.delete_my_data(),
   public._apply_rating(text, uuid, uuid), public._settle_stale(),
   public.report_online_match(text, text, boolean, text, int, text) from public, anon, authenticated;
 grant execute on function public.upsert_profile(text, jsonb, text, text),
-  public.submit_progress(bigint, int, int, numeric, numeric, jsonb), public.delete_my_data(),
+  public.submit_progress(bigint, int, int, jsonb, jsonb), public.delete_my_data(),
   public.report_online_match(text, text, boolean, text, int, text) to authenticated;
 
 -- ---------------------------------------------------------------- ranking (leitura pública)
-create or replace view public.ranking with (security_invoker = true) as
-select id, code, nick, avatar, votes, level, wins, losses, best_time_flavio, best_time_lula,
+drop view if exists public.ranking;
+create view public.ranking with (security_invoker = true) as
+select id, code, nick, avatar, votes, level, wins, losses, best_times,
        row_number() over (order by votes desc, updated_at asc) as rank                -- 1º, 2º e 3º: ouro, prata e bronze
 from public.players
 where not banned;

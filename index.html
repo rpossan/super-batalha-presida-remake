@@ -245,6 +245,15 @@
   #pStatsBody { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; } #pStatsBody .st { background:#1a2332; border-radius:10px; padding:7px 6px; text-align:center; } #pStatsBody .st b { display:block; font-size:16px; color:var(--amarelo); font-variant-numeric:tabular-nums; } #pStatsBody .st small { font-size:10.5px; opacity:.75; }
   #bkText { width:calc(100% - 24px); height:62px; resize:vertical; background:#0b111a; color:#cfe3ff; border:1px solid #fff3; border-radius:8px; font:11px ui-monospace,Consolas,monospace; padding:6px; box-sizing:border-box; }
   #profileModal .bkrow { display:flex; gap:8px; flex-wrap:wrap; margin:0 12px 10px; } #profileModal .bkrow .btn { font-size:12.5px; padding:7px 11px; } #bkMsg { min-height:16px; font-size:12px; font-weight:700; margin:0 12px 10px; }
+  #worldRow { display:flex; gap:0; margin:6px 0 2px; flex-wrap:wrap; justify-content:center; align-items:stretch; max-width:min(940px,96vw); }
+  .wcard { position:relative; width:168px; margin:10px 18px; padding:12px 10px 10px; border-radius:16px; border:3px solid #fff3; color:#fff; cursor:pointer; text-align:center; font:inherit; transition:.2s; }
+  .wcard::after { content:""; position:absolute; top:50%; right:-24px; width:24px; height:6px; margin-top:-3px; background:repeating-linear-gradient(90deg,#fff6 0 6px,#0000 6px 11px); }
+  .wcard:last-child::after { display:none; }
+  .wcard:hover:not(.locked) { transform:translateY(-4px) scale(1.04); } .wcard.on { border-color:var(--amarelo); box-shadow:0 0 22px #ffdf0088; }
+  .wcard .wn { position:absolute; top:-10px; left:12px; font:900 10px Impact,"Arial Black",sans-serif; letter-spacing:1px; background:#111823; border:1px solid #fff4; padding:2px 8px; border-radius:6px; }
+  .wcard .we { font-size:40px; line-height:1.1; } .wcard b { display:block; font-size:14px; line-height:1.2; margin-top:4px; } .wcard small { display:block; font-size:11px; opacity:.85; margin-top:3px; min-height:2.4em; }
+  .wcard.locked { filter:grayscale(.85) brightness(.7); cursor:not-allowed; } .wcard.locked .we { opacity:.55; }
+  #worldMsg { min-height:18px; font-size:12.5px; font-weight:700; color:#ffb36b; margin:2px 0 6px; }
   .onlinebtn { display:flex; align-items:center; gap:14px; width:min(560px,92vw); margin:14px auto 4px; padding:14px 18px; border-radius:16px; cursor:pointer; text-align:left; color:#fff; position:relative;
                border:3px solid #7fd0ff; background:linear-gradient(135deg,#1456c9,#0b2f7a 60%,#14306b); box-shadow:0 0 22px #2f9bff77, inset 0 0 18px #ffffff18; animation:onpulse 2.2s ease-in-out infinite; transition:transform .15s; }
   .onlinebtn:hover { transform:scale(1.02); } .onlinebtn .ico { font-size:38px; line-height:1; } .onlinebtn b { display:block; font:900 24px/1.1 Impact,"Arial Black",sans-serif; letter-spacing:1.5px; }
@@ -565,13 +574,13 @@
     <text x="0" y="10" font-size="28" font-weight="900" letter-spacing="3" fill="#fff" stroke="#3a0605" stroke-width="3" paint-order="stroke">REMAKE</text>
   </g>
 </svg></div>
-  <p class="tag">Eleições 2026 em modo campanha: escolha seu lado, vença uma fase por vez e chegue ao chefão final.</p>
+  <p class="tag" id="campTag"></p>
   <button id="onlineBtn" class="onlinebtn"><span class="ico">🌐</span><span><b>JOGAR ONLINE</b><small>Duelo 1×1 contra outros jogadores · partida aleatória ou desafio pelo ID</small></span><em>NOVO</em></button>
-  <div class="step">📖 Campanha · 1 · Escolha o seu lado</div>
-  <div class="choose">
-    <div class="card f" data-side="flavio">Flávio Bolsonaro<small>PL · verde e amarelo<br>Poder final: Motociata (linha inteira)</small></div>
-    <div class="card l" data-side="lula">Lula Molusco<small>PT · vermelho e estrela<br>Poder final: Caravana (coluna inteira)</small></div>
-  </div>
+  <div class="step">🗺️ Mapa de campanhas</div>
+  <div id="worldRow"></div>
+  <div id="worldMsg"></div>
+  <div class="step" id="sideStep">1 · Escolha o seu lado</div>
+  <div class="choose" id="sideCards"></div>
   <div id="levelsWrap" class="hidden">
     <div class="step" id="levelsTitle">2 · Escolha a fase</div>
     <div id="levelGrid"></div>
@@ -651,7 +660,7 @@
     <div class="lbl" style="opacity:.8;margin-top:6px">Curtiu? Me pague um café</div>
     <div class="pix" id="endPix"></div>
     <div class="keyline" id="endKey"></div>
-    <div class="ok" style="color:#ff9a5a;font-weight:800;margin:4px 0">🔓 NG+ desbloqueado: Apocalipse</div>
+    <div class="ok" id="endNg" style="color:#ff9a5a;font-weight:800;margin:4px 0"></div>
     <div class="row">
       <button class="btn primary" id="endBack" style="font-size:17px;padding:11px 20px">← Voltar ao menu</button>
       <button class="coffee-btn" id="endCopy">Copiar chave Pix</button>
@@ -699,10 +708,10 @@
 <div id="onlineModal" class="hidden" role="dialog" aria-modal="true" aria-label="Modo online">
   <div class="box">
     <button class="close" id="onlineClose" aria-label="Fechar">✕</button>
-    <h2>🌐 Modo online</h2>
+    <h2>🌐 Modo online</h2><div id="onCamp" style="font-size:12px;opacity:.8;margin:-4px 0 6px"></div>
     <div id="onStatus"></div>
     <div class="onsec"><label>Seu ID (passe para um amigo)</label><div class="idrow"><div id="onMyId"></div><button class="btn" id="onCopyId">Copiar</button></div></div>
-    <div class="onsec"><label>Seu lado</label><div class="sides"><button class="pill" data-oside="flavio">Flávio</button><button class="pill" data-oside="lula">Lula</button></div></div>
+    <div class="onsec"><label>Seu lado</label><div class="sides" id="onSides"></div></div>
     <div id="onActions">
       <button class="btn primary big" id="onRandom">🎲 Partida aleatória</button>
       <div class="or">ou desafie pelo ID</div>
@@ -763,6 +772,9 @@
 <script src="js/gfx.js"></script>
 <script src="js/materials.js"></script>
 <script src="js/scenery.js"></script>
+<script src="js/campaigns/registry.js"></script>
+<script src="js/campaigns/br2026.js"></script>
+<script src="js/campaigns/soon.js"></script>
 <script>
 "use strict";
 /* ================================================================
@@ -770,67 +782,17 @@
    ================================================================ */
 const N = 10;
 const BX = [-7.4, 7.4];               // centro X dos tabuleiros (0 = você, 1 = computador)
-const FLEET = [
-  { name:"Trio Elétrico",       len:5 },
-  { name:"Bloco de Rua",        len:4 },
-  { name:"Caravana",            len:3 },
-  { name:"Galera do Churrasco", len:3 },
-  { name:"Panfleteiros",        len:2 },
-];
-const SIDES = {
-  flavio: { key:"flavio", name:"Flávio Bolsonaro", short:"Flávio", party:"PL",
-            main:0x009c3b, alt:0xffdf00, css:"#009c3b", cssAlt:"#ffdf00",
-            cross:"Buzinaço", ultra:"Motociata", ultraDesc:"linha inteira", ultraMode:"row",
-            skin:0xf2c9a5, hair:0x2b1d14, beard:false, shirts:[0x009c3b,0xffdf00,0x009c3b,0xffffff] },
-  lula:   { key:"lula", name:"Lula Molusco", short:"Molusco", party:"PT",
-            main:0xd7191c, alt:0xffdf00, css:"#d7191c", cssAlt:"#ffdf00",
-            cross:"Comício", ultra:"Caravana", ultraDesc:"coluna inteira", ultraMode:"col",
-            skin:0xe8b48c, hair:0xf2f2f2, beard:true, shirts:[0xd7191c,0xffffff,0xd7191c,0xb01015] },
-};
-/* personagens: os dois líderes e os adversários de cada trilha */
-const CHARS = {
-  flavio:  { name:"Flávio Bolsonaro",    short:"Flávio",   party:"PL",           camp:"flavio", skin:0xf2c9a5, hair:0x2b1d14, hairStyle:"short" },
-  lula:    { name:"Lula Molusco",                short:"Molusco",     party:"PT",           camp:"lula",   skin:0xe8b48c, hair:0xf2f2f2, hairStyle:"short", beard:true, age:.9 },
-  boulos:  { name:"Guilherme Bolos",    short:"Bolos",   party:"PSOL",         camp:"lula",   skin:0xe0ac82, hair:0x1d1510, hairStyle:"short", beard:true, beardColor:0x3a2a20 },
-  gleisi:  { name:"G. Rofman",     short:"Rofman",   party:"PT",           camp:"lula",   skin:0xf2c9a5, hair:0x6b4a2a, hairStyle:"bob", fem:true, age:.3 },
-  moraes:  { name:"Alexandre sem Moral", short:"Sem Moral",   party:"STF",          camp:"lula",   skin:0xe8b48c, hair:0x222222, hairStyle:"bald", glasses:true, age:.4 },
-  nikolas: { name:"Niko Ferrado",    short:"Niko",  party:"PL",           camp:"flavio", skin:0xf2c9a5, hair:0x2b1d14, hairStyle:"short" },
-  tarcisio:{ name:"Tarcizinho", short:"Tarcizinho", party:"Republicanos", camp:"flavio", skin:0xe8b48c, hair:0x2b2018, hairStyle:"short", glasses:true, age:.3 },
-  michelle:{ name:"Michela",  short:"Michela", party:"PL",           camp:"flavio", skin:0xf2c9a5, hair:0xd9b36a, hairStyle:"long", fem:true, age:.2 },
-  felipe:  { name:"Felipe Feto",         short:"Feto",   party:"Influencer",   camp:"lula",   skin:0xf2c9a5, hair:0x1d1510, hairStyle:"short" },
-  hang:    { name:"Véio da Avon",        short:"Véio",     party:"Empresário",   camp:"flavio", skin:0xf2c9a5, hair:0xdcdcdc, hairStyle:"short", age:.85 },
-  marina:  { name:"Marina Sílvia",        short:"Sílvia",   party:"Rede",         camp:"lula",   skin:0xe0ac82, hair:0x3a2a1a, hairStyle:"bob", fem:true, age:.5 },
-  salles:  { name:"Ricardo Venddas",      short:"Venddas",   party:"PL",           camp:"flavio", skin:0xf2c9a5, hair:0x2b1d14, hairStyle:"short" },
-  anitta:  { name:"Pablo Vital",              short:"Vital",   party:"Cantora",      camp:"lula",   skin:0xe0ac82, hair:0x5a2f1c, hairStyle:"long" },
-  ditador: { name:"Generalíssimo Tirano", short:"Tirano", party:"Regime", camp:"regime", skin:0xd9b08c, hair:0x151515, hairStyle:"bald", military:true, glasses:true, age:.5 },
-  carlos:  { name:"Carlucho",    short:"Carlucho",   party:"PL",           camp:"flavio", skin:0xf2c9a5, hair:0x2b1d14, hairStyle:"short", beard:true, beardColor:0x3a2a20, age:.1 },
-};
-/* adversários por fase, conforme o lado que você escolheu (o chefão é sempre o líder do outro lado) */
-const TRACKS = {
-  flavio: ["boulos","gleisi","moraes","felipe","marina","anitta","lula","ditador"],
-  lula:   ["nikolas","tarcisio","michelle","hang","salles","carlos","flavio","ditador"],
-};
-/* fases: cenário, dificuldade, tamanho da torcida adversária (índices de FLEET) e nível da IA */
-const NG_DEFS = [
-  { name:"Horda de Zumbis",     len:5, kind:"zombie"  }, { name:"Pelotão de Soldados", len:4, kind:"soldier" },
-  { name:"Monstros Mutantes",   len:3, kind:"monster" }, { name:"Esquadrão Blindado",  len:3, kind:"soldier" },
-  { name:"Zumbis Rastejantes",  len:2, kind:"zombie"  }, { name:"Besta do Apocalipse", len:3, kind:"monster" }, { name:"Legião Blindada", len:2, kind:"soldier" },
-];
-const LEVELS = [
-  { scn:"paulista", diff:"Fácil",   ai:1, def:[4,3,2] },
-  { scn:"poa",      diff:"Médio",   ai:2, def:[1,2,3,4] },
-  { scn:"rio",      diff:"Difícil", ai:3, def:[0,1,2,4], hazard:"bala" },
-  { scn:"sertao",   diff:"Muito difícil", ai:3, def:[0,1,2,3], hazard:"fogo" },
-  { scn:"amazonia", diff:"Extremo", ai:3, def:[0,1,2,3,4], hazard:"flechas" },
-  { scn:"camboriu", diff:"Pré-chefão", ai:3, def:[0,1,2,3,4], calm:true },
-  { scn:"brasilia", diff:"CHEFÃO",  ai:4, def:[0,1,2,3,4], boss:true },
-  { scn:"apocalipse", diff:"NG+ · Extremo", ai:4, defs:NG_DEFS, hazard:"bombas", ng:true, cpuBonus:true },
+/* ---- dados da CAMPANHA ATIVA (preenchidos por activateCampaign a partir de js/campaigns/*.js) ---- */
+const FLEET = [], SIDES = {}, CHARS = {}, TRACKS = {}, LEVELS = [], SCENARIOS = [], NG_SIDE = {}, NG_DEFS = [];
+let CAMP = null, CAMP_ID = null;
+/* progresso:
 ];
 /* progresso: salvo no navegador (localStorage), veja saveGame()/loadGame() */
 /* modo desenvolvedor: todas as fases desbloqueadas (desligado por padrão; abra com ?dev=1 para ligar) */
 let DEV_MODE = (() => { try { const v = new URLSearchParams(location.search).get("dev"); return v === "1"; } catch (e) { return false; } })();
-const PROG = { flavio:1, lula:1 };               // fases liberadas por trilha
-const CLEARED = { flavio:[], lula:[] };          // fases já vencidas
+const PROG = {};                                 // fases liberadas por trilha (lado) da campanha ativa
+const CLEARED = {};                              // fases já vencidas
+const CAMP_STORE = {};                           // progresso de cada campanha: { id: { prog, cleared, playtime, bossLosses } }
 let menuSide = null, justUnlocked = -1;
 /* ================================================================
    Economia e progressão
@@ -838,25 +800,20 @@ let menuSide = null, justUnlocked = -1;
    - cada nível dá pontos de skill; as skills só liberam conforme o nível do jogador
    - GRANA (R$) vem do saque dos adversários derrubados e compra itens (máx. 9 de cada na mochila)
    ================================================================ */
-const ITEM_START = { revive:0, furia:0, reforco:0, breja:0, plano:0 };      // a campanha começa sem itens
+const ITEM_START = { revive:0, furia:0, reforco:0, breja:0, plano:0 };      // a campanha começa sem itens (os itens valem em todas as campanhas)
 const FURIA_EXTRA = 2;                       // turnos seguidos além do atual
 const ITEMS = { ...ITEM_START };
 const resetItems = () => Object.assign(ITEMS, ITEM_START);
-const ITEM_PRICE = { revive:400, furia:1000, reforco:650, breja:500, plano:2500 };   // em R$
+const ITEM_DEFS = [], ITEM_PRICE = {}, ITEM_WEIGHTS = [];                  // da campanha ativa
 const ITEM_MAX   = { revive:9, furia:9, reforco:9, breja:9, plano:9 };          // limite da mochila (o uso em batalha não tem limite)
 const MAX_LEVEL = 15;
 const xpForLevel = n => 500*n*(n+1);                          // votos acumulados para o nível n: 1.000, 3.000, 6.000, 10.000…
 const levelOf = xp => { let n = 0; while (n < MAX_LEVEL && xp >= xpForLevel(n+1)) n++; return n; };
 const spForLevel = n => 1 + (n % 3 === 0 ? 1 : 0);            // pontos de skill ao atingir o nível n (+1 extra nos níveis 3, 6, 9…)
-const SKILLS = [
-  { id:"folego",      icon:"⚡", name:"Fôlego de campanha",   price:3000,  desc:"Você começa cada fase com 4 de energia (em vez de 1)." },
-  { id:"instituto",   icon:"📊", name:"Instituto de pesquisa", price:4000,  desc:"A Pesquisa custa só 1 de energia (em vez de 2)." },
-  { id:"guardachuva", icon:"☂️", name:"Guarda-chuva",          price:6000,  desc:"3 torcedores seus começam cada fase protegidos por um guarda-chuva: o adversário precisa quebrá-lo (gastando um tiro) antes de atingir o torcedor." },
-  { id:"supertiro",   icon:"💥", name:"Super tiro",            price:8000,  desc:"O tiro comum atinge 4 casas (quadrado 2×2). Até 3 vezes por fase." },
-  { id:"empolgacao",  icon:"🎉", name:"Empolgação",            price:10000, desc:"Ao acertar um alvo, você ganha um turno extra (1 por turno). Até 3 vezes por fase." },
-];
-/* nível do jogador exigido para aprender cada nível de cada skill, e custo em pontos de skill */
-const SKILL_REQ = { folego:[1,4,8], instituto:[2,5,9], guardachuva:[3,6,10], supertiro:[5,8,12], empolgacao:[7,10,14] };
+/* skills da campanha ativa: o efeito vem do motor (id = efeito), o nome/ícone/preço/texto vêm da campanha */
+const SKILLS = [], SKILL_REQ = {}, LVT = {}, SKILL_TEXT = {};
+/* nível do jogador exigido];
+/* custo em pontos de skill de cada nível */
 const SKILL_COST = [1, 2, 3];
 const STATS = { wins:0, losses:0, owins:0, olosses:0 };             // vitórias e derrotas em batalhas concluídas
 let SAVE_LOCK = false;                         // true durante a importação de backup (evita o autosave sobrescrever)
@@ -870,20 +827,12 @@ const OWNED = new Set();                       // skills aprendidas
 const SKLV = {};                                 // nível de cada skill (1 a 3)
 const skillOn = id => !G.online && OWNED.has(id);          // no duelo online não há skills (regras iguais para os dois)
 const skillLv = id => (!G.online && OWNED.has(id)) ? Math.max(1, Math.min(3, SKLV[id] || 1)) : 0;
-/* valor da skill em cada nível (índice = nível - 1) */
-const LVT = { folego:[4,6,8], guardachuva:[3,5,7], supertiro:[3,4,5], empolgacao:[3,4,5], instituto:[[1,1],[1,2],[2,2]] };
+/* valor da skill em cada nível (índice = nível - 1): LVT, vindo da campanha */
 const lvVal = id => LVT[id][skillLv(id) - 1];
 const levelBonus = () => SKILLS.reduce((a,k) => a + Math.max(0, skillLv(k.id) - 1), 0);          // níveis acima do 1 (0 a 10)
 function skillDesc(k, lv) {
-  const v = LVT[k.id][lv-1];
-  switch (k.id) {
-    case "folego":      return `Você começa cada fase com ${v} de energia.`;
-    case "instituto":   return `A Pesquisa custa 1 de energia e revela ${v[0]*2+1}×${v[1]*2+1} casas.`;
-    case "guardachuva": return `${v} torcedores seus começam cada fase protegidos: o adversário gasta um tiro para quebrar o guarda-chuva antes de atingi-los.`;
-    case "supertiro":   return `O tiro comum atinge 4 casas (quadrado 2×2), até ${v} vezes por fase.`;
-    case "empolgacao":  return `Ao acertar um alvo, você ganha um turno extra (1 por turno), até ${v} vezes por fase.`;
-  }
-  return k.desc;
+  const v = LVT[k.id][lv-1], tx = SKILL_TEXT[k.id] || k.desc;
+  return tx.replace(/\{(\w+)\}/g, (m, t) => t === "v" ? v : t === "a" ? v[0]*2 + 1 : t === "b" ? v[1]*2 + 1 : m);
 }
 let BOSS_LOSSES = 0;                              // derrotas seguidas no chefão: dão apoio extra na próxima tentativa
 /* AMEAÇA: quanto mais skills você aprende, mais forte o inimigo fica (valores calibrados por simulação) */
@@ -895,12 +844,11 @@ const extraGroups = div => [2,3,2].slice(0, Math.min(3, Math.floor(threat()/div)
 const cpuExtraEnergy = () => { if (G.online) return 0; const L = LEVELS[G.levelIdx]; return (L.cpuBonus ? 1 : 0) + (threat() >= (L.ng ? 20 : 16) ? 1 : 0) + (L.ng && levelBonus() >= 8 ? 1 : 0); };
 const ARROWS_PER_TURN = 4;
 const zombieMax = () => (threat() >= 20 ? 4 : 5) - (levelBonus() >= 9 ? 1 : 0), zombieBite = () => 5 + Math.floor(threat()/10) + (levelBonus() >= 9 ? 1 : 0);
-const NG_SIDE = { key:"regime", name:"Regime", short:"Tirano", party:"Regime", main:0x39402a, alt:0xc9c27a, css:"#5b6636", cssAlt:"#e0da86",
-  cross:"Bombardeio", ultra:"Blitz", ultraDesc:"linha inteira", ultraMode:"row", skin:0xd9b08c, hair:0x151515, shirts:[0x4a5230,0x39402a] };
+
 const COST = { normal:0, radar:2, cross:3, ultra:6 };
 const MAX_ENERGY = 9;
 let TURN_TIME = Infinity;    // segundos por jogada (Infinity = sem limite)
-const FLEET_TOTAL = FLEET.reduce((a,f) => a+f.len, 0);
+let FLEET_TOTAL = 0;
 
 /* ================================================================
    Estado
@@ -1043,25 +991,7 @@ GFX.init(pscene, { N, BX, SIDES, NG_SIDE, CAPS:CAPPOS, isMobile,
   hudBottom: () => { const e = $("bottom"); if (!e) return 0; const r = e.getBoundingClientRect(); return r.height > 0 ? innerHeight - r.top : 0; } });
 
 /* cenários: só os metadados; o desenho de cada um está em js/scenery.js */
-const SCENARIOS = [
-  { id:"paulista", name:"Avenida Paulista", short:"Av. Paulista", of:"da Avenida Paulista", emoji:"🏙️", city:"São Paulo · SP",
-    thumb:"linear-gradient(170deg,#6a8fc7,#2b3a55 70%)", sky:0x8fc0ef, fog:[0x8fc0ef,60,150], tiles:[0x484e58,0x3d434c] },
-  { id:"rio", name:"Cristo Redentor", short:"Cristo Redentor", of:"do Cristo Redentor", emoji:"⛰️", city:"Rio de Janeiro · RJ",
-    thumb:"linear-gradient(170deg,#7fd0ff,#3d9a4d 75%)", sky:0x86cdfa, fog:[0xcfeaff,70,190], tiles:[0x2a5f35,0x214e2b] },
-  { id:"poa", name:"Aeroporto Salgado Filho", short:"Aeroporto POA", of:"do Aeroporto de Porto Alegre", emoji:"✈️", city:"Porto Alegre · RS",
-    thumb:"linear-gradient(170deg,#b5c9da,#4a4f57 75%)", sky:0xa8c0d4, fog:[0xbccbd8,60,160], tiles:[0x666a70,0x5a5e64] },
-  { id:"sertao", name:"Sertão Nordestino", short:"Sertão", of:"do Sertão", emoji:"🌵", city:"Nordeste · Caatinga",
-    thumb:"linear-gradient(170deg,#ffd27a,#c9893a 75%)", sky:0xf7c97a, fog:[0xf6d08c,55,150], tiles:[0xb8925a,0xa98349] },
-  { id:"amazonia", name:"Floresta Amazônica", short:"Amazônia", of:"da Floresta Amazônica", emoji:"🌴", city:"Amazônia · Rio Negro",
-    thumb:"linear-gradient(170deg,#9fe0a8,#1f5a2c 75%)", sky:0xa6dcc0, fog:[0xa9d9b8,36,115], tiles:[0x5f7d3b,0x516e31] },
-  { id:"camboriu", name:"Balneário Camboriú", short:"Camboriú", of:"de Balneário Camboriú", emoji:"🏖️", city:"Santa Catarina · SC",
-    thumb:"linear-gradient(170deg,#7fd0ff,#f2dca6 70%)", sky:0x79c8ff, fog:[0xc3e7ff,75,210], tiles:[0xcdb27a,0xbfa26a] },
-  { id:"brasilia", name:"Brasília · Praça dos Três Poderes", short:"Brasília", of:"da Praça dos Três Poderes", emoji:"🏛️", city:"Brasília · DF",
-    thumb:"linear-gradient(170deg,#ff9f6a,#e8d9b8 70%)", sky:0xff9f6a, fog:[0xffc79a,60,200], tiles:[0x8a836d,0x7b745f] },
-  { id:"apocalipse", name:"Apocalipse · NG+", short:"Apocalipse", of:"do Apocalipse", emoji:"☢️", city:"NG+ · O fim da democracia",
-    thumb:"linear-gradient(170deg,#ff6a2a,#2a0d08 75%)", sky:0x3a130c, fog:[0x4a1a10,38,150], tiles:[0x4f453b,0x41382f] },
-  /* >>> ADICIONE NOVOS CENÁRIOS AQUI (e o desenho em js/scenery.js) <<< */
-];
+/* cenários: vêm da campanha ativa (metadados + desenho em js/campaigns/) */
 const SCENARIO_SLOTS = 2;                                       // lacunas "Em breve" exibidas no menu
 
 function applyScenario(scn) { Scenery.build(scn); G.scn = scn; }
@@ -1205,15 +1135,7 @@ function playSpecial(power, tb, r, c, who) {
 /* ================================================================
    Objetos arremessados nos protestos (tiro normal)
    ================================================================ */
-const THROWS = [
-  { id:"cone",     indef:"um cone",      def:"o cone",      emoji:"🚧", dur:1.0,  H:3.3 },
-  { id:"tomate",   indef:"um tomate",    def:"o tomate",    emoji:"🍅", dur:.9,   H:3.0 },
-  { id:"bandeira", indef:"uma bandeira", def:"a bandeira",  emoji:"🚩", dur:1.1,  H:2.4 },
-  { id:"cavalete", indef:"um cavalete",  def:"o cavalete",  emoji:"🚧", dur:1.25, H:3.9 },
-  { id:"chinelo",  indef:"um chinelo",   def:"o chinelo",   emoji:"🩴", dur:.8,   H:2.2 },
-  { id:"pedra",    indef:"uma pedra",    def:"a pedra",     emoji:"🪨", dur:.65,  H:1.8 },
-  { id:"ovo",      indef:"um ovo",       def:"o ovo",       emoji:"🥚", dur:1.0,  H:3.4 },
-];
+const THROWS = [];
 
 /* voo em arco da mão do capitão até a casa alvo, com efeito de impacto específico */
 function fxThrow(tb, r, c, who, th) {
@@ -1323,19 +1245,10 @@ function pattern(power, r, c) {
 }
 
 /* frases de reação (contexto político, tom de brincadeira) */
-const HIT_PHRASES = ["Na mosca!","Arribaaaa!","Viva a democracia!","Aprovado por unanimidade!","Maioria absoluta!","Ganhou o debate!",
-  "Voto certeiro!","A urna confirmou!","Direto no palanque!","Que comício!","A pesquisa não mentiu!","Vai pro segundo turno!",
-  "Eleito no primeiro turno!","Esse é do povo!","Boca de urna certeira!","Mandou bem na campanha!",
-  "Acertou em cheio!","Esse voto é nosso!","Contagem confirmada!","Urna eletrônica aprova!","Santinho certeiro!","Subiu nas pesquisas!","Debate ganho!","Discurso afiado!","Candidato do povo!","Palanque cheio!","Carreata na veia!","Apoio garantido!","Aliança fechada!","Papo reto!","Foi cirúrgico!","Quórum batido!","Pesquisa de boca de urna!","Margem de erro: zero!","Voto consciente!","Veio de lavada!","Mandou a real!","Recebeu o apoio!","Direto no alvo, parlamentar!","A militância vibra!","Tá no horário eleitoral!","Mira de campanha!"];
-const MULTI_PHRASES = ["Lavada nas urnas!","Maioria esmagadora!","Virada histórica!","Showmício de acertos!","Chapa completa!",
-  "Varreu a convenção!","Combo no horário eleitoral!","Aprovado em todas as seções!",
-  "Arrasou na apuração!","Votação histórica!","Maioria qualificada!","Três turnos num só!","Tsunami de votos!","Chuva de apoio!","Apuração relâmpago!","Sessão encerrada com goleada!","Virou o placar!","Rodada de aplausos!","Comitê em festa!","Fechou a coligação!"];
-const MISS_PHRASES = ["Não foi desta vez!","Por pouco!","Errrouuuuu!","Voto nulo!","Foi pra urna errada!","Abstenção!",
-  "Projeto arquivado!","Vetado!","Pediram vista!","Cadê o quórum?","Sumiu na tramitação!","Passou longe da tribuna!",
-  "Caiu no orçamento secreto!","Mira de CPI!","Fake news: não acertou ninguém!",
-  "Quase, candidato!","Ficou no quase!","Foi pro segundo turno... do erro!","Voto em branco!","Urna vazia!","Tentou, mas não rolou!","Discurso sem plateia!","Santinho no lixo!","Passou batido!","Foi de arrasto!","Sem quórum pra isso!","Tá difícil, hein?","Desistiu do mandato!","Mandato cassado!","Errou o endereço do comício!","Caiu na tramitação!","Emenda rejeitada!","Rejeitado em plenário!","Foi pro arquivo!","Pesquisa errou a margem!","O eleitor mudou de ideia!","Caiu na pegadinha!","Cadê o voto?","Nem fez cócegas!","Tropeçou no palanque!","Aposta perdida!","Ixi, errou!","Nem chegou perto!","Boato desmentido!","Erro de cálculo eleitoral!"];
-const SUNK_PHRASES = ["TORCIDA DISPERSADA!","COMÍCIO ESVAZIADO!","FOI TUDO PRA CASA!","CABO ELEITORAL DESISTIU!","CARREATA DISSOLVIDA!",
-  "PELOTÃO DE APOIADORES DISPERSO!","MILITÂNCIA EM RETIRADA!","ATO ENCERRADO!","BANDEIRAS RECOLHIDAS!","CORREU TUDO PRO ÔNIBUS!","GRUPO DESMOBILIZADO!"];
+const HIT_PHRASES = [];
+const MULTI_PHRASES = [];
+const MISS_PHRASES = [];
+const SUNK_PHRASES = [];
 let lastPhrase = "";
 function pickPhrase(list) {
   let p; do { p = list[rand(list.length)]; } while (p===lastPhrase && list.length>1);
@@ -1413,7 +1326,7 @@ function allSunk(b) {
    ================================================================ */
 /* equilíbrio definido por simulação (jogador competente x IA): ~60% de vitória, lutas de ~26 turnos */
 const bossMin = () => Math.max(4, 6 - Math.floor(threat()/14)), bossBl = () => 4 + Math.floor(threat()/9), bossRest = () => Math.max(0, .2 - threat()*.006);
-const minionName = () => G.boss.kind === "lula" ? "petista" : "bolsonarista";
+const minionName = () => SIDES[G.boss.kind].followers.one;
 function placeBoss() {
   const B = G.boards[1], free = () => {
     const f = [];
@@ -1462,12 +1375,12 @@ function zombieHorde(done) {
 }
 function bossPower(done) {
   const keys = [...G.boss.minions].map(k => k.split(",").map(Number));
-  if (G.boss.kind === "flavio") {                                    // Flávio: recarrega a vida toda
+  if (SIDES[G.boss.kind].bossPower === "heal") {                      // o chefão recarrega a vida toda
     keys.forEach(([r,c]) => { const p = tilePos(1,r,c); burst(p, [0x2f9a3f, 0xffd23a, 0xffffff], 20, 5); removeMinion(r, c, false); });
     G.boss.hp = G.boss.max;
     toast(`${G.enemy.short.toUpperCase()} RECARREGOU A VIDA!`, "#ffdf00");
-    setAction(`💚 ${G.enemy.short} recarregou a vida toda!`, "#ffdf00", `${bossMin()} bolsonaristas reunidos · vida ${G.boss.hp}/${G.boss.max}`);
-    log(`💚 ${bossMin()} bolsonaristas reunidos: ${G.enemy.short} recarregou a vida (${G.boss.hp}/${G.boss.max}).`);
+    setAction(`💚 ${G.enemy.short} recarregou a vida toda!`, "#ffdf00", `${bossMin()} ${SIDES[G.boss.kind].followers.many.toLowerCase()} reunidos · vida ${G.boss.hp}/${G.boss.max}`);
+    log(`💚 ${bossMin()} ${SIDES[G.boss.kind].followers.many.toLowerCase()} reunidos: ${G.enemy.short} recarregou a vida (${G.boss.hp}/${G.boss.max}).`);
     [523,659,784,1047].forEach((f,i) => tone(f,.2,"square",.08,0,i*.1));
     ui(); setTimeout(done, 1100);
     return;
@@ -1475,7 +1388,7 @@ function bossPower(done) {
   keys.forEach(([r,c]) => { burst(tilePos(1,r,c), [0xd7191c, 0xffdf00, 0xffffff], 24, 5); removeMinion(r, c, false); });   // Lula: eles explodem
   bossBlast(done);
 }
-function bossBlast(done, cfg = { n:bossBl(), title:"💥 OS PETISTAS EXPLODIRAM!", log:n => `💥 ${bossMin()} petistas reunidos: eles explodem ${n} casas da sua arena!` }) {
+function bossBlast(done, cfg = { n:bossBl(), title:`💥 OS ${SIDES[G.boss.kind].followers.many.toUpperCase()} EXPLODIRAM!`, log:n => `💥 ${bossMin()} ${SIDES[G.boss.kind].followers.many.toLowerCase()} reunidos: eles explodem ${n} casas da sua arena!` }) {
   const B0 = G.boards[0], free = [];
   for (let r=0;r<N;r++) for (let c=0;c<N;c++) if (!B0[r][c].shot) free.push([r,c]);
   const picks = [];
@@ -1598,7 +1511,7 @@ function startBattle() {
   if (G.online) log(`⚔️ Duelo online: <b>${esc(PROFILE.nick)}</b> contra <b>${esc(G.enemy.name)}</b>. ${G.online.first ? "Você começa!" : "O adversário começa."}`);
   else log(`⚔️ Fase ${G.level}: <b>${sname(0)}</b> contra <b>${G.enemy.name}</b> (${LEVELS[G.levelIdx].diff}).`);
   if (LEVELS[G.levelIdx].boss) setTimeout(() => toast(`CHEFÃO: ${G.enemy.short.toUpperCase()}!`, "#ff5a4a"), 300);
-  if (G.boss) log(`👑 ${G.enemy.short} é único, com ${G.boss.max} pontos de vida. A cada acerto ele muda de casa, escondido. Cada erro seu faz surgir um ${minionName()}; com ${bossMin()}, ${G.boss.kind==="lula" ? `eles explodem ${bossBl()} casas suas` : "ele recarrega a vida toda"}. Acerte os seguidores para eliminá-los!`);
+  if (G.boss) log(`👑 ${G.enemy.short} é único, com ${G.boss.max} pontos de vida. A cada acerto ele muda de casa, escondido. Cada erro seu faz surgir um ${minionName()}; com ${bossMin()}, ${SIDES[G.boss.kind].bossPower === "explode" ? `eles explodem ${bossBl()} casas suas` : "ele recarrega a vida toda"}. Acerte os seguidores para eliminá-los!`);
   if (LEVELS[G.levelIdx].hazard === "bala") log("⚠️ Perigo do cenário: uma bala perdida cai do céu a cada turno: antes do seu ataque, na arena do adversário; antes do ataque dele, na sua.");
   if (LEVELS[G.levelIdx].hazard === "fogo") log("🔥 Perigo do cenário: a cada 2 turnos o sol escaldante incendeia 4 casas de cada arena.");
   if (LEVELS[G.levelIdx].hazard === "bombas") log("☢️ APOCALIPSE: bombas caem a cada turno (mais a cada 3 rodadas) e cada erro seu invoca um zumbi. Com 5 zumbis a horda invade e morde 5 casas suas!");
@@ -2007,8 +1920,8 @@ function finish(winner, reason) {
     CLEARED[side][G.levelIdx] = true;
     if (G.levelIdx < last && PROG[side] === G.levelIdx+1) { PROG[side]++; justUnlocked = G.levelIdx+1; }
     if (G.levelIdx === last) {
-      title = "SOBREVIVENTE DO APOCALIPSE!";
-      text = `${G.enemy.name} caiu e a democracia sobreviveu! Você zerou o NG+ em ${rounds}. ☢️🏆`;
+      title = (CAMP.ng && CAMP.ng.winTitle) || "NG+ CONCLUÍDO!";
+      text = ((CAMP.ng && CAMP.ng.winText) || "{boss} caiu! Você zerou o NG+ em {rounds}. 🏆").replace("{boss}", G.enemy.name).replace("{rounds}", rounds);
       btn = "Voltar ao menu";
     } else if (G.levelIdx === bossIdx) {
       title = "CAMPEÃO!";
@@ -2050,7 +1963,7 @@ function settleResults(youWin) {
   const R = { win:youWin, xpBefore, xpAfter:G.votes, votesBattle, bonusVotes, loot:G.loot || newLoot(), moneyBonus:0, itemsBonus:{}, lostMoney:0, lostItems:{} };
   if (youWin) {
     R.moneyBonus = 100*(G.levelIdx+1) + (L.boss ? 1500 : 0); MONEY += R.moneyBonus;
-    if (L.boss) ["furia","reforco"].forEach(id => { if (ITEMS[id] < ITEM_MAX[id]) { ITEMS[id]++; R.itemsBonus[id] = 1; } });
+    if (L.boss) ["furia","reforco"].forEach(id => { if (ITEM_PRICE[id] != null && ITEMS[id] < ITEM_MAX[id]) { ITEMS[id]++; R.itemsBonus[id] = 1; } });
   } else {                                                    // derrota: perde metade da grana e os itens que saqueou nesta batalha
     R.lostMoney = Math.min(MONEY, Math.floor(R.loot.money/2)); MONEY -= R.lostMoney;
     Object.keys(R.loot.items).forEach(id => { const n = Math.min(R.loot.items[id], ITEMS[id]); if (n > 0) { ITEMS[id] -= n; R.lostItems[id] = n; } });
@@ -2149,7 +2062,7 @@ function ui() {
   $("sideA").innerHTML = `${PROFILE ? avatarSVG(17) : ""}${esc(playerNick())} · ${s0.short}`; $("sideA").style.background = s0.css;
   $("sideB").innerHTML = (G.online ? faceSVG(G.enemy, 17) : "") + esc(`${G.enemy ? G.enemy.short : s1.short} (${G.online ? "online" : "CPU"})`) + (G.phase==="battle" ? ` ⚡${G.energy[1]}` : "");  $("sideB").style.background = s1.css;
   $("pauseBtn").classList.toggle("hidden", !(G.phase==="battle" || G.phase==="place"));
-  $("sideA").style.color = s0.key==="flavio" ? "#ffdf00" : "#fff";
+  $("sideA").style.color = s0.textColor || "#fff";
   const ft = $("focusTag");
   if (G.phase==="battle") {
     ft.classList.remove("hidden");
@@ -2166,7 +2079,7 @@ function ui() {
     $("hp"+k).classList.toggle("low", pct>0 && pct<=30);
     $("hp"+k+"txt").textContent = `${left}/${tot}`;
   });
-  $("sideB").style.color = s1.key==="flavio" ? "#ffdf00" : "#fff";
+  $("sideB").style.color = s1.textColor || "#fff";
 
   if (G.phase==="place") {
     const idx = G.fleets[0].length;
@@ -2227,7 +2140,7 @@ function ui() {
       `<div class="${sh.sunk?"sunk":""}">${"●".repeat(sh.len-sh.hits)}${"○".repeat(sh.hits)} ${sh.name}</div>`).join("");
     $("fleetA").innerHTML = `<b style="color:${s0.cssAlt}">Sua torcida</b>${row(0)}`;
     $("fleetB").innerHTML = G.boss
-      ? `<b style="color:${s1.cssAlt}">👑 Chefão ${G.enemy.short}</b>❤ Vida: ${G.boss.hp}/${G.boss.max}<br>👤 ${G.boss.kind==="lula" ? "Petistas" : "Bolsonaristas"}: ${G.boss.minions.size}/${bossMin()}<br><span style="opacity:.8">${G.boss.kind==="lula" ? `com ${bossMin()}: explodem ${bossBl()} casas suas` : `com ${bossMin()}: recarrega a vida`}</span>`
+      ? `<b style="color:${s1.cssAlt}">👑 Chefão ${G.enemy.short}</b>❤ Vida: ${G.boss.hp}/${G.boss.max}<br>👤 ${SIDES[G.boss.kind].followers.many}: ${G.boss.minions.size}/${bossMin()}<br><span style="opacity:.8">${SIDES[G.boss.kind].bossPower === "explode" ? `com ${bossMin()}: explodem ${bossBl()} casas suas` : `com ${bossMin()}: recarrega a vida`}</span>`
       : `<b style="color:${s1.cssAlt}">${G.ng ? "Exército de " : "Torcida de "}${G.enemy ? G.enemy.short : s1.short}</b>${row(1)}${G.ng ? `<div style="margin-top:4px">🧟 Zumbis: ${G.ngz.minions.size}/${zombieMax()}</div>` : ""}`;
   } else if (G.phase==="place") {
     $("fleetA").classList.add("hidden"); $("fleetB").classList.add("hidden");
@@ -2274,7 +2187,6 @@ function renderStats(xp = G.votes) {
 }
 function bumpChip(id) { const e = $(id); e.classList.remove("bump"); void e.offsetWidth; e.classList.add("bump"); }
 /* SAQUE: quem você derruba pode deixar grana ou item (combos e grupos inteiros dispersados aumentam as chances) */
-const ITEM_WEIGHTS = [["revive", .4], ["reforco", .28], ["furia", .14], ["breja", .14], ["plano", .04]];
 function newLoot() { return { money:0, items:{ revive:0, furia:0, reforco:0, breja:0, plano:0 }, lost:false }; }
 function giveMoney(n) { MONEY += n; G.loot.money += n; bumpChip("moneyChip"); renderStats(); }
 function giveItem(id) {
@@ -2291,12 +2203,12 @@ function rollLoot(r, c, sunk) {
   if (Math.random() < .05 + .008*G.levelIdx + (sunk ? .12 : 0)) {
     let x = Math.random(), id = ITEM_WEIGHTS[0][0]; for (const [k, w] of ITEM_WEIGHTS) { if (x < w) { id = k; break; } x -= w; }
     const got = giveItem(id), d = ITEM_DEFS.find(q => q.id === id);
-    GFX.pickup({ x:p.x + .3, z:p.z }, id, got.item ? d.name + " +1" : "+R$ " + got.money, "#7ee0ff"); Sfx.coin(true); setTimeout(() => renderStats(), 0);
+    GFX.pickup({ x:p.x + .3, z:p.z }, d.pickup ? "emoji:" + d.pickup : id, got.item ? d.name + " +1" : "+R$ " + got.money, "#7ee0ff"); Sfx.coin(true); setTimeout(() => renderStats(), 0);
     log(got.item ? `🎁 Saque: <b>${d.name}</b>!` : `🎁 Mochila cheia: o ${d.name} virou R$ ${got.money}.`);
   }
 }
 /* TEMPO DE JOGO: segundos jogados em cada fase de cada trilha (conta posicionando e batalhando; pausa e menu não contam) */
-const PLAYTIME = { flavio:[], lula:[] };
+const PLAYTIME = {};
 const trailTime = (side, upTo = LEVELS.length) => (PLAYTIME[side] || []).slice(0, upTo).reduce((a, t) => a + (t || 0), 0);
 const fmtTime = v => { v = Math.floor(v); const h = Math.floor(v/3600), m = Math.floor(v%3600/60), x = v%60, two = n => String(n).padStart(2, "0"); return h ? `${h}:${two(m)}:${two(x)}` : `${m}:${two(x)}`; };
 let lastClock = -1;
@@ -2345,20 +2257,9 @@ function addSupportFan() {
 const superActive = () => skillOn("supertiro") && G.superLeft > 0;
 
 /* ---- itens: Remédio (reviver), Energético (turnos contínuos) e Reforço (alto-falante) ---- */
-const ITEM_DEFS = [
-  { id:"revive",  name:"Remédio",  desc:"revive 1 torcedor caído", key:"5",
-    svg:`<svg viewBox="0 0 40 40"><rect x="11" y="4" width="18" height="7" rx="2" fill="#d9dde6" stroke="#1a1a1a" stroke-width="2"/><rect x="7" y="10" width="26" height="27" rx="5" fill="#fff" stroke="#1a1a1a" stroke-width="2.4"/><path d="M17 17h6v5h5v6h-5v5h-6v-5h-5v-6h5z" fill="#e0242a"/></svg>` },
-  { id:"furia",   name:"Energético", desc:`+${FURIA_EXTRA} turnos seguidos`, key:"6",
-    svg:`<svg viewBox="0 0 40 40"><rect x="9" y="5" width="22" height="31" rx="5" fill="url(#gCan)" stroke="#1a1a1a" stroke-width="2.4"/><rect x="9" y="5" width="22" height="5" rx="2" fill="#c9ced8"/><path d="M22 12l-8 12h6l-2 9 9-13h-6z" fill="#ffe14a" stroke="#1a1a1a" stroke-width="1.4" stroke-linejoin="round"/><defs><linearGradient id="gCan" x1="0" x2="1"><stop offset="0" stop-color="#2f7bff"/><stop offset="1" stop-color="#143c9c"/></linearGradient></defs></svg>` },
-  { id:"reforco", name:"Reforço",  desc:"invoca 1 torcedor", key:"7",
-    svg:`<svg viewBox="0 0 40 40"><path d="M6 15h8l14-8v26l-14-8H6z" fill="#ffd23a" stroke="#1a1a1a" stroke-width="2.4" stroke-linejoin="round"/><rect x="9" y="26" width="6" height="9" rx="2" fill="#555" stroke="#1a1a1a" stroke-width="2"/><path d="M32 14q5 6 0 12M35 10q9 10 0 20" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round"/></svg>` },
-  { id:"breja",   name:"Breja",    desc:"+1 uso de Super tiro e Empolgação", key:"8",
-    svg:`<svg viewBox="0 0 40 40"><path d="M9 14h17v21a3 3 0 0 1-3 3H12a3 3 0 0 1-3-3z" fill="url(#gBr)" stroke="#1a1a1a" stroke-width="2.4" stroke-linejoin="round"/><path d="M26 18h5a4 4 0 0 1 4 4v6a4 4 0 0 1-4 4h-5" fill="none" stroke="#1a1a1a" stroke-width="2.4"/><path d="M8 14q-2-7 5-8 2-4 7-2 4-1 6 3 4 1 2 7z" fill="#fff" stroke="#1a1a1a" stroke-width="2.2" stroke-linejoin="round"/><path d="M14 20v13M19 20v13" stroke="#fff6" stroke-width="2" stroke-linecap="round"/><defs><linearGradient id="gBr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffc83a"/><stop offset="1" stop-color="#d98a0a"/></linearGradient></defs></svg>` },
-  { id:"plano",   name:"Plano de Governo", desc:"ganha 1 ponto de skill", key:"9",
-    svg:`<svg viewBox="0 0 40 40"><rect x="7" y="4" width="26" height="33" rx="3" fill="#f6f1de" stroke="#1a1a1a" stroke-width="2.4"/><rect x="14" y="2" width="12" height="6" rx="2" fill="#8a8f9c" stroke="#1a1a1a" stroke-width="2"/><path d="M12 15h16M12 20h16M12 25h10" stroke="#8b8573" stroke-width="2" stroke-linecap="round"/><path d="M28 24l2.2 4.4 4.8.7-3.5 3.4.9 4.8-4.4-2.3-4.3 2.3.8-4.8-3.4-3.4 4.8-.7z" fill="#ffd23a" stroke="#1a1a1a" stroke-width="1.6" stroke-linejoin="round"/></svg>` },
-];
+/* ITEM_DEFS: montado pela campanha ativa (activateCampaign) */
 function canUseItem(id) {
-  return !G.online && G.phase==="battle" && G.turn===0 && !G.busy && ITEMS[id] > 0 && !(id==="furia" && G.furia>0);
+  return !G.online && ITEM_PRICE[id] != null && G.phase==="battle" && G.turn===0 && !G.busy && ITEMS[id] > 0 && !(id==="furia" && G.furia>0);
 }
 function fallenFans() {
   const out = [];
@@ -2572,6 +2473,7 @@ function artFlag(x, y, kind, k=1) {
   const pole = `<path d="M${x} ${y} L${x} ${top-6*k}" stroke="#555" stroke-width="5" stroke-linecap="round"/><circle cx="${x}" cy="${top-8*k}" r="4" fill="#ffd23a"/>`;
   const shine = `<path d="${w1}" fill="url(#gShine)" opacity=".5">${wave}</path>`;
   if (kind === "lula") return pole + `<path d="${w1}" fill="#d7191c" ${ART_STROKE}>${wave}</path><g>${bob}${artStar(x+w/2, top+h/2, 14*k, 5.6*k, "#ffdf00")}</g>` + shine;
+  if (kind !== "flavio") { const sd = SIDES[kind] || {}, fl = sd.flag || {}; return pole + `<path d="${w1}" fill="${fl.bg || sd.css || "#778"}" ${ART_STROKE}>${wave}</path><g>${bob}${artStar(x+w/2, top+h/2, 14*k, 5.6*k, sd.cssAlt || "#fff")}</g>` + shine; }
   return pole + `<path d="${w1}" fill="#0a9d3f" ${ART_STROKE}>${wave}</path><g>${bob}<polygon points="${x+w/2},${top+5*k} ${x+w-8*k},${top+h/2} ${x+w/2},${top+h-5*k} ${x+8*k},${top+h/2}" fill="#ffd400"/><circle cx="${x+w/2}" cy="${top+h/2}" r="${(10*k).toFixed(1)}" fill="#1d3b8f"/></g>` + shine;
 }
 /* cenário anime: nascer do sol sobre o Palácio do Planalto, com rampa e raios de luz */
@@ -2663,46 +2565,32 @@ function artPerson(o) {
 function artSparkles(pts) {
   return pts.map(([x,y,s],i) => `<g transform="translate(${x} ${y}) scale(${s})" opacity="0"><animate attributeName="opacity" values="0;1;0" dur="${(1.6+(i%3)*.7).toFixed(1)}s" begin="${(i*.45).toFixed(2)}s" repeatCount="indefinite"/><path d="M0 -12 L3 -3 L12 0 L3 3 L0 12 L-3 3 L-12 0 L-3 -3 Z" fill="#fff"/></g>`).join("");
 }
+/* peças de desenho da cena final entregues à campanha (ending.art(side, K) devolve o SVG 800×500) */
+function endingKit(side) { return { artBackground, artPetals, artFlag, artPerson, artSparkles, artHeart, artStar, ART_STROKE, faceSVG, side:SIDES[side], leader:CHARS[side], camp:CAMP }; }
+function defaultEndingArt(side, K) {
+  const sd = SIDES[side], ch = CHARS[side], face = faceSVG(ch, 190).replace("<svg ", '<svg x="305" y="70" ');
+  return K.artBackground() + K.artPetals() + K.artFlag(58, 420, side, 1.05) + K.artFlag(730, 450, side, .95)
+    + `<ellipse cx="400" cy="420" rx="170" ry="26" fill="#0003"/>` + face
+    + `<text x="400" y="330" text-anchor="middle" font-family="Impact,Arial Black,sans-serif" font-size="46" fill="#fff" stroke="#1a1020" stroke-width="7" paint-order="stroke">${esc(ch.name)}</text>`
+    + `<text x="400" y="372" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="800" font-size="22" fill="${sd.cssAlt}" stroke="#1a1020" stroke-width="5" paint-order="stroke">VENCEDOR</text>`
+    + K.artHeart(250, 150, 1.3) + K.artHeart(560, 130, 1.1, "#ff7a9a") + K.artSparkles([[250,110,1],[560,90,.9],[330,60,.7],[650,200,1],[170,220,.8],[470,50,.7]]);
+}
 function endingArt(side) {
-  let body = artBackground() + artPetals();
-  if (side === "lula") {
-    body += artFlag(58, 420, "lula", 1.05) + artFlag(730, 450, "lula", .95);
-    const lula = artPerson({ x:318, y:386, s:1.12, step:true, walk:true, walkCount:14, hair:"#f4f4fa", hairHi:"#fff", hairSh:"#c8ccd8", brow:"#d0d4e0", beard:"#f4f4fa", skin:"#f4cfae", skinShade:"#e0aa84", sash:true, arm:"wave", happyEyes:false });
-    // sobe a rampa andando (de baixo-esquerda até o ponto final), com balanço do passo
-    body += `<g><animateTransform attributeName="transform" type="translate" from="-340 78" to="0 0" dur="9.8s" fill="freeze" calcMode="spline" keyTimes="0;1" keySplines=".25 .55 .3 1"/>`
-          + `<g><animateTransform attributeName="transform" type="translate" values="0 0;0 -7;0 0" dur=".7s" repeatCount="14"/>${lula}</g></g>`;
-    body += artSparkles([[430,150,1.1],[560,110,.8],[250,120,.7],[640,200,1],[190,300,.8],[520,60,.7]]);
-  } else {
-    body += artFlag(58, 420, "flavio", 1.05) + artFlag(730, 450, "flavio", .95);
-    const slide = (from, p) => `<g><animateTransform attributeName="transform" type="translate" from="${from} 0" to="0 0" dur="5s" fill="freeze" calcMode="spline" keyTimes="0;1" keySplines=".25 .6 .3 1"/>${p}</g>`;
-    const jair = artPerson({ x:462, y:342, s:1.02, tilt:5, suitGrad:"url(#gSuit2)", tie:"#ffd400", hair:"#9a9aa6", hairHi:"#e2e2ea", hairSh:"#6b6b78", hairStyle:"side", skin:"#f6d2b4", skinShade:"#e4ad8a", arm:"none", happyEyes:true });
-    const flavio = artPerson({ x:548, y:342, s:1.06, tilt:-5, tie:"#0a9d3f", hair:"#3a2a22", hairHi:"#8a6a58", hairSh:"#22170f", skin:"#f8d6b8", skinShade:"#e8b390", sash:true, arm:"none", happyEyes:true });
-    const hug = (d, c) => `<path d="${d}" stroke="#101830" stroke-width="29" stroke-linecap="round" fill="none"/><path d="${d}" stroke="${c}" stroke-width="22" stroke-linecap="round" fill="none"/><path d="${d}" stroke="#ffffff" stroke-width="4" stroke-linecap="round" fill="none" opacity=".25" transform="translate(0 -4)"/>`;
-    const arms = `<g opacity="0"><animate attributeName="opacity" from="0" to="1" begin="4.6s" dur=".8s" fill="freeze"/>`
-      + hug("M498 210 Q542 190 580 236", "#2a3552") + `<circle cx="582" cy="240" r="12" fill="#f8d6b8" ${ART_STROKE}/>`
-      + hug("M516 210 Q472 190 436 236", "#26335f") + `<circle cx="434" cy="240" r="12" fill="#f6d2b4" ${ART_STROKE}/></g>`;
-    // chegam um de cada lado, se abraçam e balançam de leve
-    body += `<g><animateTransform attributeName="transform" type="rotate" values="-1.4 505 342;1.4 505 342;-1.4 505 342" dur="3.2s" begin="5.6s" repeatCount="indefinite"/>`
-          + slide(-210, jair) + slide(210, flavio) + arms + `</g>`;
-    const heart = (x, y, s, c, i) => `<g opacity="0"><animateTransform attributeName="transform" type="translate" values="0 40;0 -34" dur="3s" begin="${5+i*.9}s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" dur="3s" begin="${5+i*.9}s" repeatCount="indefinite"/>${artHeart(x, y, s, c)}</g>`;
-    body += heart(500, 92, 1.9, "#ff4d73", 0) + heart(566, 70, 1.3, "#ff7a9a", 1) + heart(446, 62, 1.1, "#ff5a7e", 2) + heart(520, 120, 1, "#ff93ad", 3);
-    body += artSparkles([[420,130,1],[600,120,.9],[360,200,.7],[660,210,1],[250,150,.8],[300,90,.7]]);
-  }
+  const K = endingKit(side), body = (CAMP.ending && CAMP.ending.art) ? CAMP.ending.art(side, K) : defaultEndingArt(side, K);
   // câmera: aproxima devagar (efeito Ken Burns)
   const svgBody = `<g transform="translate(400 250)"><g><animateTransform attributeName="transform" type="scale" from="1" to="1.13" dur="27s" fill="freeze"/><g transform="translate(-400 -250)">${body}</g></g></g>`;
   return `<svg viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Final da trilha (animado)">${svgBody}<rect width="800" height="500" fill="url(#gVig)"/></svg>`;
 }
 
 let endTimers = [], endActive = false;
+const GAME_TITLE = "SUPER PRESIDA BATALHA";
 const getRecord = () => { try { return parseInt(localStorage.getItem("spb_record")) || 0; } catch (e) { return window.__rec || 0; } };
 const setRecord = v => { try { localStorage.setItem("spb_record", String(v)); } catch (e) { window.__rec = v; } };
 const endAt = (ms, fn) => endTimers.push(setTimeout(fn, ms));
 /* ---- final cinematográfico: câmera, fogos, confete, linha do tempo da campanha e créditos ---- */
 const endFx = { cv:null, ctx:null, cv2:null, ctx2:null, parts:[], raf:0, last:0, rockets:0, confetti:0, pal:[], on:false, w:0, h:0, d:1 };
-const FX_PAL = {
-  lula:   [["#ff3b30","#ffb3a8"], ["#ffd23a","#fff3b0"], ["#ffffff","#cfe3ff"], ["#ff5ea8","#ffd0e6"]],
-  flavio: [["#18c24a","#b4f7c6"], ["#ffd23a","#fff3b0"], ["#3a86ff","#c4dcff"], ["#ffffff","#e6ffe9"]],
-};
+/* paleta dos fogos: a da campanha (ending.fx[lado]) ou derivada das cores do lado */
+function sidePalette(side) { const sd = SIDES[side]; return [[sd.css, sd.cssAlt], ["#ffd23a", "#fff3b0"], ["#ffffff", "#cfe3ff"], [sd.cssAlt, sd.css]]; }
 function fxResize() { const d = Math.min(window.devicePixelRatio || 1, 2); endFx.d = d; endFx.w = innerWidth; endFx.h = innerHeight; [endFx.cv, endFx.cv2].forEach(c => { c.width = endFx.w*d; c.height = endFx.h*d; }); }
 function fxBoom(big) {
   tone(70 + Math.random()*40, .55, "sawtooth", big ? .06 : .045, -40);
@@ -2767,7 +2655,7 @@ function fxFrame(now) {
 }
 function fxStart(side) {
   if (!endFx.cv) { endFx.cv = $("endFx"); endFx.ctx = endFx.cv.getContext("2d"); endFx.cv2 = $("endFxC"); endFx.ctx2 = endFx.cv2.getContext("2d"); window.addEventListener("resize", () => endFx.on && fxResize()); }
-  endFx.pal = FX_PAL[side] || FX_PAL.lula; endFx.parts = []; endFx.rockets = 0; endFx.confetti = 0; endFx.on = true; endFx.last = performance.now(); fxResize();
+  endFx.pal = (CAMP.ending && CAMP.ending.fx && CAMP.ending.fx[side]) || sidePalette(side); endFx.parts = []; endFx.rockets = 0; endFx.confetti = 0; endFx.on = true; endFx.last = performance.now(); fxResize();
   endFx.ctx.clearRect(0, 0, endFx.w, endFx.h); endFx.ctx2.clearRect(0, 0, endFx.w, endFx.h); cancelAnimationFrame(endFx.raf); endFx.raf = requestAnimationFrame(fxFrame);
 }
 function fxStop() { endFx.on = false; cancelAnimationFrame(endFx.raf); if (endFx.ctx) { endFx.ctx.clearRect(0, 0, endFx.w, endFx.h); endFx.ctx2.clearRect(0, 0, endFx.w, endFx.h); } endFx.parts = []; }
@@ -2820,9 +2708,9 @@ function startEnding(side) {
   endActive = true; endCleanup();
   const ch = CHARS[side], total = G.votes, prev = getRecord(), isRec = total > prev;
   if (isRec) setRecord(total);
-  const bossIdx = LEVELS.findIndex(l => l.boss), runTime = trailTime(side, bossIdx + 1), bestKey = "spb_best_time_" + side, prevBest = parseFloat(storage.get(bestKey)) || 0;
+  const bossIdx = LEVELS.findIndex(l => l.boss), runTime = trailTime(side, bossIdx + 1), bKey = bestKey(CAMP_ID, side), prevBest = parseFloat(storage.get(bKey)) || 0;
   const isTimeRec = !DEV_MODE && runTime > 0 && (!prevBest || runTime < prevBest);
-  if (isTimeRec) storage.set(bestKey, String(Math.round(runTime*10)/10));
+  if (isTimeRec) storage.set(bKey, String(Math.round(runTime*10)/10));
   $("endRecord").textContent = `Recorde: ${fmtVotes(Math.max(prev, total))} votos`;
   $("endNewRec").classList.toggle("hidden", !isRec);
   $("endTimeRec").textContent = `Melhor tempo: ${fmtTime(isTimeRec || !prevBest ? runTime : prevBest)}`;
@@ -2839,10 +2727,13 @@ function startEnding(side) {
   $("jRows").innerHTML = rows.join(""); $("jTotal").classList.remove("in"); $("jTotalT").textContent = "0:00";
   $("endPix").innerHTML = document.querySelector("#coffeeModal .qr").innerHTML;
   $("endKey").textContent = PIX_KEY;
+  $("endNg").textContent = CAMP.ng ? "🔓 NG+ desbloqueado: " + (SCENARIOS.find(x => LEVELS.some(l => l.ng && l.scn === x.id)) || { short:"" }).short : ""; $("endNg").classList.toggle("hidden", !CAMP.ng);
+  const ngKey = CAMP.ng ? CAMP.ng.side.key : null, castOf = k => (TRACKS[k] || []).filter(c => CHARS[c] && CHARS[c].camp !== ngKey).map(c => CHARS[c].name).join(" · ");
+  const sceneNames = LEVELS.filter(l => !l.ng).map(l => (SCENARIOS.find(x => x.id === l.scn) || {}).name).filter(Boolean).join(" · ");
   $("credits").innerHTML = `
-    <h3>SUPER PRESIDA BATALHA</h3>
-    <div class="dim">${side === "lula" ? "A trilha do " + CHARS.lula.short : "A trilha do " + CHARS.flavio.short} · fim</div>
-    <div class="dim" style="margin-top:34px;opacity:1;font-size:1.05em">Parabéns${PROFILE ? ", <b>" + esc(PROFILE.nick) + "</b>" : ""}! Você levou ${ch.short} até o Planalto em <b>${fmtTime(runTime)}</b>.</div>
+    <h3>${esc(GAME_TITLE)}</h3>
+    <div class="dim">${esc(CAMP.name)} · a trilha de ${esc(ch.short)} · fim</div>
+    <div class="dim" style="margin-top:34px;opacity:1;font-size:1.05em">Parabéns${PROFILE ? ", <b>" + esc(PROFILE.nick) + "</b>" : ""}! Você levou ${esc(ch.short)} à vitória em <b>${fmtTime(runTime)}</b>.</div>
     <div class="role">Um jogo criado por</div><div class="name">rpossan</div>
     <div class="role">Direção e roteiro</div><div class="name">rpossan</div>
     <div class="role">Programação</div><div class="name">rpossan</div>
@@ -2852,12 +2743,11 @@ function startEnding(side) {
     <div class="role">Chefões e equilíbrio</div><div class="name">rpossan</div>
     <div class="role">Testes, café e paciência</div><div class="name">rpossan</div>
     <h3>CENÁRIOS</h3>
-    <div class="dim" style="margin-top:6px">Av. Paulista · Aeroporto Salgado Filho · Cristo Redentor · Sertão · Amazônia · Balneário Camboriú · Praça dos Três Poderes</div>
+    <div class="dim" style="margin-top:6px">${esc(sceneNames)}</div>
     <div class="role">Participações (em tom de paródia)</div>
-    <div class="name" style="font-size:1em">${["boulos","gleisi","moraes","felipe","marina","anitta","lula"].map(k => CHARS[k].name).join(" · ")}</div>
-    <div class="name" style="font-size:1em">${["nikolas","tarcisio","michelle","hang","salles","carlos","flavio"].map(k => CHARS[k].name).join(" · ")}</div>
+    ${Object.keys(SIDES).map(k => `<div class="name" style="font-size:1em">${esc(castOf(k))}</div>`).join("")}
     <div class="dim">Jogo apartidário e imparcial. Paródia bem-humorada: os personagens são inspirados em figuras públicas, sem nenhuma intenção de ofender ninguém.</div>
-    <div class="dim" style="margin-top:34px;color:#ff9a5a;opacity:1">☢️ Mas a paz não durou... um ditador surge das cinzas. O modo <b>NG+: Apocalipse</b> foi desbloqueado no menu.</div>
+    ${CAMP.ng && CAMP.ng.unlockNote ? `<div class="dim" style="margin-top:34px;color:#ff9a5a;opacity:1">${CAMP.ng.unlockNote}</div>` : ""}
     <h3>OBRIGADO POR JOGAR!</h3>
     <div class="dim" style="opacity:1">Obrigado, de coração, por ter chegado até aqui.<br>Se curtiu, conta pra um amigo. ☕</div>
     <div class="name" style="margin-top:20px">rpossan</div>
@@ -2873,11 +2763,10 @@ function startEnding(side) {
   fxStart(side);
   endCamStart();
   // ATO 1: câmera passeando pela festa
-  endAt(800,   () => { endFx.confetti = 5; endChapter("Brasília · Praça dos Três Poderes"); });
-  endAt(6200,  () => { endFx.rockets = .5; endChapter("O último adversário caiu."); });
-  endAt(11800, () => { endFx.rockets = 1.1; endChapter("A torcida inteira vai à loucura…"); });
-  endAt(17200, () => { endFx.rockets = 2.2; endFx.confetti = 9; endChapter("E o céu do Planalto se acende."); });
-  endAt(22200, () => { endFx.rockets = 1.4; endChapter(side === "lula" ? "Hoje, o Brasil escolheu o seu presidente." : "Hoje, o Brasil escolheu o seu presidente."); });
+  const CE = CAMP.ending || {};
+  const chapters = CE.chapters ? CE.chapters(side, ch) : [CAMP.name, "O último adversário caiu.", "A torcida inteira vai à loucura…", "E o céu se acende em festa.", `${ch.name} venceu!`];
+  const chRate = [[5, 0], [0, .5], [0, 1.1], [9, 2.2], [0, 1.4]];
+  [800, 6200, 11800, 17200, 22200].forEach((ms, i) => { if (chapters[i]) endAt(ms, () => { if (chRate[i][0]) endFx.confetti = chRate[i][0]; endFx.rockets = chRate[i][1] || endFx.rockets; endChapter(chapters[i]); }); });
   // ATO 2: a cena da posse (a animação só começa a rodar quando a arte é inserida)
   endAt(T2, () => {
     endCamStop(); el.classList.remove("cine"); document.body.classList.remove("cinema");
@@ -2885,15 +2774,8 @@ function startEnding(side) {
     endFx.rockets = 1; endFx.confetti = 6; endingStep("endArtStage");
   });
   const cap = (ms, big, small) => endAt(T2 + ms, () => { $("endCaption").innerHTML = big + (small ? `<small>${small}</small>` : ""); });
-  cap(900,   "Brasília, 1º de janeiro de 2027.", "Dia de posse no Palácio do Planalto");
-  if (side === "lula") {
-    cap(7500,  `${ch.name} sobe a rampa…`, "a multidão toma a Esplanada");
-    cap(14500, "…de faixa presidencial no peito.", "o povo canta, chora e aplaude");
-  } else {
-    cap(7500,  `${ch.short} chega ao Planalto…`, "a multidão toma a Esplanada");
-    cap(14500, "…e abraça o pai, Jair Bolsonaro, na rampa.", "o povo canta, chora e aplaude");
-  }
-  cap(21000, `${ch.name} foi eleito presidente do Brasil!`, "");
+  const posse = CE.posse ? CE.posse(side, ch) : [{ big:`${ch.name} venceu!`, small:CAMP.name }];
+  posse.forEach((p, i) => cap(posse.length === 1 ? 900 : 900 + i*(20100/(posse.length - 1)), p.big, p.small));
   endAt(T2 + 24800, () => { endFx.rockets = 3.2; });
   // ATO 3: a jornada (cada fase vencida entra, com carimbo e tempo)
   endAt(T3, () => { endFx.rockets = .35; endFx.confetti = 2; endingStep("endJourney"); });
@@ -3041,7 +2923,7 @@ refreshDevBtn();
    - salva entre as fases (nunca no meio de uma partida) e ao fechar a aba
    - o modo desenvolvedor nunca grava nem lê o saldo de teste
    ================================================================ */
-const SAVE_KEY = "spb_save_v1", SAVE_VERSION = 2;
+const SAVE_KEY = "spb_save_v1", SAVE_VERSION = 3;
 const storage = {
   get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
   set(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } },
@@ -3049,14 +2931,13 @@ const storage = {
 };
 function snapshotForSave() {
   const inLevel = G.phase === "battle";                 // no meio da fase vale o estado do início dela
+  stashProgress();
   return {
     v: SAVE_VERSION,
     money: inLevel && G.walletSnap !== undefined ? G.walletSnap : MONEY, votes: inLevel && G.levelStartVotes !== undefined ? G.levelStartVotes : G.votes, sp: SKILL_POINTS - (inLevel && G.itemUse ? G.itemUse.plano : 0), spLevel: SP_LEVEL,
-    skills: [...OWNED], sklv: Object.fromEntries([...OWNED].map(id => [id, skillLv(id)])), bossLosses: BOSS_LOSSES, stats: { wins: STATS.wins, losses: STATS.losses, owins: STATS.owins, olosses: STATS.olosses },
+    skills: [...OWNED], sklv: Object.fromEntries([...OWNED].map(id => [id, skillLv(id)])), stats: { wins: STATS.wins, losses: STATS.losses, owins: STATS.owins, olosses: STATS.olosses },
     items: inLevel && G.itemsSnap ? { ...G.itemsSnap } : { ...ITEMS },
-    prog: { flavio: PROG.flavio, lula: PROG.lula },
-    playtime: { flavio: PLAYTIME.flavio.map(t => Math.round((t || 0)*10)/10), lula: PLAYTIME.lula.map(t => Math.round((t || 0)*10)/10) },
-    cleared: { flavio: CLEARED.flavio.map(Boolean), lula: CLEARED.lula.map(Boolean) },
+    campaigns: exportCampaigns(), activeCampaign: CAMP_ID,
     prefs: { muted, music: Music.on },
   };
 }
@@ -3067,31 +2948,39 @@ function saveGame() {
 function loadGame() {
   const raw = storage.get(SAVE_KEY); if (!raw) return false;
   try {
-    const d = JSON.parse(raw); if (!d || (d.v !== SAVE_VERSION && d.v !== 1)) return false;
+    const d = JSON.parse(raw); if (!d || ![1, 2, 3].includes(d.v)) return false;
     const num = (x, max) => Math.max(0, Math.min(max, Math.floor(Number(x) || 0)));
+    const readStore = (st, c) => {                          // lê o progresso de uma campanha (sanitizado pelo tamanho das fases dela)
+      const keys = Object.keys(c.sides), nL = c.levels.length, out = { prog:{}, cleared:{}, playtime:{}, bossLosses:num(st && st.bossLosses, 99) };
+      keys.forEach(k => {
+        out.prog[k] = Math.max(1, num(st && st.prog && st.prog[k], nL));
+        out.cleared[k] = c.levels.map((_, i) => !!(st && st.cleared && st.cleared[k] && st.cleared[k][i]));
+        out.playtime[k] = c.levels.map((_, i) => num(st && st.playtime && st.playtime[k] && st.playtime[k][i], 1e7));
+      });
+      return out;
+    };
+    Object.keys(CAMP_STORE).forEach(k => delete CAMP_STORE[k]);
+    if (d.v === 3) { Object.entries(d.campaigns || {}).forEach(([id, st]) => { const c = SPBCampaigns.get(id); if (c && c.status === "ready") CAMP_STORE[id] = readStore(st, c); }); }
+    else { const c = SPBCampaigns.get("br2026"); if (c) CAMP_STORE.br2026 = readStore({ prog:d.prog, cleared:d.cleared, playtime:d.playtime, bossLosses:d.bossLosses }, c); }      // saves antigos: tudo era do Brasil
     if (d.v === 1) {                                       // save antigo: mantém fases liberadas e preferências; economia e skills recomeçam
-      ["flavio","lula"].forEach(sd => { PROG[sd] = Math.max(1, num(d.prog && d.prog[sd], LEVELS.length)); CLEARED[sd] = LEVELS.map((_, i) => !!(d.cleared && d.cleared[sd] && d.cleared[sd][i])); });
       muted = !!(d.prefs && d.prefs.muted); Music.on = !(d.prefs && d.prefs.music === false); return true;
     }
     MONEY = num(d.money, 1e9); G.votes = num(d.votes, 1e9); SKILL_POINTS = num(d.sp, 999); SP_LEVEL = num(d.spLevel, MAX_LEVEL);
     OWNED.clear(); Object.keys(SKLV).forEach(k => delete SKLV[k]);
-    (d.skills || []).forEach(id => { if (SKILLS.some(k => k.id === id)) { OWNED.add(id); SKLV[id] = Math.max(1, Math.min(3, Math.floor(Number(d.sklv && d.sklv[id]) || 1))); } });
-    BOSS_LOSSES = num(d.bossLosses, 99); STATS.wins = num(d.stats && d.stats.wins, 1e6); STATS.losses = num(d.stats && d.stats.losses, 1e6); STATS.owins = num(d.stats && d.stats.owins, 1e6); STATS.olosses = num(d.stats && d.stats.olosses, 1e6);
+    (d.skills || []).forEach(id => { if (SPBCampaigns.catalog.SKILL_KINDS[id]) { OWNED.add(id); SKLV[id] = Math.max(1, Math.min(3, Math.floor(Number(d.sklv && d.sklv[id]) || 1))); } });
+    STATS.wins = num(d.stats && d.stats.wins, 1e6); STATS.losses = num(d.stats && d.stats.losses, 1e6); STATS.owins = num(d.stats && d.stats.owins, 1e6); STATS.olosses = num(d.stats && d.stats.olosses, 1e6);
     Object.keys(ITEM_MAX).forEach(id => { ITEMS[id] = num(d.items && d.items[id], ITEM_MAX[id]); });
     if (levelOf(G.votes) > SP_LEVEL) { for (let n = SP_LEVEL + 1; n <= levelOf(G.votes); n++) SKILL_POINTS += spForLevel(n); SP_LEVEL = levelOf(G.votes); }
-    ["flavio","lula"].forEach(sd => {
-      PROG[sd] = Math.max(1, num(d.prog && d.prog[sd], LEVELS.length));
-      CLEARED[sd] = LEVELS.map((_, i) => !!(d.cleared && d.cleared[sd] && d.cleared[sd][i]));
-    });
-    ["flavio","lula"].forEach(sd => { PLAYTIME[sd] = LEVELS.map((_, i) => num(d.playtime && d.playtime[sd] && d.playtime[sd][i], 1e7)); });
     muted = !!(d.prefs && d.prefs.muted); Music.on = !(d.prefs && d.prefs.music === false);
+    const want = d.activeCampaign && SPBCampaigns.get(d.activeCampaign);
+    if (want && want.status === "ready" && want.id !== CAMP_ID) activateCampaign(want.id); else loadProgress(CAMP_ID);
     return true;
   } catch (e) { return false; }
 }
 function resetSave() {
   storage.del(SAVE_KEY);
-  resetItems(); MONEY = 0; G.votes = 0; SKILL_POINTS = 0; SP_LEVEL = 0; OWNED.clear(); Object.keys(SKLV).forEach(k => delete SKLV[k]); BOSS_LOSSES = 0;
-  PROG.flavio = PROG.lula = 1; CLEARED.flavio = []; CLEARED.lula = []; PLAYTIME.flavio = []; PLAYTIME.lula = []; lastClock = -1; STATS.wins = STATS.losses = STATS.owins = STATS.olosses = 0;
+  resetItems(); MONEY = 0; G.votes = 0; SKILL_POINTS = 0; SP_LEVEL = 0; OWNED.clear(); Object.keys(SKLV).forEach(k => delete SKLV[k]);
+  Object.keys(CAMP_STORE).forEach(k => delete CAMP_STORE[k]); loadProgress(CAMP_ID); lastClock = -1; STATS.wins = STATS.losses = STATS.owins = STATS.olosses = 0;
 }
 ["pagehide","visibilitychange"].forEach(ev => addEventListener(ev, () => { if (ev !== "visibilitychange" || document.hidden) saveGame(); }));
 
@@ -3115,8 +3004,8 @@ function faceSVG(ch, size, boss) {
 }
 
 function buildMenu() {
-  refreshShopButtons();
-  document.querySelectorAll(".card").forEach(c => c.classList.toggle("sel", c.dataset.side === menuSide));
+  refreshShopButtons(); renderWorld(); renderSideCards();
+  document.querySelectorAll("#sideCards .card").forEach(c => c.classList.toggle("sel", c.dataset.side === menuSide));
   const wrap = $("levelsWrap"), grid = $("levelGrid");
   if (!menuSide) { wrap.classList.add("hidden"); return; }
   wrap.classList.remove("hidden");
@@ -3176,10 +3065,6 @@ $("btnAgain").onclick = () => {
   if (G.lastWin) showMenu();            // vitória: volta à tela inicial já com a próxima fase liberada
   else startLevel(G.levelIdx);          // derrota: tenta a mesma fase de novo
 };
-document.querySelectorAll(".card").forEach(card => card.onclick = () => {
-  actx && actx.state==="suspended" && actx.resume();
-  menuSide = card.dataset.side; buildMenu();
-});
 /* ================================================================
    Perfil do jogador: nick + avatar (guardado à parte do progresso: apagar o progresso não apaga o perfil)
    ================================================================ */
@@ -3230,19 +3115,22 @@ function renderProfileStats() {
   $("pStats").classList.toggle("hidden", !PROFILE);
   if (!PROFILE) return;
   const done = sd => CLEARED[sd].filter(Boolean).length, sk = [...OWNED].reduce((a, id) => a + skillLv(id), 0);
-  const total = trailTime("flavio") + trailTime("lula"), bf = parseFloat(storage.get("spb_best_time_flavio")) || 0, bl = parseFloat(storage.get("spb_best_time_lula")) || 0;
+  const sk2 = Object.keys(SIDES), total = sk2.reduce((a, k) => a + trailTime(k), 0), bestOf = k => parseFloat(storage.get(bestKey(CAMP_ID, k))) || 0;
   const t = (v, l) => `<div class="st"><b>${v}</b><small>${l}</small></div>`;
   $("pStatsBody").innerHTML = t(playerLevel(), "Nível") + t(fmtVotes(G.votes), "Votos") + t("R$ " + fmtVotes(MONEY), "Grana")
-    + t(`${done("flavio")}/${LEVELS.length}`, "Fases · Flávio") + t(`${done("lula")}/${LEVELS.length}`, "Fases · Lula") + t(`${sk}/15`, "Skills (níveis)")
+    + sk2.map(k => t(`${done(k)}/${LEVELS.length}`, "Fases · " + SIDES[k].short)).join("") + t(`${sk}/15`, "Skills (níveis)")
     + t(STATS.wins, "Vitórias") + t(STATS.losses, "Derrotas") + t(fmtTime(total), "Tempo de jogo") + t(STATS.owins, "Vitórias online") + t(STATS.olosses, "Derrotas online")
-    + t(bf ? fmtTime(bf) : "—", "Melhor · Flávio") + t(bl ? fmtTime(bl) : "—", "Melhor · Lula") + t(fmtVotes(getRecord()), "Recorde de votos");
+    + sk2.map(k => t(bestOf(k) ? fmtTime(bestOf(k)) : "—", "Melhor · " + SIDES[k].short)).join("") + t(fmtVotes(getRecord()), "Recorde de votos");
+}
+function allBestTimes() {                                   // "campanha/lado" -> segundos
+  const out = {}; SPBCampaigns.list().filter(c => c.status === "ready").forEach(c => Object.keys(c.sides).forEach(k => { const v = parseFloat(storage.get(bestKey(c.id, k))); if (v > 0) out[c.id + "/" + k] = v; })); return out;
 }
 function buildBackup() {
   saveGame();
   return { app:"super-presida-batalha-remake", v:1, at:new Date().toISOString(),
     profile: PROFILE ? { id:PROFILE.id, nick:PROFILE.nick, av:PROFILE.av } : null,
     save: (() => { try { return JSON.parse(storage.get(SAVE_KEY) || "null"); } catch (e) { return null; } })(),
-    record: getRecord(), best: { flavio:storage.get("spb_best_time_flavio"), lula:storage.get("spb_best_time_lula") } };
+    record: getRecord(), best: allBestTimes() };
 }
 const encodeBackup = o => "SPB1:" + btoa(unescape(encodeURIComponent(JSON.stringify(o))));
 function decodeBackup(text) {
@@ -3250,7 +3138,7 @@ function decodeBackup(text) {
   if (t[0] === "{") o = JSON.parse(t); else { t = t.replace(/^SPB1:/, "").replace(/\s+/g, ""); o = JSON.parse(decodeURIComponent(escape(atob(t)))); }
   if (!o || o.app !== "super-presida-batalha-remake") throw new Error("Esse código não é um backup deste jogo.");
   if (o.profile && !(checkNick(String(o.profile.nick || "")).nick && /^[0-9a-f]{8}$/.test(o.profile.id))) throw new Error("O perfil do backup é inválido.");
-  if (o.save && (typeof o.save !== "object" || (o.save.v !== SAVE_VERSION && o.save.v !== 1))) throw new Error("O progresso do backup é de uma versão incompatível.");
+  if (o.save && (typeof o.save !== "object" || ![1, 2, 3].includes(o.save.v))) throw new Error("O progresso do backup é de uma versão incompatível.");
   return o;
 }
 function applyBackup(o) {
@@ -3258,7 +3146,7 @@ function applyBackup(o) {
   if (o.profile) storage.set(PROFILE_KEY, JSON.stringify({ v:1, id:o.profile.id, nick:checkNick(o.profile.nick).nick, av:cleanAv(o.profile.av) }));
   if (o.save) storage.set(SAVE_KEY, JSON.stringify(o.save));
   if (Number(o.record) > 0) setRecord(Math.floor(Number(o.record)));
-  ["flavio", "lula"].forEach(sd => { const v = parseFloat(o.best && o.best[sd]); if (v > 0) storage.set("spb_best_time_" + sd, String(v)); });
+  Object.entries(o.best || {}).forEach(([k, v]) => { const [cid, sd] = k.includes("/") ? k.split("/") : ["br2026", k]; const x = parseFloat(v); if (x > 0 && /^[\w-]+$/.test(cid) && /^[\w-]+$/.test(sd)) storage.set(bestKey(cid, sd), String(x)); });
   location.reload();
 }
 function importBackup(text) {
@@ -3335,7 +3223,9 @@ $("profileChip").onclick = () => openProfile(false);
    - sem adversário disponível, entra um jogador simulado (conversa pelo mesmo protocolo);
    - sem skills nem itens (regras iguais para os dois); não rende votos nem grana.
    ================================================================ */
-const ONLINE_TURN_SECONDS = 45, ONLINE_SCENES = ["paulista", "poa", "rio", "sertao", "amazonia", "camboriu", "brasilia"];
+const ONLINE_TURN_SECONDS = 45;
+const firstSide = () => Object.keys(SIDES)[0];
+const onlineScenes = (c = CAMP) => c.scenarios.filter(sc => !c.levels.some(l => l.ng && l.scn === sc.id)).map(sc => sc.id);
 const hexRand = n => Array.from(crypto.getRandomValues(new Uint8Array(n)), b => b.toString(16).padStart(2, "0")).join("");
 async function sha256hex(s) {
   try { const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)); return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join(""); }
@@ -3347,7 +3237,7 @@ const myPublic = side => ({ id:PROFILE.id, nick:PROFILE.nick, av:PROFILE.av, sid
 function sanePeer(p) {                                                  // valida o perfil que vem da rede
   if (!p || typeof p.id !== "string" || !/^[0-9a-f]{8}$/.test(p.id)) return null;
   const n = checkNick(String(p.nick || "")); if (!n.nick) return null;
-  return { id:p.id, nick:n.nick, av:cleanAv(p.av), side:p.side === "lula" ? "lula" : "flavio" };
+  return { id:p.id, nick:n.nick, av:cleanAv(p.av), side:SPBCampaigns.list().some(c => c.sides && c.sides[p.side]) ? p.side : firstSide() };
 }
 const BOT_NAMES = ["Zé Pilha", "Carol_Rocha", "Marcão", "Tati Souza", "Bruno.Lima", "Dani Torres", "Leo_Mendes", "Fabi Alves", "Rafa Costa", "Gabi Nunes", "Thiago_P", "Mari Duarte", "Juninho", "Lu Ferreira", "Pedrão", "Cris Moura"];
 /* relógio que não sofre a "economia de bateria" das abas em segundo plano (roda num Worker) */
@@ -3355,7 +3245,7 @@ function makeTicker(ms, fn) {
   try { const url = URL.createObjectURL(new Blob([`setInterval(() => postMessage(0), ${ms})`], { type:"text/javascript" })), w = new Worker(url); w.onmessage = () => fn(); return { stop() { w.terminate(); URL.revokeObjectURL(url); } }; }
   catch (e) { const id = setInterval(fn, ms); return { stop() { clearInterval(id); } }; }
 }
-const ON = { ch:null, userCh:null, lobbyCh:null, search:null, busy:false, side:"flavio", incoming:null };
+const ON = { ch:null, userCh:null, lobbyCh:null, search:null, busy:false, side:null, incoming:null };
 
 /* ---------------------------------------------------------------- jogador simulado (usado quando não há ninguém online) */
 function startBot(ch, prof) {
@@ -3457,7 +3347,7 @@ function newOnlineGame(O) {
   G.defs = [FLEET, FLEET];
   G.phase = "place"; G.turn = 0; G.busy = false; G.horiz = true; G.power = "normal"; G.energy = [1, 1]; G.hover = null;
   applyScenario(SCENARIOS.find(x => x.id === O.scn) || SCENARIOS[0]);
-  musicStart(G.scn.id);
+  musicStart(sceneSong(G.scn));
   $("action").classList.add("hidden"); clearMarkers(); clearUmbrellas(); resetFleet(0); resetFleet(1);
   G.fleets[1] = FLEET.map((d, idx) => ({ ...d, idx, cells:[], hits:0, sunk:false }));          // a arena do adversário começa às escuras
   for (let b = 0; b < 2; b++) {
@@ -3658,6 +3548,7 @@ async function joinMatch({ mid, role, peerHint, bot }) {
   ON.ch = O;
   const begin = (cfg, opp) => {
     if (O.started) return; O.started = true; O.opp = opp;
+    if (cfg.camp && cfg.camp !== CAMP_ID) activateCampaign(cfg.camp);                 // o duelo acontece na campanha escolhida pelo anfitrião
     O.mySide = role === "host" ? cfg.hostSide : cfg.guestSide; O.oppSide = role === "host" ? cfg.guestSide : cfg.hostSide;
     O.scn = cfg.scn; O.first = (cfg.first === "host") === (role === "host");
     stopSearch(true); closeOnline(); newOnlineGame(O);
@@ -3666,11 +3557,12 @@ async function joinMatch({ mid, role, peerHint, bot }) {
   ch.on("hello", p => {
     O.last = Date.now(); const peer = sanePeer(p); if (!peer) return; hello = peer;
     if (role === "host") {
-      const cfg = O.cfg || (O.cfg = { mid, hostSide:ON.side, guestSide:ON.side === "flavio" ? "lula" : "flavio", scn:ONLINE_SCENES[rand(ONLINE_SCENES.length)], first:Math.random() < .5 ? "host" : "guest" });
+      if (!SIDES[ON.side]) ON.side = firstSide();
+      const cfg = O.cfg || (O.cfg = { mid, camp:CAMP_ID, hostSide:ON.side, guestSide:Object.keys(SIDES).find(k => k !== ON.side), scn:onlineScenes()[rand(onlineScenes().length)], first:Math.random() < .5 ? "host" : "guest" });
       ch.send("cfg", cfg); begin(cfg, peer);
     } else sendHello();
   });
-  ch.on("cfg", p => { O.last = Date.now(); if (role !== "guest" || !hello) return; if (!["flavio", "lula"].includes(p.hostSide) || !["flavio", "lula"].includes(p.guestSide) || p.hostSide === p.guestSide || !ONLINE_SCENES.includes(p.scn) || !["host", "guest"].includes(p.first)) return; begin(p, hello); });
+  ch.on("cfg", p => { O.last = Date.now(); if (role !== "guest" || !hello) return; const pc = SPBCampaigns.get(p.camp); if (!pc || pc.status !== "ready" || !pc.sides[p.hostSide] || !pc.sides[p.guestSide] || p.hostSide === p.guestSide || !onlineScenes(pc).includes(p.scn) || !["host", "guest"].includes(p.first)) return; begin(p, hello); });
   if (!bot) { sendHello(); O.helloTimer = setInterval(() => { if (O.started) clearInterval(O.helloTimer); else sendHello(); }, 1000); }
   setTimeout(() => { if (!O.started) { clearInterval(O.helloTimer); try { ch.close(); } catch (e) {} if (ON.ch === O) ON.ch = null; setOnlineMsg("Não foi possível iniciar a partida. Tente de novo.", true); showOnlineActions(); } }, 15000);
 }
@@ -3683,11 +3575,11 @@ function stopSearch(silent) {
 async function findRandom() {
   if (ON.search || ON.busy) return; ON.busy = true; showSearching("Conectando…");
   const mine = myPublic(ON.side), ts = Date.now();
-  const startedBot = () => { if (!ON.search || ON.search.cancelled) return; stopSearch(true); const side = ON.side === "flavio" ? "lula" : "flavio"; joinMatch({ mid:hexRand(6), role:"host", bot:{ id:hexRand(4), nick:BOT_NAMES[rand(BOT_NAMES.length)].slice(0, 14), av:randomAv(), side } }); };
+  const startedBot = () => { if (!ON.search || ON.search.cancelled) return; stopSearch(true); const side = Object.keys(SIDES).find(k => k !== ON.side); joinMatch({ mid:hexRand(6), role:"host", bot:{ id:hexRand(4), nick:BOT_NAMES[rand(BOT_NAMES.length)].slice(0, 14), av:randomAv(), side } }); };
   const S = ON.search = { kind:"random", cancelled:false, lobby:null, t0:ts };
   try {
     if (!SPBNet.available) { S.botTimer = setTimeout(startedBot, 4000 + Math.random()*3000); ON.busy = false; startTick(); return; }
-    S.lobby = await SPBNet.channel("spb:lobby:v1", mine.id);
+    S.lobby = await SPBNet.channel("spb:lobby:v1:" + CAMP_ID, mine.id);
   } catch (e) { ON.busy = false; if (ON.search === S) { showSearching("Sem conexão com o servidor: procurando…"); S.botTimer = setTimeout(startedBot, 3500); startTick(); } return; }
   if (S.cancelled) { try { S.lobby.close(); } catch (e) {} ON.busy = false; return; }
   ON.busy = false; startTick(); showSearching("Procurando adversário…");
@@ -3717,7 +3609,8 @@ async function listenInvites() {
     ch.on("invite", p => {
       const from = sanePeer(p.from); if (!from || typeof p.mid !== "string" || !/^[0-9a-f]{12}$/.test(p.mid)) return;
       if (ON.search || ON.incoming || G.online || $("onlineModal").classList.contains("hidden")) { ch.send("reply", { mid:p.mid, ok:false, busy:true }); return; }
-      ON.incoming = { from, mid:p.mid, ch };
+      const ic = SPBCampaigns.get(p.camp); if (!ic || ic.status !== "ready") { ch.send("reply", { mid:p.mid, ok:false }); return; }
+      ON.incoming = { from, mid:p.mid, ch, camp:p.camp };
       $("invAvatar").innerHTML = faceSVG(avToChar(from.av), 64); $("invText").innerHTML = `<b>${esc(from.nick)}</b> <small>(${fmtId(from.id)})</small><br>te desafiou para um duelo!`;
       $("inviteModal").classList.remove("hidden"); try { Sfx.coin(true); } catch (e) {}
       clearTimeout(ON.incomingT); ON.incomingT = setTimeout(() => declineInvite(), 25000);
@@ -3729,6 +3622,7 @@ function declineInvite() { const I = ON.incoming; if (!I) return; clearTimeout(O
 function acceptInvite() {
   const I = ON.incoming; if (!I) return; clearTimeout(ON.incomingT);
   I.ch.send("reply", { mid:I.mid, ok:true }); ON.incoming = null; $("inviteModal").classList.add("hidden");
+  if (I.camp && I.camp !== CAMP_ID) activateCampaign(I.camp);
   stopSearch(true); joinMatch({ mid:I.mid, role:"guest" });
 }
 async function challengeFriend() {
@@ -3746,7 +3640,7 @@ async function challengeFriend() {
       if (p.ok) { stopSearch(true); joinMatch({ mid, role:"host" }); }
       else { stopSearch(true); setOnlineMsg(p.busy ? "Seu amigo está ocupado agora." : "Seu amigo recusou o desafio.", true); showOnlineActions(); }
     });
-    ch.send("invite", { mid, from:myPublic(ON.side) });
+    ch.send("invite", { mid, camp:CAMP_ID, from:myPublic(ON.side) });
     S.botTimer = setTimeout(() => { if (ON.search === S && !S.cancelled) { try { ch.send("cancel", { mid }); } catch (e) {} stopSearch(true); setOnlineMsg("Sem resposta: seu amigo precisa estar com a tela Online aberta.", true); showOnlineActions(); } }, 25000);
     S.tick = setInterval(() => { $("onSearchText").textContent = `Aguardando ${Math.max(0, 25 - Math.floor((Date.now() - S.t0)/1000))}s a resposta do seu amigo…`; }, 500);
   } catch (e) { ON.busy = false; stopSearch(true); setOnlineMsg("Não foi possível conectar ao servidor online.", true); showOnlineActions(); }
@@ -3757,8 +3651,9 @@ function setOnlineMsg(t, bad) { const m = $("onMsg"); m.textContent = t || ""; m
 function showSearching(text) { $("onActions").classList.add("hidden"); $("onSearch").classList.remove("hidden"); $("onSearchText").textContent = text; setOnlineMsg(""); }
 function showOnlineActions() { $("onSearch").classList.add("hidden"); $("onActions").classList.remove("hidden"); }
 function renderOnline() {
-  $("onMyId").textContent = PROFILE ? fmtId(PROFILE.id) : "—";
-  document.querySelectorAll("[data-oside]").forEach(b => b.classList.toggle("sel", b.dataset.oside === ON.side));
+  $("onMyId").textContent = PROFILE ? fmtId(PROFILE.id) : "—"; $("onCamp").textContent = `Campanha: ${CAMP.emoji || ""} ${CAMP.name}`;
+  if (!SIDES[ON.side]) ON.side = firstSide();
+  $("onSides").innerHTML = Object.values(SIDES).map(sd => `<button class="pill${sd.key === ON.side ? " sel" : ""}" data-oside="${esc(sd.key)}">${esc(sd.short)}</button>`).join("");
   const st = $("onStatus");
   st.innerHTML = SPBNet.mode === "supabase" ? `<span class="dot ok"></span> Servidor online conectado`
     : SPBNet.mode === "local" ? `<span class="dot test"></span> Modo de teste (abas do mesmo navegador)`
@@ -3785,7 +3680,7 @@ $("onFriend").addEventListener("keydown", e => { if (e.key === "Enter") challeng
 $("onCancel").onclick = () => { const S = ON.search; if (S && S.kind === "friend" && S.lobby) { try { S.lobby.send("cancel", { mid:S.mid }); } catch (e) {} } stopSearch(); setOnlineMsg(""); };
 $("onCopyId").onclick = () => { copyText(PROFILE.id.toUpperCase(), ""); setOnlineMsg("ID copiado! Passe para o seu amigo."); };
 $("invAccept").onclick = acceptInvite; $("invDecline").onclick = declineInvite;
-document.querySelectorAll("[data-oside]").forEach(b => b.onclick = () => { ON.side = b.dataset.oside; renderOnline(); });
+$("onSides").addEventListener("click", e => { const b = e.target.closest("[data-oside]"); if (b && SIDES[b.dataset.oside]) { ON.side = b.dataset.oside; renderOnline(); } });
 
 /* ================================================================
    Nuvem (Supabase): perfil, progresso, resultados do online e ranking
@@ -3814,8 +3709,7 @@ async function cloudProfile(force) {
 async function cloudSubmit() {
   try {
     const sb = await cloudProfile(); if (!sb || Date.now() - Cloud.last < 20000) return; Cloud.last = Date.now();
-    const best = sd => { const v = parseFloat(storage.get("spb_best_time_" + sd)); return v > 0 ? v : null; };
-    const { error } = await sb.rpc("submit_progress", { p_votes:Math.floor(G.votes), p_wins:STATS.wins, p_losses:STATS.losses, p_best_flavio:best("flavio"), p_best_lula:best("lula"), p_save:JSON.parse(JSON.stringify(snapshotForSave())) });
+    const { error } = await sb.rpc("submit_progress", { p_votes:Math.floor(G.votes), p_wins:STATS.wins, p_losses:STATS.losses, p_best:allBestTimes(), p_save:JSON.parse(JSON.stringify(snapshotForSave())) });
     if (error) console.warn("submit_progress:", error.message);
   } catch (e) { console.warn("nuvem:", e.message || e); }
 }
@@ -3865,6 +3759,120 @@ $("rkTabOn").onclick = () => { rankTab = "online"; loadRanking(); };
 $("rkRefresh").onclick = () => { Cloud.last = 0; loadRanking(); };
 addEventListener("keydown", e => { if (e.key === "Escape" && !$("rankModal").classList.contains("hidden")) $("rankModal").classList.add("hidden"); });
 
+/* ================================================================
+   Campanhas: cada campanha (js/campaigns/*.js) traz lados, personagens, cenários, fases, itens, skills,
+   frases e final. activateCampaign() preenche os dados que o motor lê; o resto do jogo é o mesmo.
+   ================================================================ */
+const fillObj = (dst, src) => { Object.keys(dst).forEach(k => delete dst[k]); Object.assign(dst, src); };
+const fillArr = (dst, src) => { dst.length = 0; src.forEach(x => dst.push(x)); };
+const GENERIC = { hit:["Acertou!", "Na mosca!", "Boa jogada!"], multi:["Que jogada!", "Varreu a área!"], miss:["Errou!", "Por pouco!"], sunk:["TORCIDA DISPERSADA!"] };
+const DEFAULT_THROWS = [{ id:"bola", indef:"uma bola", def:"a bola", emoji:"⚽", dur:.9, H:3 }];
+const sceneSong = scn => SPBCampaigns.catalog.MUSIC[scn.music] || scn.music || scn.id;
+const bestKey = (camp, side) => camp === "br2026" ? "spb_best_time_" + side : `spb_best_${camp}_${side}`;
+function exportCampaigns() {
+  const out = {};
+  Object.entries(CAMP_STORE).forEach(([id, st]) => { out[id] = { prog:{ ...st.prog }, cleared:Object.fromEntries(Object.entries(st.cleared).map(([k, v]) => [k, v.map(Boolean)])), playtime:Object.fromEntries(Object.entries(st.playtime).map(([k, v]) => [k, v.map(t => Math.round((t || 0)*10)/10)])), bossLosses:st.bossLosses }; });
+  return out;
+}
+function stashProgress() {
+  if (!CAMP_ID) return;
+  CAMP_STORE[CAMP_ID] = { prog:{ ...PROG }, cleared:Object.fromEntries(Object.keys(CLEARED).map(k => [k, CLEARED[k].slice()])), playtime:Object.fromEntries(Object.keys(PLAYTIME).map(k => [k, PLAYTIME[k].slice()])), bossLosses:BOSS_LOSSES };
+}
+function loadProgress(id) {
+  [PROG, CLEARED, PLAYTIME].forEach(o => Object.keys(o).forEach(k => delete o[k]));
+  const st = CAMP_STORE[id] || {}, c = SPBCampaigns.get(id);
+  Object.keys(SIDES).forEach(k => {
+    PROG[k] = Math.max(1, (st.prog && st.prog[k]) || 1);
+    CLEARED[k] = ((st.cleared && st.cleared[k]) || []).slice();
+    PLAYTIME[k] = ((st.playtime && st.playtime[k]) || []).slice();
+  });
+  BOSS_LOSSES = st.bossLosses || 0;
+}
+function activateCampaign(id) {
+  const c = SPBCampaigns.get(id); if (!c || c.status !== "ready") return false;
+  if (CAMP_ID) stashProgress();
+  CAMP = c; CAMP_ID = id;
+  fillObj(SIDES, c.sides); fillObj(CHARS, c.chars); fillObj(TRACKS, c.tracks);
+  fillArr(FLEET, c.fleet); FLEET_TOTAL = FLEET.reduce((a, f) => a + f.len, 0);
+  fillObj(NG_SIDE, c.ng ? c.ng.side : {}); fillArr(NG_DEFS, c.ng ? c.ng.defs : []);
+  fillArr(LEVELS, c.levels.map(l => l.ng ? { ...l, defs:NG_DEFS.map(d => ({ ...d })) } : l));
+  fillArr(SCENARIOS, c.scenarios);
+  fillArr(HIT_PHRASES, c.phrases.hit.length ? c.phrases.hit : GENERIC.hit); fillArr(MULTI_PHRASES, c.phrases.multi.length ? c.phrases.multi : GENERIC.multi);
+  fillArr(MISS_PHRASES, c.phrases.miss.length ? c.phrases.miss : GENERIC.miss); fillArr(SUNK_PHRASES, c.phrases.sunk.length ? c.phrases.sunk : GENERIC.sunk);
+  fillArr(THROWS, c.throws.length ? c.throws : DEFAULT_THROWS);
+  // skills (o efeito é do motor; nome, ícone, preço, níveis exigidos e texto são da campanha)
+  const SK = SPBCampaigns.catalog.SKILL_KINDS, skDef = Object.keys(c.skills).length ? c.skills : Object.fromEntries(Object.keys(SK).map(k => [k, {}]));
+  SKILLS.length = 0; [SKILL_REQ, LVT, SKILL_TEXT].forEach(o => Object.keys(o).forEach(k => delete o[k]));
+  Object.keys(SK).forEach(kind => {
+    if (!skDef[kind]) return; const d = skDef[kind], b = SK[kind];
+    SKILLS.push({ id:kind, icon:d.icon ?? b.icon, name:d.name ?? b.name, price:d.price ?? b.price, desc:d.desc ?? b.desc });
+    SKILL_REQ[kind] = d.req || b.req; LVT[kind] = d.values || b.values; SKILL_TEXT[kind] = d.desc ?? b.desc;
+  });
+  // itens
+  const IK = SPBCampaigns.catalog.ITEM_KINDS, itDef = Object.keys(c.items).length ? c.items : Object.fromEntries(Object.keys(IK).map(k => [k, {}]));
+  ITEM_DEFS.length = 0; Object.keys(ITEM_PRICE).forEach(k => delete ITEM_PRICE[k]); ITEM_WEIGHTS.length = 0;
+  const wsum = Object.keys(IK).reduce((a, k) => a + (itDef[k] ? (itDef[k].weight ?? IK[k].weight) : 0), 0) || 1;
+  ["revive", "reforco", "furia", "breja", "plano"].forEach(kind => {
+    if (!itDef[kind]) return; const d = itDef[kind], b = IK[kind], emoji = d.emoji ?? b.emoji;
+    ITEM_DEFS.push({ id:kind, name:d.name ?? b.name, desc:d.desc ?? b.desc, key:b.key, svg:d.svg || `<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="17" fill="#14202f" stroke="#fff" stroke-width="2"/><text x="20" y="28" font-size="22" text-anchor="middle">${emoji}</text></svg>`, pickup:d.svg ? null : emoji });
+    ITEM_PRICE[kind] = d.price ?? b.price; ITEM_WEIGHTS.push([kind, (d.weight ?? b.weight)/wsum]);
+  });
+  ITEM_DEFS.sort((a, b) => a.key.localeCompare(b.key));
+  // bandeiras e cenários
+  Object.values(c.sides).forEach(sd => { if (sd.flag && sd.flag.builtin) return; Art.registerFlag(sd.key, sd.flag || { bg:sd.css, shapes:[{ type:"star", color:sd.cssAlt }] }); });
+  c.scenarios.forEach(sc => {
+    if (typeof sc.scenery === "function") Scenery.register(sc.id, sc.scenery, sc.ground);
+    else if (typeof sc.scenery === "string" && Scenery.get(sc.scenery)) Scenery.register(sc.id, Scenery.get(sc.scenery), sc.ground);
+  });
+  loadProgress(id); menuSide = null; lastClock = -1;
+  return true;
+}
+function campaignCleared(id) {
+  const c = SPBCampaigns.get(id); if (!c || c.status !== "ready") return false;
+  if (CAMP_ID) stashProgress();
+  const st = CAMP_STORE[id]; if (!st) return false;
+  const bi = c.levels.findIndex(l => l.boss); return Object.keys(c.sides).some(k => st.cleared && st.cleared[k] && st.cleared[k][bi]);
+}
+/* regra de liberação: { start:true } (aberta) ou { campaigns:["id"], level:N } (zerar outras campanhas e/ou nível do jogador) */
+function campaignState(c) {
+  if (DEV_MODE && c.status === "ready") return { open:true };
+  if (c.status !== "ready") return { open:false, reason:"Em breve" };
+  const u = c.unlock || { start:true }; if (u.start) return { open:true };
+  const miss = []; (u.campaigns || []).forEach(id => { if (!campaignCleared(id)) { const o = SPBCampaigns.get(id); miss.push("zere " + (o ? o.shortName || o.name : id)); } });
+  if (u.level && playerLevel() < u.level) miss.push("chegue ao nível " + u.level);
+  return miss.length ? { open:false, reason:"Para liberar: " + miss.join(" e ") } : { open:true };
+}
+function selectCampaign(id) {
+  const c = SPBCampaigns.get(id), st = c && campaignState(c);
+  if (!c || !st.open) { $("worldMsg").textContent = st ? (c.status === "soon" ? `${c.name}: em breve!` : st.reason) : ""; return; }
+  $("worldMsg").textContent = "";
+  if (id !== CAMP_ID) { activateCampaign(id); saveGame(); }
+  buildMenu();
+}
+function renderWorld() {
+  const row = $("worldRow"); row.innerHTML = "";
+  SPBCampaigns.list().forEach(c => {
+    const st = campaignState(c), on = c.id === CAMP_ID, b = document.createElement("button");
+    b.className = "wcard" + (on ? " on" : "") + (st.open ? "" : " locked"); b.dataset.camp = c.id; b.style.background = c.theme.bg;
+    let line = st.open ? "" : st.reason;
+    if (st.open) { const store = on ? { cleared:CLEARED } : CAMP_STORE[c.id], bi = c.levels.findIndex(l => l.boss); const done = store ? Math.max(0, ...Object.keys(c.sides).map(k => (store.cleared[k] || []).filter(Boolean).length)) : 0; line = `${done}/${c.levels.length} fases${store && Object.keys(c.sides).some(k => (store.cleared[k] || [])[bi]) ? " · ✔ zerada" : ""}`; }
+    b.innerHTML = `<span class="wn">MUNDO ${c.world}</span><div class="we">${c.emoji || "🌎"}</div><b>${esc(c.name)}</b><small>${esc(line)}</small>`;
+    b.onclick = () => selectCampaign(c.id); row.appendChild(b);
+  });
+}
+function renderSideCards() {
+  $("campTag").textContent = CAMP.tagline; $("sideStep").textContent = CAMP.sideStep || "1 · Escolha o seu lado";
+  const box = $("sideCards"); box.innerHTML = "";
+  Object.values(SIDES).forEach(sd => {
+    const d = document.createElement("div"); d.className = "card"; d.dataset.side = sd.key;
+    d.style.background = `linear-gradient(160deg, color-mix(in srgb, ${sd.css} 78%, #000), ${sd.css} 62%, ${sd.cssAlt})`;
+    d.innerHTML = `${esc(sd.name)}<small>${esc(sd.party)}${sd.tag ? " · " + esc(sd.tag) : ""}<br>Poder final: ${esc(sd.ultra)} (${esc(sd.ultraDesc)})</small>`;
+    d.onclick = () => { actx && actx.state === "suspended" && actx.resume(); menuSide = sd.key; buildMenu(); };
+    box.appendChild(d);
+  });
+}
+
+activateCampaign("br2026");
 const hadSave = loadGame();
 if (DEV_MODE) { MONEY = Math.max(MONEY, 99999); SKILL_POINTS = Math.max(SKILL_POINTS, 99); }
 $("mute").textContent = muted ? "🔇" : "🔊"; $("musicBtn").classList.toggle("off", !Music.on);
@@ -3874,7 +3882,7 @@ if (loadProfile()) renderProfileChip(); else { renderProfileChip(); openProfile(
 
 function newGame(playerKey, levelIdx = 0) {
   leaveOnline();
-  const other = playerKey==="flavio" ? "lula" : "flavio";
+  const other = Object.keys(SIDES).find(k => k !== playerKey);
   const L = LEVELS[levelIdx];
   G.side = [playerKey, other];
   G.levelIdx = levelIdx; G.level = levelIdx + 1; G.lastWin = false;
@@ -3885,12 +3893,12 @@ function newGame(playerKey, levelIdx = 0) {
   G.defs = [FLEET, L.defs ? L.defs.map(d => ({...d})) : L.def.map(i => FLEET[i])];
   if (L.ng) [3,2,3,2,3].slice(0, Math.min(4, Math.floor(levelBonus()/3.5))).forEach(len => G.defs[1].push({ name:"Legião veterana", len, kind:["zombie","soldier","monster"][len % 3] }));
   if (!L.boss) extraGroups(L.ng ? 6 : 8).forEach(len => G.defs[1].push({ name: L.ng ? "Tropa de reforço" : "Reforço adversário", len, kind: ["zombie","soldier","monster"][len % 3] }));
-  G.boss = L.boss ? { hp:bossHp(), max:bossHp(), r:0, c:0, minions:new Set(), kind: G.enemy.camp === "lula" ? "lula" : "flavio" } : null;
+  G.boss = L.boss ? { hp:bossHp(), max:bossHp(), r:0, c:0, minions:new Set(), kind: G.enemy.camp } : null;
   if (G.boss) G.defs[1] = [];                                      // chefão: sem torcida
   G.phase = "place"; G.turn = 0; G.busy = false; G.horiz = true; G.power = "normal";
   G.energy = [1,1]; G.hover = null;
   applyScenario(SCENARIOS.find(x => x.id === L.scn) || SCENARIOS[0]);
-  musicStart(G.scn.id);
+  musicStart(sceneSong(G.scn));
   $("action").classList.add("hidden"); clearMarkers(); clearUmbrellas(); resetFleet(0); resetFleet(1); randomFleet(1);
   if (G.boss) placeBoss();
   for (let b=0;b<2;b++) {
