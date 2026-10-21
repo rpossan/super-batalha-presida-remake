@@ -541,6 +541,32 @@ const Art = (() => {
       x.closePath(); x.fill();
     });
   }
+  /* moeda e ícones de item (butim) */
+  function coin() {
+    return bake(40, 40, 20, 20, x => {
+      x.fillStyle = rad(x, 20, 20, 2, 19, [[0, "#fff6b0"], [.55, "#f2b92a"], [1, "#9a6a08"]], 14, 12); x.beginPath(); x.arc(20, 20, 17, 0, 7); x.fill(); x.lineWidth = 2; x.strokeStyle = "#5a3a00"; x.stroke();
+      x.strokeStyle = "rgba(255,246,190,.9)"; x.lineWidth = 1.6; x.beginPath(); x.arc(20, 20, 12.4, 0, 7); x.stroke();
+      x.fillStyle = "#7a4a00"; x.font = "900 17px 'Segoe UI',Arial,sans-serif"; x.textAlign = "center"; x.textBaseline = "middle"; x.fillText("$", 20, 21.5);
+      x.fillStyle = "rgba(255,255,255,.55)"; x.beginPath(); x.ellipse(13, 12, 5, 2.4, -.6, 0, 7); x.fill();
+    });
+  }
+  function itemIcon(id) {
+    return bake(44, 44, 22, 22, x => {
+      x.translate(22, 22);
+      if (id === "revive") {                                       // frasco de remédio
+        x.fillStyle = lin(x, -12, -16, 12, 16, [[0, "#ffffff"], [1, "#c8ccd6"]]); rr(x, -12, -9, 24, 24, 5); x.fill(); x.lineWidth = 1.8; x.strokeStyle = INK; x.stroke();
+        x.fillStyle = "#cfd3dc"; rr(x, -8, -16, 16, 8, 2.5); x.fill(); x.stroke();
+        x.fillStyle = "#e0242a"; x.fillRect(-2.6, -2, 5.2, 14); x.fillRect(-7.5, 2.6, 15, 5.2);
+      } else if (id === "furia") {                                 // lata de energético
+        x.fillStyle = lin(x, -11, 0, 11, 0, [[0, "#6fbfff"], [.5, "#2a7fe0"], [1, "#16407a"]]); rr(x, -11, -14, 22, 30, 4); x.fill(); x.lineWidth = 1.8; x.strokeStyle = INK; x.stroke();
+        x.fillStyle = "#d9dde6"; rr(x, -11, -14, 22, 5, 2); x.fill(); x.fillStyle = "#ffe14a"; x.beginPath(); x.moveTo(2, -6); x.lineTo(-6, 5); x.lineTo(-1, 5); x.lineTo(-3, 13); x.lineTo(6, 1); x.lineTo(1, 1); x.closePath(); x.fill(); x.stroke();
+      } else {                                                      // megafone
+        x.fillStyle = "#ffd23a"; x.beginPath(); x.moveTo(-14, -4); x.lineTo(-4, -4); x.lineTo(14, -14); x.lineTo(14, 14); x.lineTo(-4, 4); x.lineTo(-14, 4); x.closePath(); x.fill(); x.lineWidth = 1.8; x.strokeStyle = INK; x.stroke();
+        x.fillStyle = "#555"; rr(x, -12, 3, 7, 12, 2); x.fill(); x.stroke();
+        x.strokeStyle = "#ffe9a0"; x.lineWidth = 2; x.beginPath(); x.arc(14, 0, 6, -1, 1); x.stroke();
+      }
+    });
+  }
   /* mancha de impacto irregular com respingos (tomate, ovo, poeira) */
   function splat() {
     return bake(96, 96, 48, 48, x => {
@@ -593,5 +619,5 @@ const Art = (() => {
   return { Q, INK, HW, HH, HY, css, shade, mix, rgb, hex, rnd, make, bake, rr, lin, rad, ell, poly, ball, starPath,
            flag, shadow, shadowDir, fanBody, fanArm, unitBody, captainBody, captainArm,
            sheared, drawMoto, drawBus, drawTruck, drawHeli, rotor, throwIcon, bullet, arrow, bomb, umbrella, coneMark, flame,
-           blob, splat, ring, glow, chip, label, hint };
+           blob, splat, coin, itemIcon, ring, glow, chip, label, hint };
 })();

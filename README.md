@@ -35,7 +35,7 @@ Duas torcidas tomaram o país. Você escolhe o lado, monta a sua campanha e vai 
 até o chefão final. **A estratégia política é sua:** onde posicionar a torcida, quando gastar a energia,
 quando fazer uma pesquisa para descobrir onde o adversário se esconde e qual poder usar para virar o jogo.
 
-- 🎯 **Cada acerto é um voto.** Encadeie acertos para ativar o **combo** (2x, 3x, 4x e **50x** no quinto seguido).
+- 🎯 **Cada acerto é um voto (experiência).** Encadeie acertos para ativar o **combo** (2x, 3x… até **8x**), suba de nível e saqueie grana dos adversários.
 - 🧠 **Cada fase pede uma tática nova:** perigos do cenário, adversários mais espertos e um chefão que se esconde.
 - 🏁 **Dois lados, duas histórias:** cada trilha tem o seu próprio desfecho.
 
@@ -52,8 +52,8 @@ quando fazer uma pesquisa para descobrir onde o adversário se esconde e qual po
 | 🌎 **7 cenários do Brasil** | Av. Paulista, Aeroporto de Porto Alegre, Cristo Redentor, Sertão, Amazônia, Balneário Camboriú e Praça dos Três Poderes. |
 | ⚠️ **Perigos de cenário** | Bala perdida, fogo no sertão e chuva de flechas na floresta, em quantidade equilibrada ao nível. |
 | 👑 **Chefões únicos** | Sem torcida, com pontos de vida, que mudam de casa a cada acerto e reagem aos seus erros. |
-| 🛒 **Loja, itens e skills** | Gaste seus votos em itens (Remédio, Fúria, Reforço) e desbloqueie skills permanentes (Empolgação, Super tiro, Guarda-chuva, Instituto de pesquisa, Fôlego). [Veja a seção](#-itens-e-skills). |
-| 🏆 **Votos e recorde** | Placar acumulado entre as fases, com combo e recorde pessoal. |
+| 🛒 **Loja, itens e skills** | Compre itens com a grana do saque e aprenda skills com pontos de nível (Empolgação, Super tiro, Guarda-chuva, Instituto de pesquisa, Fôlego). [Veja a seção](#-itens-e-skills). |
+| 🏆 **Nível, votos e recorde** | Votos são experiência (nunca zeram), com tela de resultados e *LEVEL UP!*; combo e recorde pessoal. |
 | 🎵 **Trilha sonora própria** | Uma música diferente por cenário (samba, baião, milonga, tambores, marcha…), gerada por código. |
 | 📱 **Funciona no celular** | A câmera acompanha o turno: na sua vez, só a arena do adversário, para dar precisão no toque. |
 
@@ -126,79 +126,58 @@ Zerou a campanha e viu os créditos? Um ditador surge das cinzas. **O NG+ é des
 
 ---
 
-## 🎒 Itens e skills
+## 🎖️ Níveis, grana, itens e skills
 
-Além dos poderes de energia, você tem **itens** (gastáveis, limitados) e **skills** (permanentes). Tudo se compra na
-**🛒 Loja**, com os **votos** que você ganha acertando alvos. O botão da loja fica no menu principal e ao fim de cada fase.
+A progressão é de RPG: **votos são experiência**, a **grana** vem do saque e as **skills** dependem do **nível** do jogador.
 
-<p align="center"><img src="docs/img/loja_skills.png" alt="Loja de skills" width="640"></p>
+### 📈 Nível e experiência
+- Cada torcedor adversário derrubado rende **votos** (com combo, até **8x**). Os votos **nunca zeram**, nem quando você perde.
+- Ao fim de cada batalha aparece a **tela de resultados** (estilo menu de vitória de RPG clássico): os votos contam, a barra enche,
+  o jogador sobe de nível com a animação **LEVEL UP!** e ganha **pontos de skill**. Vencer dá ainda um **bônus de votos**.
+- Níveis de 1 a 15, com experiência acumulada de **1.000, 3.000, 6.000, 10.000, 15.000…** votos (`500 × n × (n+1)`).
+- Cada nível dá **1 ponto de skill** (e **+1 extra** nos níveis 3, 6, 9, 12 e 15): são 20 pontos no total, e maximizar as 5 skills custa 30. É preciso escolher uma *build*.
 
-### 🎒 Itens
-Estoque único para a campanha toda: **acabou, já era**. Usar um item **não gasta o turno**. O *game over* repõe o estoque inicial.
+### 💰 Grana e saque
+- Quando **você** derruba um adversário, ele pode **soltar grana ou um item** (ou nada). O saque aparece ali na arena, com a moeda saltando do corpo.
+- A chance sobe com o **combo** e com a **dispersão de um grupo inteiro** (bônus); há um raro **JACKPOT**. Quanto mais avançada a fase, maior o valor.
+- Vitória: **bônus de grana** (e, no chefão, grana extra e itens). Derrota: você **perde metade da grana e os itens que saqueou naquela batalha**, mas **mantém todos os votos**.
+- Perigos do cenário (bala perdida, fogo, flechas, bombas) **não** dão saque.
 
-| Item | Atalho | Efeito | Estoque inicial | Limite por fase | Preço | Máx. |
-|---|---|---|---|---|---|---|
-| 💊 **Remédio** (cruz vermelha) | `5` | revive 1 torcedor caído da sua torcida | 4 | 2 | 1.000 | 9 |
-| 🥫 **Fúria** (energético) | `6` | turnos contínuos: joga 3 turnos seguidos (o atual + 2), sem o adversário agir | 2 | 1 | 3.000 | 9 |
-| 📢 **Reforço** (alto-falante) | `7` | invoca 1 torcedor aleatório na sua arena (+1 de vida) | 3 | 1 | 1.500 | 9 |
+### 🎒 Itens (só na loja ou no saque)
+Você começa **sem itens**. Compra na **🛒 Loja** com grana ou os encontra no saque. A mochila guarda **no máximo 9 de cada** (excedente do saque vira grana),
+mas **não há limite de uso por fase**. Usar um item **não gasta o turno**.
+
+| Item | Atalho | Efeito | Preço |
+|---|---|---|---|
+| 💊 **Remédio** (cruz vermelha) | `5` | revive 1 torcedor caído da sua torcida | R$ 400 |
+| 🥫 **Fúria** (energético) | `6` | turnos contínuos: joga 3 turnos seguidos (o atual + 2), sem o adversário agir | R$ 1.000 |
+| 📢 **Reforço** (alto-falante) | `7` | invoca 1 torcedor aleatório na sua arena (+1 de vida) | R$ 650 |
 
 No celular os itens ficam num botão único **🎒 Itens** que abre a lista.
 
-### ⭐ Skills
-Compra única. Depois de desbloqueada, a skill vale em **todas as fases e cenários**, das duas trilhas, e fica ativa sozinha.
-Ficam salvas no navegador (veja [Salvamento](#-salvamento-local)).
+<p align="center"><img src="docs/img/loja_skills.png" alt="Loja de skills" width="640"></p>
 
-| Skill | Preço | Efeito |
+### ⭐ Skills
+Aprendidas com **pontos de skill** e **liberadas pelo nível do jogador**. Depois de aprendida, a skill vale em **todas as fases e cenários**, das duas trilhas.
+Cada skill tem **3 níveis**; evoluir custa **1, 2 e 3 pontos** e cada nível exige um nível mínimo de jogador:
+
+| Skill | Efeito (nível 1 → 2 → 3) | Nível de jogador exigido |
 |---|---|---|
-| ⚡ **Fôlego de campanha** | 3.000 | começa cada fase com 4 de energia (em vez de 1) |
-| 📊 **Instituto de pesquisa** | 4.000 | a Pesquisa custa 1 de energia (em vez de 2) |
-| ☂️ **Guarda-chuva** | 6.000 | 3 torcedores começam cada fase protegidos; o adversário gasta um tiro para quebrar a proteção |
-| 💥 **Super tiro** | 8.000 | o tiro comum atinge 4 casas (quadrado 2×2), até 3 vezes por fase |
-| 🎉 **Empolgação** | 10.000 | ao acertar um alvo, ganha um turno extra (1 por turno), até 3 vezes por fase |
+| ⚡ **Fôlego de campanha** | começa a fase com 4 → 6 → 8 de energia | 1 · 4 · 8 |
+| 📊 **Instituto de pesquisa** | Pesquisa custa 1 e revela 3×3 → 3×5 → 5×5 | 2 · 5 · 9 |
+| ☂️ **Guarda-chuva** | 3 → 5 → 7 torcedores protegidos; o adversário gasta um tiro para quebrar | 3 · 6 · 10 |
+| 💥 **Super tiro** | tiro 2×2, 3 → 4 → 5 usos por fase | 5 · 8 · 12 |
+| 🎉 **Empolgação** | turno extra ao acertar, 3 → 4 → 5 usos por fase | 7 · 10 · 14 |
 
 <p align="center"><img src="docs/img/skills_batalha.png" alt="Batalha com skills ativas" width="760"></p>
-
-### 📈 Níveis das skills
-Cada skill tem **3 níveis**. Evoluir custa 1,5x (nível 2) e 2,5x (nível 3) o preço base. O nível máximo que você pode comprar
-**depende de até onde você chegou na campanha** (em qualquer trilha), então não dá para subir tudo de uma vez:
-
-| Teto de nível | Como liberar |
-|---|---|
-| 1 | desde o começo |
-| 2 | vencer a fase 3 (Cristo Redentor) |
-| 3 | vencer o chefão final (fase 7) |
-
-| Skill | Nível 1 | Nível 2 | Nível 3 |
-|---|---|---|---|
-| ⚡ Fôlego de campanha | começa com 4 de energia | 6 | 8 |
-| 📊 Instituto de pesquisa | Pesquisa custa 1 e revela 3×3 | revela 3×5 | revela 5×5 |
-| ☂️ Guarda-chuva | 3 protegidos | 5 | 7 |
-| 💥 Super tiro | 3 usos por fase | 4 | 5 |
-| 🎉 Empolgação | 3 usos por fase | 4 | 5 |
-
-**Importante:** subir de nível **não aumenta a ameaça**; só **comprar skills novas** deixa o inimigo mais forte (veja abaixo).
-Assim, evoluir é pura vantagem para o jogador, e é o que torna o chefão e o Apocalipse vencíveis.
 
 **Apoio da torcida:** se você perder no chefão, na tentativa seguinte ganha torcedores extras na sua arena (+1 por derrota seguida, até +3).
 Vencer o chefão zera esse apoio.
 
-### ⚖️ Ameaça e equilíbrio
-As skills ajudam, mas **quanto mais votos você investe nelas, mais forte o inimigo fica**. A *ameaça* é o total gasto na **compra** de skills
-(em milhares de votos, de 0 a 31; os níveis não contam) e muda de nível: **Calma → Moderada → Elevada → Alta → Crítica → Extrema**.
-O jogo avisa o nível no começo de cada fase e na aba de skills da loja.
-
-| Ameaça (votos gastos) | Fases comuns | Chefão final (Lula Molusco / Flávio) | Apocalipse (NG+) |
-|---|---|---|---|
-| 0 (nenhuma skill) | base | 3 de vida, descansa em 20% dos turnos, 6 seguidores, explosão de 4 casas | base: 22 unidades, bombas a cada 3 rodadas |
-| 7 | base | 4 de vida | +1 grupo de reforço |
-| 14 | +1 grupo de reforço, inimigo ganha energia extra | explosão de 5 casas | +2 grupos, bombas escalam a cada 2 rodadas |
-| 21 | +2 grupos | 5 de vida, 5 seguidores, explosão de 6 | +3 grupos, zumbis em 4 (e não 5), mordida de 7, energia extra |
-| 31 (todas) | +3 grupos | 6 de vida, 4 seguidores, explosão de 7, quase não descansa | máximo de tudo |
-
-**Como foi calibrado:** simulação do chefão e do Apocalipse com um jogador competente **usando skills e itens**. Os itens
-pesam bastante: sem considerá-los o chefão parecia equilibrado, mas na prática dava cerca de 79% de vitória. Agora o chefão
-fica em torno de **50% sem skills e ~23% com todas no nível 1**, subindo para ~44% com tudo no nível 2 e ~60% no nível 3, e o Apocalipse em torno de **30%**, em qualquer nível de investimento.
-Jogadores humanos tendem a ir melhor que o simulador, então a sensação real deve ser um pouco mais confortável.
+### ⚖️ Ameaça
+Quanto mais skills você **aprende**, mais forte o inimigo fica (mais reforços, energia extra, vida no chefão, bombas e zumbis no NG+). A *ameaça*
+soma o peso das skills aprendidas (de 0 a 31) e vai de **Calma** a **Extrema**; evoluir o nível de uma skill já aprendida não aumenta a ameaça.
+Como a progressão agora é mais lenta e o jogo começa sem itens, os números de equilíbrio do chefão e do Apocalipse ainda precisam de nova calibração com jogadores reais.
 
 ---
 
@@ -222,7 +201,7 @@ Energia: **+1 por turno** e **+1 por torcedor atingido**. No celular, a câmera 
 ### ⏸ Pausa e modo desenvolvedor
 
 - **Pausa:** botão ⏸ no topo (ou `Esc`) congela o jogo e abre o menu com **Continuar**, **Reiniciar a fase** e
-  **Sair para o menu principal**. Reiniciar ou sair desfaz os votos e itens gastos na fase em andamento.
+  **Sair para o menu principal**. Reiniciar ou sair desfaz os votos, a grana e os itens ganhos ou gastos na fase em andamento.
 - **Modo desenvolvedor:** vem **desligado**. Abra o jogo com `?dev=1` na URL para liberar todas as fases (e um saldo de testes na loja).
   Com `?dev=` na URL aparece o botão "🛠 Modo desenvolvedor" no menu para ligar e desligar.
 
@@ -241,7 +220,7 @@ Para rodar localmente, abra o `index.html` no navegador. Para criar um cenário 
 
 O jogo **salva sozinho no seu navegador** (`localStorage`), mesmo hospedado no GitHub Pages. Nada vai para servidor nenhum.
 
-- **O que é salvo:** fases desbloqueadas e vencidas (nas duas trilhas), saldo de votos da loja, skills compradas, estoque de itens, recorde e as preferências de som e música.
+- **O que é salvo:** fases desbloqueadas e vencidas (nas duas trilhas), nível e votos, grana, pontos de skill, skills aprendidas, itens, recorde e as preferências de som e música.
 - **Quando salva:** entre as fases (ao terminar uma fase, comprar na loja ou voltar ao menu) e ao fechar a aba. Não salva no meio de uma partida: se você fechar durante uma fase, volta ao estado do início dela.
 - **Onde fica:** só naquele navegador e aparelho; não sincroniza entre computador e celular. Limpar os dados do site, usar aba anônima ou trocar de navegador perde o progresso.
 - **Apagar:** botão **"🗑 Apagar progresso salvo"** no menu principal.

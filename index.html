@@ -54,6 +54,44 @@
   @keyframes clockpulse { to { transform:scale(1.12); } }
   #topBtns { display:flex; gap:6px; }
   #top .side { font-weight:800; font-size:15px; letter-spacing:.3px; padding:4px 10px; border-radius:8px; }
+  /* tela de resultados da batalha: janelas azuis de RPG clássico */
+  #results { position:fixed; inset:0; z-index:9; background:radial-gradient(circle at 50% 40%,#0a1030cc,#000000ee); display:flex; align-items:center; justify-content:center; }
+  #results.hidden { display:none; }
+  #rBox { width:min(620px,94vw); display:flex; flex-direction:column; gap:12px; font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif; }
+  #rTitle { text-align:center; font:900 clamp(34px,7vw,60px)/1 "Trebuchet MS",Impact,sans-serif; letter-spacing:3px; color:#fff; text-shadow:3px 3px 0 #0a1470, 0 0 22px #5a7aff; animation:rtitle .7s cubic-bezier(.2,1.6,.4,1) both; }
+  #rTitle.lose { color:#ff8a80; text-shadow:3px 3px 0 #5a0a0a, 0 0 22px #ff3b30; }
+  @keyframes rtitle { from { transform:scale(.2) translateY(-40px); opacity:0; } to { transform:none; opacity:1; } }
+  .ffwin { position:relative; background:linear-gradient(180deg,#2a46d6 0%,#0f1f94 48%,#050b45 100%); border:3px solid #dfe5f6; border-radius:12px; padding:12px 18px;
+           box-shadow:inset 0 0 0 2px #0a0f4a, inset 0 0 18px #000a, 0 0 0 2px #4a5cae, 0 10px 30px #000b; color:#fff; font-weight:800; letter-spacing:.6px; text-shadow:2px 2px 0 #14163a; }
+  .slideL { animation:slideL .5s .15s cubic-bezier(.2,1,.3,1) both; } .slideR { animation:slideR .5s .3s cubic-bezier(.2,1,.3,1) both; }
+  @keyframes slideL { from { transform:translateX(-120%); } to { transform:none; } } @keyframes slideR { from { transform:translateX(120%); } to { transform:none; } }
+  .rrow { display:flex; justify-content:space-between; align-items:baseline; gap:12px; font-size:clamp(16px,3.4vw,22px); }
+  .rrow b { font-size:clamp(20px,4.2vw,28px); color:#fff; font-variant-numeric:tabular-nums; }
+  .rrow.sub { font-size:14px; opacity:.9; color:#cfe0ff; } .rrow.sub b { font-size:16px; color:#ffe97a; }
+  #rChar { display:flex; gap:16px; align-items:center; }
+  #rFace { flex:none; filter:drop-shadow(2px 2px 0 #000a); } .rinfo { flex:1; min-width:0; } .rname { font-size:18px; color:#ffe97a; margin-bottom:4px; }
+  .rbar { height:12px; border-radius:6px; background:#000a; border:2px solid #9db4ff; margin:5px 0 3px; overflow:hidden; } .rbar i { display:block; height:100%; width:0; background:linear-gradient(#ffffa0,#f0a800); }
+  #rLvUp { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%) scale(.2); opacity:0; pointer-events:none; white-space:nowrap;
+           font:900 clamp(40px,9vw,72px)/1 "Trebuchet MS",Impact,sans-serif; letter-spacing:4px; background:linear-gradient(#fff,#ffe97a 45%,#ff9a1a); -webkit-background-clip:text; background-clip:text; color:transparent;
+           -webkit-text-stroke:2px #5a3400; filter:drop-shadow(0 0 14px #ffd23a); }
+  #rLvUp.on { animation:lvup 1.5s ease-out both; }
+  @keyframes lvup { 0% { opacity:0; transform:translate(-50%,-50%) scale(.2) rotate(-8deg); } 18% { opacity:1; transform:translate(-50%,-50%) scale(1.25) rotate(2deg); } 30% { transform:translate(-50%,-50%) scale(1); } 80% { opacity:1; } 100% { opacity:0; transform:translate(-50%,-70%) scale(1.05); } }
+  #rFlash { position:absolute; inset:0; background:radial-gradient(circle,#fff,#9ab4ff 60%,#0000); opacity:0; pointer-events:none; } #rFlash.on { animation:rflash .7s ease-out both; }
+  @keyframes rflash { 0% { opacity:.95; } 100% { opacity:0; } }
+  .spark { position:absolute; width:10px; height:10px; background:#fff3a0; clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%); animation:spark 1.2s ease-out forwards; pointer-events:none; }
+  @keyframes spark { from { transform:scale(.3) rotate(0); opacity:1; } to { transform:translate(var(--dx),var(--dy)) scale(1.6) rotate(200deg); opacity:0; } }
+  #rItems .ilist { display:flex; flex-wrap:wrap; gap:8px 18px; align-items:center; margin-top:4px; } #rItems .ilist span { display:flex; align-items:center; gap:6px; font-size:16px; } #rItems svg { width:28px; height:28px; }
+  #rItems .lost { color:#ff9a8a; }
+  #rGo { align-self:center; font:900 22px "Trebuchet MS",sans-serif; letter-spacing:2px; color:#fff; padding:10px 34px; border-radius:12px; border:3px solid #dfe5f6; cursor:pointer;
+         background:linear-gradient(180deg,#2a46d6,#050b45); box-shadow:0 0 0 2px #4a5cae, 0 8px 22px #000a; text-shadow:2px 2px 0 #14163a; animation:rblink 1s infinite alternate; }
+  @keyframes rblink { to { box-shadow:0 0 0 2px #9db4ff, 0 0 24px #5a7aff; } }
+  #rHint { text-align:center; font-size:12px; opacity:.6; color:#cfe0ff; }
+  #statRow { display:flex; align-items:center; justify-content:center; gap:8px; margin-top:4px; font-size:12px; font-weight:800; }
+  #lvChip { background:#1b3fa8; border:1px solid #9db4ff; border-radius:8px; padding:1px 8px; text-shadow:0 1px 0 #000; }
+  #xpBar { width:90px; height:8px; border-radius:5px; background:#0008; border:1px solid #fff5; overflow:hidden; }
+  #xpFill { display:block; height:100%; width:0; background:linear-gradient(#ffe97a,#f0a800); transition:width .25s; }
+  #moneyChip { background:#14532d; border:1px solid #7ee0a0; border-radius:8px; padding:1px 8px; text-shadow:0 1px 0 #000; }
+  #moneyChip.bump, #lvChip.bump { animation:bump2 .3s ease-out; }
   #turn { flex:1; text-align:center; }
   #turn b { font-size:18px; }
   #roundText { font-size:12px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; color:var(--amarelo); text-shadow:0 1px 3px #000; }
@@ -111,7 +149,7 @@
   .card small { display:block; font-weight:400; font-size:13px; margin-top:6px; opacity:.9; }
   .card.f { background:linear-gradient(160deg,#00842f,#0aa845 60%,#e5c800); }
   .card.l { background:linear-gradient(160deg,#a50f12,#d7191c 70%,#e8b900); }
-  #action { top:122px; left:50%; transform:translateX(-50%); max-width:min(640px,92vw); text-align:center; pointer-events:none;
+  #action { top:150px; left:50%; transform:translateX(-50%); max-width:min(640px,92vw); text-align:center; pointer-events:none;
             font-size:clamp(16px,2.4vw,24px); font-weight:800; padding:10px 20px; border-radius:14px;
             background:rgba(10,14,22,.88); border:2px solid var(--amarelo); box-shadow:0 6px 24px #0008; text-shadow:0 2px 4px #000; z-index:3; }
   #action.bump { animation:bump .35s ease-out; }
@@ -365,6 +403,7 @@
       <span id="combo" class="hidden"></span>
       <span id="furia" class="hidden"></span>
     </div>
+    <div id="statRow"><span id="lvChip">Nv <b id="lvNum">0</b></span><span id="xpBar" title="Experiência (votos) até o próximo nível"><i id="xpFill"></i></span><span id="moneyChip" title="Sua grana">R$ <b id="moneyNum">0</b></span></div>
     <div id="turn"><div id="roundText"></div><b id="turnText"></b><div id="timerbar"><div id="timerfill"></div></div></div>
   </div>
   <div class="fighter right">
@@ -471,6 +510,33 @@
   </div>
 </div>
 
+<div id="results" class="hidden" role="dialog" aria-label="Resultado da batalha">
+  <div id="rFlash"></div>
+  <div id="rBox">
+    <div id="rTitle">VITÓRIA!</div>
+    <div class="ffwin slideL" id="rTop">
+      <div class="rrow"><span>Votos (EXP)</span><b id="rExp">0</b></div>
+      <div class="rrow sub hidden" id="rBonusRow"><span>Bônus de vitória</span><b id="rBonus">+0</b></div>
+      <div class="rrow"><span>Grana</span><b id="rMoney">R$ 0</b></div>
+      <div class="rrow sub hidden" id="rMoneyRow"></div>
+    </div>
+    <div class="ffwin slideR" id="rChar">
+      <div id="rFace"></div>
+      <div class="rinfo">
+        <div class="rname" id="rName"></div>
+        <div class="rrow"><span>Nível</span><b id="rLv">0</b></div>
+        <div class="rbar"><i id="rBarFill"></i></div>
+        <div class="rrow sub"><span>Próximo nível</span><b id="rNext">0</b></div>
+        <div class="rrow"><span>Pontos de skill</span><b id="rSP">0</b></div>
+      </div>
+      <div id="rLvUp">LEVEL UP!</div>
+    </div>
+    <div class="ffwin slideL hidden" id="rItems"></div>
+    <button id="rGo" class="hidden">▶ Continuar</button>
+    <div id="rHint">toque ou pressione uma tecla para acelerar</div>
+  </div>
+</div>
+
 <div id="ending" class="hidden">
   <div id="endArtStage" class="stage"><div id="endArt"></div><div id="endCaption"></div></div>
   <div id="endScore" class="stage">
@@ -501,7 +567,7 @@
     <div class="tabs"><button class="btn tab" id="tabItems">🎒 Itens</button><button class="btn tab" id="tabSkills">⭐ Skills</button></div>
     <div id="shopBody"></div>
     <div class="msg" id="shopMsg"></div>
-    <div class="note">Os votos que você ganha acertando alvos viram moeda. Itens gastam e acabam; skills ficam para sempre (salvas neste navegador).</div>
+    
   </div>
 </div>
 
@@ -609,16 +675,22 @@ let DEV_MODE = (() => { try { const v = new URLSearchParams(location.search).get
 const PROG = { flavio:1, lula:1 };               // fases liberadas por trilha
 const CLEARED = { flavio:[], lula:[] };          // fases já vencidas
 let menuSide = null, justUnlocked = -1;
-/* itens da campanha (estoque único para o jogo todo; acabou, já era) e limite de uso por fase */
-const ITEM_START = { revive:4, furia:2, reforco:3 };
-const ITEM_CAP   = { revive:2, furia:1, reforco:1 };
+/* ================================================================
+   Economia e progressão
+   - VOTOS = experiência (nunca zeram, nem na derrota): níveis de 1 a 15
+   - cada nível dá pontos de skill; as skills só liberam conforme o nível do jogador
+   - GRANA (R$) vem do saque dos adversários derrubados e compra itens (máx. 9 de cada na mochila)
+   ================================================================ */
+const ITEM_START = { revive:0, furia:0, reforco:0 };      // a campanha começa sem itens
 const FURIA_EXTRA = 2;                       // turnos seguidos além do atual
 const ITEMS = { ...ITEM_START };
 const resetItems = () => Object.assign(ITEMS, ITEM_START);
-
-/* ---- loja: votos viram moeda. Itens e skills ficam na memória da aba ---- */
-const ITEM_PRICE = { revive:1000, furia:3000, reforco:1500 };
-const ITEM_MAX   = { revive:9, furia:9, reforco:9 };
+const ITEM_PRICE = { revive:400, furia:1000, reforco:650 };   // em R$
+const ITEM_MAX   = { revive:9, furia:9, reforco:9 };          // limite da mochila (o uso em batalha não tem limite)
+const MAX_LEVEL = 15;
+const xpForLevel = n => 500*n*(n+1);                          // votos acumulados para o nível n: 1.000, 3.000, 6.000, 10.000…
+const levelOf = xp => { let n = 0; while (n < MAX_LEVEL && xp >= xpForLevel(n+1)) n++; return n; };
+const spForLevel = n => 1 + (n % 3 === 0 ? 1 : 0);            // pontos de skill ao atingir o nível n (+1 extra nos níveis 3, 6, 9…)
 const SKILLS = [
   { id:"folego",      icon:"⚡", name:"Fôlego de campanha",   price:3000,  desc:"Você começa cada fase com 4 de energia (em vez de 1)." },
   { id:"instituto",   icon:"📊", name:"Instituto de pesquisa", price:4000,  desc:"A Pesquisa custa só 1 de energia (em vez de 2)." },
@@ -626,8 +698,14 @@ const SKILLS = [
   { id:"supertiro",   icon:"💥", name:"Super tiro",            price:8000,  desc:"O tiro comum atinge 4 casas (quadrado 2×2). Até 3 vezes por fase." },
   { id:"empolgacao",  icon:"🎉", name:"Empolgação",            price:10000, desc:"Ao acertar um alvo, você ganha um turno extra (1 por turno). Até 3 vezes por fase." },
 ];
-let WALLET = DEV_MODE ? 99999 : 0;            // votos gastáveis (os votos do placar continuam separados)
-const OWNED = new Set();                       // skills compradas (permanentes na sessão)
+/* nível do jogador exigido para aprender cada nível de cada skill, e custo em pontos de skill */
+const SKILL_REQ = { folego:[1,4,8], instituto:[2,5,9], guardachuva:[3,6,10], supertiro:[5,8,12], empolgacao:[7,10,14] };
+const SKILL_COST = [1, 2, 3];
+let MONEY = DEV_MODE ? 99999 : 0;             // grana (R$)
+let SKILL_POINTS = DEV_MODE ? 99 : 0;         // pontos de skill disponíveis
+let SP_LEVEL = 0;                             // nível até o qual os pontos já foram creditados
+const playerLevel = () => DEV_MODE ? MAX_LEVEL : levelOf(G.votes);
+const OWNED = new Set();                       // skills aprendidas
 const SKLV = {};                                 // nível de cada skill (1 a 3)
 const skillOn = id => OWNED.has(id);
 const skillLv = id => OWNED.has(id) ? Math.max(1, Math.min(3, SKLV[id] || 1)) : 0;
@@ -635,15 +713,6 @@ const skillLv = id => OWNED.has(id) ? Math.max(1, Math.min(3, SKLV[id] || 1)) : 
 const LVT = { folego:[4,6,8], guardachuva:[3,5,7], supertiro:[3,4,5], empolgacao:[3,4,5], instituto:[[1,1],[1,2],[2,2]] };
 const lvVal = id => LVT[id][skillLv(id) - 1];
 const levelBonus = () => SKILLS.reduce((a,k) => a + Math.max(0, skillLv(k.id) - 1), 0);          // níveis acima do 1 (0 a 10)
-const upgradePrice = (k, lv) => Math.round(k.price * [1, 1.5, 2.5][lv-1] / 100) * 100;            // preço para chegar ao nível lv
-/* trava: o nível máximo depende da fase mais avançada que você já venceu (em qualquer trilha) */
-function bestCleared() { return Math.max(0, ...["flavio","lula"].map(sd => CLEARED[sd].reduce((m,c,i) => c ? Math.max(m, i+1) : m, 0))); }
-function skillCap() {
-  if (DEV_MODE) return 3;
-  const boss = LEVELS.findIndex(l => l.boss) + 1, best = bestCleared();
-  return best >= boss ? 3 : best >= 3 ? 2 : 1;
-}
-const capReason = lv => lv === 2 ? "vença a fase 3 (Cristo Redentor)" : "vença o chefão (fase 7)";
 function skillDesc(k, lv) {
   const v = LVT[k.id][lv-1];
   switch (k.id) {
@@ -656,8 +725,8 @@ function skillDesc(k, lv) {
   return k.desc;
 }
 let BOSS_LOSSES = 0;                              // derrotas seguidas no chefão: dão apoio extra na próxima tentativa
-/* AMEAÇA: quanto mais votos você investe em skills, mais forte o inimigo fica (valores calibrados por simulação) */
-const threat = () => SKILLS.reduce((a,k) => a + (skillOn(k.id) ? k.price/1000 : 0), 0);        // 0 a 31
+/* AMEAÇA: quanto mais skills você aprende, mais forte o inimigo fica (valores calibrados por simulação) */
+const threat = () => SKILLS.reduce((a,k) => a + (skillOn(k.id) ? k.price/1000 : 0), 0);        // 0 a 31 (peso das skills aprendidas)
 const THREAT_TIERS = [[28,"Extrema"],[21,"Crítica"],[14,"Alta"],[7,"Elevada"],[1,"Moderada"],[0,"Calma"]];
 const threatName = () => (THREAT_TIERS.find(([min]) => threat() >= min) || [0,"Calma"])[1];
 const bossHp = () => 3 + Math.round(threat()/10);                                    // chefão: 3 a 6 de vida
@@ -1292,7 +1361,7 @@ function resolveShots(targetB, cells, who, powerLabel, opts = {}) {
     maxT = Math.max(maxT, tm);
     setTimeout(() => {
       const res = applyShot(targetB, r, c, opts.noCone);
-      if (res !== "miss" && res !== "block") { hits++; if (who === 0) gained += registerHit(); }
+      if (res !== "miss" && res !== "block") { hits++; if (who === 0) { gained += registerHit(); rollLoot(r, c, res === "sunk"); } }
       if (res === "sunk") {
         const sh = G.boards[targetB][r][c].ship; sunkNames.push(G.fleets[targetB][sh].name);
       }
@@ -1361,12 +1430,11 @@ function doRadar(targetB, r, c, who, cb) {
 function startBattle() {
   G.phase = "battle"; G.turn = 0; G.round = 1; G.power = "normal"; G.firstTurn = true;
   G.finished = false; G.matchEnd = Date.now() + MATCH_TIME*1000;
-  G.furia = 0; G.repeatKind = "furia"; G.itemUse = { revive:0, furia:0, reforco:0 }; G.itemsSnap = { ...ITEMS };
-  if (G.runOver) { G.votes = 0; G.runOver = false; }       // nova jornada: o placar recomeça (itens já foram repostos no fim da anterior)
+  G.furia = 0; G.repeatKind = "furia"; G.itemUse = { revive:0, furia:0, reforco:0 }; G.itemsSnap = { ...ITEMS }; G.loot = newLoot();
   G.combo = 0; G.levelStartVotes = G.votes; shownVotes = G.votes;
-  $("votesNum").textContent = fmtVotes(G.votes); renderCombo();
+  $("votesNum").textContent = fmtVotes(G.votes); renderCombo(); renderStats();
   G.energy = [1, LEVELS[G.levelIdx].cpuBonus ? (LEVELS[G.levelIdx].ng ? 4 : 3) : 1]; lastEnergy = 1; $("log").innerHTML = ""; setupSkills();
-  G.walletSnap = WALLET;
+  G.walletSnap = MONEY;
   log(`⚔️ Fase ${G.level}: <b>${sname(0)}</b> contra <b>${G.enemy.name}</b> (${LEVELS[G.levelIdx].diff}).`);
   if (LEVELS[G.levelIdx].boss) setTimeout(() => toast(`CHEFÃO: ${G.enemy.short.toUpperCase()}!`, "#ff5a4a"), 300);
   if (G.boss) log(`👑 ${G.enemy.short} é único, com ${G.boss.max} pontos de vida. A cada acerto ele muda de casa, escondido. Cada erro seu faz surgir um ${minionName()}; com ${bossMin()}, ${G.boss.kind==="lula" ? `eles explodem ${bossBl()} casas suas` : "ele recarrega a vida toda"}. Acerte os seguidores para eliminá-los!`);
@@ -1783,11 +1851,9 @@ function finish(winner, reason) {
   }
   const rounds = `${G.round} rodada${G.round>1?"s":""}`;
   const side = G.side[0], last = LEVELS.length-1, bossIdx = LEVELS.findIndex(l => l.boss);
-  let title, text, btn, capUp = 0;
+  let title, text, btn;
   if (youWin) {
-    const capBefore = skillCap();
     CLEARED[side][G.levelIdx] = true;
-    capUp = skillCap() > capBefore ? skillCap() : 0;
     if (G.levelIdx < last && PROG[side] === G.levelIdx+1) { PROG[side]++; justUnlocked = G.levelIdx+1; }
     if (G.levelIdx === last) {
       title = "SOBREVIVENTE DO APOCALIPSE!";
@@ -1805,39 +1871,126 @@ function finish(winner, reason) {
     }
   } else {
     title = "GAME OVER";
-    text = `${G.enemy.name} (${G.enemy.party}) dominou a disputa ${G.scn.of} em ${rounds}. Reorganize a torcida e tente de novo!`;
+    text = `${G.enemy.name} (${G.enemy.party}) dominou a disputa ${G.scn.of} em ${rounds}. Os votos conquistados continuam valendo como experiência: reorganize a torcida e tente de novo!`;
     btn = "Tentar de novo ↻";
-  }
-  /* placar da jornada: acumula entre as fases até o game over ou até zerar o jogo */
-  const levelVotes = G.votes - (G.levelStartVotes || 0);
-  if (!youWin) {
-    text += ` Total da jornada: ${fmtVotes(G.votes)} votos. O placar recomeça; os votos da loja e suas skills ficam.`;
-    G.runOver = true; resetItems();
     if (LEVELS[G.levelIdx].boss) { BOSS_LOSSES++; text += ` Na próxima tentativa você terá apoio extra de ${Math.min(3, BOSS_LOSSES)} torcedor${BOSS_LOSSES>1?"es":""}.`; }
-  } else if (G.levelIdx === bossIdx) {
-    BOSS_LOSSES = 0;
-    text += ` Votos nesta fase: ${fmtVotes(levelVotes)}. TOTAL DA CAMPANHA: ${fmtVotes(G.votes)} votos! O NG+ foi desbloqueado.`;
-  } else if (G.levelIdx === last) {
-    text += ` Votos nesta fase: ${fmtVotes(levelVotes)}. TOTAL FINAL: ${fmtVotes(G.votes)} votos!`;
-    G.runOver = true; resetItems();
-  } else {
-    text += ` Votos nesta fase: ${fmtVotes(levelVotes)} · Total acumulado: ${fmtVotes(G.votes)}.`;
   }
-  if (capUp) text += ` ⭐ Suas skills agora podem chegar ao nível ${capUp}! Veja na loja.`;
+  if (youWin && G.levelIdx === bossIdx) BOSS_LOSSES = 0;
   G.lastWin = youWin;
+  const R = settleResults(youWin);
   saveGame();
   $("coffeeNudge").classList.toggle("hidden", !youWin);
   setTimeout(() => {
     $("endTitle").textContent = title; $("endText").textContent = text; $("btnAgain").textContent = btn;
-    if (youWin && G.levelIdx === bossIdx) startEnding(side);         // chefão vencido: final da trilha
-    else $("endscreen").classList.remove("hidden");
+    showResults(R, () => {
+      if (youWin && G.levelIdx === bossIdx) startEnding(side);         // chefão vencido: final da trilha
+      else $("endscreen").classList.remove("hidden");
+    });
   }, 2600);
 }
+
+/* ================================================================
+   Fechamento da batalha: experiência, níveis, pontos de skill e saque
+   ================================================================ */
+function settleResults(youWin) {
+  const L = LEVELS[G.levelIdx], xpBefore = G.levelStartVotes || 0, votesBattle = G.votes - xpBefore;
+  const bonusVotes = youWin ? 300 + 200*G.levelIdx : 0;
+  G.votes += bonusVotes;
+  const R = { win:youWin, xpBefore, xpAfter:G.votes, votesBattle, bonusVotes, loot:G.loot || newLoot(), moneyBonus:0, itemsBonus:{}, lostMoney:0, lostItems:{} };
+  if (youWin) {
+    R.moneyBonus = 100*(G.levelIdx+1) + (L.boss ? 1500 : 0); MONEY += R.moneyBonus;
+    if (L.boss) ["furia","reforco"].forEach(id => { if (ITEMS[id] < ITEM_MAX[id]) { ITEMS[id]++; R.itemsBonus[id] = 1; } });
+  } else {                                                    // derrota: perde metade da grana e os itens que saqueou nesta batalha
+    R.lostMoney = Math.min(MONEY, Math.floor(R.loot.money/2)); MONEY -= R.lostMoney;
+    Object.keys(R.loot.items).forEach(id => { const n = Math.min(R.loot.items[id], ITEMS[id]); if (n > 0) { ITEMS[id] -= n; R.lostItems[id] = n; } });
+  }
+  R.lvBefore = levelOf(xpBefore); R.lvAfter = levelOf(G.votes);
+  R.spBefore = SKILL_POINTS; R.spGained = 0;
+  for (let n = SP_LEVEL + 1; n <= R.lvAfter; n++) R.spGained += spForLevel(n);
+  SKILL_POINTS += R.spGained; SP_LEVEL = Math.max(SP_LEVEL, R.lvAfter);
+  return R;
+}
+const rsleep = ms => new Promise(r => _setTimeout(r, ms));
+let resultsSkip = false;
+async function showResults(R, done) {
+  const el = $("results"), ch = CHARS[G.side[0]];
+  const wait = ms => resultsSkip ? Promise.resolve() : rsleep(ms);
+  resultsSkip = false; el.classList.remove("hidden");
+  $("rTitle").textContent = R.win ? "VITÓRIA!" : "DERROTA"; $("rTitle").className = R.win ? "" : "lose";
+  $("rFace").innerHTML = faceSVG(ch, 72, false); $("rName").textContent = ch.name;
+  ["rBonusRow","rMoneyRow","rItems","rGo"].forEach(id => $(id).classList.add("hidden"));
+  $("rExp").textContent = "0"; $("rMoney").textContent = "R$ 0"; $("rSP").textContent = fmtVotes(R.spBefore);
+  const setXP = (xp, lv) => {
+    const lo = xpForLevel(lv), hi = lv >= MAX_LEVEL ? lo : xpForLevel(lv + 1);
+    $("rLv").textContent = lv; $("rBarFill").style.width = (lv >= MAX_LEVEL ? 100 : Math.max(0, Math.min(100, (xp - lo)/(hi - lo)*100))) + "%";
+    $("rNext").textContent = lv >= MAX_LEVEL ? "MÁX" : fmtVotes(Math.max(0, hi - xp));
+  };
+  const spark = () => { for (let i = 0; i < 16; i++) { const sp = document.createElement("i"); sp.className = "spark"; sp.style.left = (30 + Math.random()*40) + "%"; sp.style.top = (30 + Math.random()*40) + "%"; sp.style.setProperty("--dx", (Math.random()*240 - 120) + "px"); sp.style.setProperty("--dy", (Math.random()*160 - 100) + "px"); $("rChar").appendChild(sp); setTimeout(() => sp.remove(), 1300); } };
+  const levelUp = async lv => {
+    $("rLv").textContent = lv; $("rFlash").classList.remove("on"); void $("rFlash").offsetWidth; $("rFlash").classList.add("on");
+    $("rLvUp").classList.remove("on"); void $("rLvUp").offsetWidth; $("rLvUp").classList.add("on"); spark();
+    try { Sfx.levelUp(); } catch (e) {}
+    await wait(1100);
+    const pts = spForLevel(lv); let cur = Number($("rSP").dataset.v || R.spBefore);
+    for (let i = 0; i < pts; i++) { cur++; $("rSP").textContent = cur; $("rSP").dataset.v = cur; try { Sfx.sp(); } catch (e) {} await wait(320); }
+    await wait(250);
+  };
+  $("rSP").dataset.v = R.spBefore;
+  let xp = R.xpBefore, lv = R.lvBefore;
+  setXP(xp, lv);
+  try { R.win ? Sfx.fanfare() : Sfx.defeat(); } catch (e) {}
+  await wait(900);
+  /* votos: o contador sobe e a barra enche; ao cruzar o limite, sobe de nível */
+  const total = R.xpAfter - R.xpBefore, dur = Math.max(1100, Math.min(3600, total*1.1)), t0 = performance.now();
+  let shown = 0, lastTick = 0;
+  while (shown < total && !resultsSkip) {
+    shown = Math.min(total, (performance.now() - t0)/dur*total);
+    xp = R.xpBefore + shown;
+    $("rExp").textContent = fmtVotes(shown);
+    while (lv < MAX_LEVEL && xp >= xpForLevel(lv + 1)) { lv++; setXP(xpForLevel(lv), lv); await levelUp(lv); }
+    setXP(xp, lv);
+    if (performance.now() - lastTick > 55) { lastTick = performance.now(); try { Sfx.tick(); } catch (e) {} }
+    await rsleep(28);
+  }
+  if (R.bonusVotes) { $("rBonusRow").classList.remove("hidden"); $("rBonus").textContent = "+" + fmtVotes(R.bonusVotes) + " (incluído)"; }
+  if (resultsSkip) {                                          // pulou: mostra o estado final de uma vez
+    $("rExp").textContent = fmtVotes(total); setXP(R.xpAfter, R.lvAfter); $("rLv").textContent = R.lvAfter; $("rSP").textContent = fmtVotes(SKILL_POINTS); $("rSP").dataset.v = SKILL_POINTS;
+    if (R.lvAfter > R.lvBefore) { $("rLvUp").classList.remove("on"); }
+  }
+  await wait(450);
+  /* grana */
+  const gain = R.loot.money + R.moneyBonus, t1 = performance.now(), d1 = Math.max(600, Math.min(1800, gain*2));
+  let m = 0, lt = 0;
+  while (m < gain && !resultsSkip) { m = Math.min(gain, (performance.now() - t1)/d1*gain); $("rMoney").textContent = "R$ " + fmtVotes(m); if (performance.now() - lt > 70) { lt = performance.now(); try { Sfx.coin(); } catch (e) {} } await rsleep(28); }
+  $("rMoney").textContent = "R$ " + fmtVotes(gain);
+  const rows = [];
+  if (R.loot.money) rows.push(`Saque dos adversários: R$ ${fmtVotes(R.loot.money)}`);
+  if (R.moneyBonus) rows.push(`Bônus${R.win ? " de vitória" : ""}: R$ ${fmtVotes(R.moneyBonus)}`);
+  if (R.lostMoney) rows.push(`Perdido na derrota: −R$ ${fmtVotes(R.lostMoney)}`);
+  if (rows.length) { $("rMoneyRow").classList.remove("hidden"); $("rMoneyRow").innerHTML = rows.join("<br>"); }
+  await wait(350);
+  /* itens obtidos / perdidos */
+  const got = {}, lost = R.lostItems; Object.keys(R.loot.items).forEach(id => got[id] = R.loot.items[id] - (lost[id] || 0) + (R.itemsBonus[id] || 0));
+  const chips = (obj, cls) => ITEM_DEFS.filter(d => obj[d.id] > 0).map(d => `<span class="${cls}">${d.svg} ${d.name} ×${obj[d.id]}</span>`).join("");
+  const gotH = chips(got, ""), lostH = chips(lost, "lost");
+  if (gotH || lostH) { $("rItems").innerHTML = (gotH ? `<div>Itens obtidos</div><div class="ilist">${gotH}</div>` : "") + (lostH ? `<div class="lost" style="margin-top:6px">Itens perdidos na derrota</div><div class="ilist">${lostH}</div>` : ""); $("rItems").classList.remove("hidden"); try { Sfx.coin(true); } catch (e) {} }
+  else if (R.win && !gotH) { /* sem itens desta vez */ }
+  if (R.spGained > 0 || SKILL_POINTS > 0) $("rSP").textContent = fmtVotes(SKILL_POINTS);
+  await wait(500);
+  $("rGo").classList.remove("hidden"); $("rGo").focus();
+  await new Promise(res => { const go = () => { removeEventListener("keydown", kd); res(); }; const kd = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } }; addEventListener("keydown", kd); $("rGo").onclick = go; });
+  el.classList.add("hidden"); $("rLvUp").classList.remove("on");
+  refreshShopButtons(); renderStats();
+  done();
+}
+$("results").addEventListener("pointerdown", e => { if (!e.target.closest("#rGo")) resultsSkip = true; });
+addEventListener("keydown", e => { if (!$("results").classList.contains("hidden") && e.key !== "Enter" && e.key !== " ") resultsSkip = true; });
 
 /* ================================================================
    UI
    ================================================================ */
 function ui() {
+  renderStats();
   const s0 = SIDES[G.side[0]], s1 = G.ng ? NG_SIDE : SIDES[G.side[1]];
   if (!s0) return;
   $("roundText").innerHTML = (G.scn ? `<span class="scn-name">📍 ${G.scn.short}</span>` : "") +
@@ -1937,14 +2090,14 @@ function shapeHTML(id, side) {
 }
 /* votos (pontos) e combo: cada acerto vale 100 × multiplicador; 2x, 3x, 4x e, no 5º acerto seguido, 50x */
 let shownVotes = 0;
-const comboMult = n => n >= 5 ? 50 : Math.max(1, n);
+const comboMult = n => Math.min(Math.max(1, n), 8);
 const fmtVotes = n => Math.round(n).toLocaleString("pt-BR");
 function renderCombo() {
   const el = $("combo"), m = comboMult(G.combo);
   if (G.combo < 2) { el.classList.add("hidden"); el.classList.remove("max"); return; }
   el.classList.remove("hidden");
-  el.classList.toggle("max", G.combo >= 5);
-  el.textContent = G.combo >= 5 ? `🔥 COMBO MÁX ${m}x` : `COMBO ${m}x`;
+  el.classList.toggle("max", G.combo >= 8);
+  el.textContent = G.combo >= 8 ? `🔥 COMBO MÁX ${m}x` : `COMBO ${m}x`;
 }
 function popVotes(text, big) {
   const el = document.createElement("span");
@@ -1954,14 +2107,43 @@ function popVotes(text, big) {
 function registerHit() {                       // chamado a cada torcedor adversário derrubado por você
   G.combo++;
   const m = comboMult(G.combo), pts = 100*m;
-  G.votes += pts; WALLET += pts;
+  G.votes += pts;
   renderCombo();
   popVotes(`+${fmtVotes(pts)}`, G.combo >= 3);
   const v = $("votes"); v.classList.remove("bump"); void v.offsetWidth; v.classList.add("bump");
-  if (G.combo === 5) toast("COMBO MÁXIMO 50x!", "#ffe600");
+  if (G.combo === 8) toast("COMBO MÁXIMO 8x!", "#ffe600");
   return pts;
 }
 function resetCombo() { if (G.combo > 0) { G.combo = 0; renderCombo(); } }
+/* nível, barra de experiência e grana no topo */
+function renderStats(xp = G.votes) {
+  const lv = DEV_MODE ? MAX_LEVEL : levelOf(xp), lo = xpForLevel(lv), hi = lv >= MAX_LEVEL ? lo : xpForLevel(lv+1);
+  $("lvNum").textContent = lv; $("xpFill").style.width = (lv >= MAX_LEVEL ? 100 : Math.max(0, Math.min(100, (xp - lo)/(hi - lo)*100))) + "%";
+  $("moneyNum").textContent = fmtVotes(MONEY);
+}
+function bumpChip(id) { const e = $(id); e.classList.remove("bump"); void e.offsetWidth; e.classList.add("bump"); }
+/* SAQUE: quem você derruba pode deixar grana ou item (combos e grupos inteiros dispersados aumentam as chances) */
+const ITEM_WEIGHTS = [["revive", .5], ["reforco", .34], ["furia", .16]];
+function newLoot() { return { money:0, items:{ revive:0, furia:0, reforco:0 }, lost:false }; }
+function giveMoney(n) { MONEY += n; G.loot.money += n; bumpChip("moneyChip"); renderStats(); }
+function giveItem(id) {
+  if (ITEMS[id] >= ITEM_MAX[id]) { const v = Math.round(ITEM_PRICE[id]*.4/5)*5; giveMoney(v); return { money:v }; }   // mochila cheia: vira grana
+  ITEMS[id]++; G.loot.items[id]++; return { item:id };
+}
+function rollLoot(r, c, sunk) {
+  const L = LEVELS[G.levelIdx], base = (40 + 25*G.levelIdx)*(L.ng ? 1.4 : 1), p = tilePos(1, r, c);
+  const luck = Math.min(.15, G.combo*.025) + (sunk ? .35 : 0);
+  if (Math.random() < .36 + luck) {
+    let amt = Math.round(base*(.6 + Math.random()*1)/5)*5; const jack = Math.random() < .025; if (jack) amt *= 5;
+    giveMoney(amt); GFX.pickup(p, "coin", (jack ? "JACKPOT! " : "+") + "R$ " + fmtVotes(amt), jack ? "#ff9a2a" : "#ffd23a"); Sfx.coin();
+  }
+  if (Math.random() < .05 + .008*G.levelIdx + (sunk ? .12 : 0)) {
+    let x = Math.random(), id = ITEM_WEIGHTS[0][0]; for (const [k, w] of ITEM_WEIGHTS) { if (x < w) { id = k; break; } x -= w; }
+    const got = giveItem(id), d = ITEM_DEFS.find(q => q.id === id);
+    GFX.pickup({ x:p.x + .3, z:p.z }, id, got.item ? d.name + " +1" : "+R$ " + got.money, "#7ee0ff"); Sfx.coin(true); setTimeout(() => renderStats(), 0);
+    log(got.item ? `🎁 Saque: <b>${d.name}</b>!` : `🎁 Mochila cheia: o ${d.name} virou R$ ${got.money}.`);
+  }
+}
 let lastClock = -1;
 function setClock(v) {
   if (v===lastClock) return; lastClock = v;
@@ -2017,7 +2199,7 @@ const ITEM_DEFS = [
     svg:`<svg viewBox="0 0 40 40"><path d="M6 15h8l14-8v26l-14-8H6z" fill="#ffd23a" stroke="#1a1a1a" stroke-width="2.4" stroke-linejoin="round"/><rect x="9" y="26" width="6" height="9" rx="2" fill="#555" stroke="#1a1a1a" stroke-width="2"/><path d="M32 14q5 6 0 12M35 10q9 10 0 20" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round"/></svg>` },
 ];
 function canUseItem(id) {
-  return G.phase==="battle" && G.turn===0 && !G.busy && ITEMS[id] > 0 && G.itemUse[id] < ITEM_CAP[id] && !(id==="furia" && G.furia>0);
+  return G.phase==="battle" && G.turn===0 && !G.busy && ITEMS[id] > 0 && !(id==="furia" && G.furia>0);
 }
 function fallenFans() {
   const out = [];
@@ -2080,9 +2262,9 @@ function renderItems(myTurn) {
   list.innerHTML = '<span class="ilabel">Itens</span>';
   ITEM_DEFS.forEach(d => {
     const bt = document.createElement("button");
-    const left = ITEMS[d.id], cap = ITEM_CAP[d.id] - G.itemUse[d.id];
+    const left = ITEMS[d.id];
     bt.className = "btn item" + (left <= 0 ? " empty" : "");
-    bt.innerHTML = `${d.svg}<span class="itx"><b>${d.name} <kbd>${d.key}</kbd></b><small>${d.desc}${left>0 ? ` · limite ${Math.max(0,cap)}/fase` : ""}</small></span><span class="qty">×${left}</span>`;
+    bt.innerHTML = `${d.svg}<span class="itx"><b>${d.name} <kbd>${d.key}</kbd></b><small>${d.desc}${left>0 ? "" : " · compre na loja"}</small></span><span class="qty">×${left}</span>`;
     bt.disabled = !myTurn || !canUseItem(d.id);
     bt.onclick = e => { e.stopPropagation(); itemsOpen = false; useItem(d.id); };
     list.appendChild(bt);
@@ -2422,39 +2604,38 @@ $("copyCode").onclick = () => copyText(PIX_CODE, "Código Pix copiado! Cole no a
 /* ---- loja ---- */
 let shopTab = "items";
 function refreshShopButtons() {
-  const w = fmtVotes(WALLET);
-  $("menuShop").textContent = `🛒 Loja · 🗳️ ${w}`;
-  $("menuSkills").textContent = `⭐ Skills (${OWNED.size}/${SKILLS.length}) · nv ${SKILLS.reduce((a,k) => a + skillLv(k.id), 0)}`;
-  $("endShop").textContent = `🛒 Loja · 🗳️ ${w}`;
+  $("menuShop").textContent = `🛒 Loja · R$ ${fmtVotes(MONEY)}`;
+  $("menuSkills").textContent = `⭐ Skills · ${SKILL_POINTS} pt${SKILL_POINTS===1?"":"s"}${SKILL_POINTS > 0 ? " ❗" : ""} · Nv ${playerLevel()}`;
+  $("endShop").textContent = `🛒 Loja · R$ ${fmtVotes(MONEY)}`;
 }
 function renderShop(msg, ok) {
-  $("shopWallet").textContent = `🗳️ ${fmtVotes(WALLET)} votos`;
+  const lvl = playerLevel();
+  $("shopWallet").textContent = `💰 R$ ${fmtVotes(MONEY)} · ⭐ ${SKILL_POINTS} pts · Nv ${lvl}`;
   $("tabItems").classList.toggle("on", shopTab === "items"); $("tabSkills").classList.toggle("on", shopTab === "skills");
   let h = '<div class="grid">';
   if (shopTab === "items") {
     ITEM_DEFS.forEach(d => {
       const have = ITEMS[d.id], full = have >= ITEM_MAX[d.id], price = ITEM_PRICE[d.id];
-      h += `<div class="card2"><div class="ic">${d.svg}</div><b>${d.name}</b><div class="dsc">${d.desc}<br>Limite por fase: ${ITEM_CAP[d.id]}</div>
-        <div>Você tem <b>×${have}</b> (máx. ${ITEM_MAX[d.id]})</div><div class="pr">🗳️ ${fmtVotes(price)}</div>
-        <button class="btn primary" data-buy="item:${d.id}" ${full || WALLET < price ? "disabled" : ""}>${full ? "Estoque cheio" : WALLET < price ? "Votos insuficientes" : "Comprar +1"}</button></div>`;
+      h += `<div class="card2"><div class="ic">${d.svg}</div><b>${d.name}</b><div class="dsc">${d.desc}<br>Sem limite de uso em batalha.</div>
+        <div>Mochila: <b>${have}/${ITEM_MAX[d.id]}</b></div><div class="pr">💰 R$ ${fmtVotes(price)}</div>
+        <button class="btn primary" data-buy="item:${d.id}" ${full || MONEY < price ? "disabled" : ""}>${full ? "Mochila cheia" : MONEY < price ? "Grana insuficiente" : "Comprar +1"}</button></div>`;
     });
   } else {
-    const cap = skillCap();
     SKILLS.forEach(k => {
-      const own = skillOn(k.id), lv = skillLv(k.id), nxt = lv + 1, max = lv >= 3;
+      const own = skillOn(k.id), lv = skillLv(k.id), nxt = lv + 1, max = lv >= 3, req = SKILL_REQ[k.id], cost = SKILL_COST[nxt-1];
       const pips = [1,2,3].map(i => `<i style="display:inline-block;width:22px;height:8px;border-radius:3px;margin-right:3px;background:${i <= lv ? "var(--amarelo)" : "#fff3"}"></i>`).join("");
-      let btn, price = "", dsc = skillDesc(k, own ? lv : 1);
-      if (!own) { price = upgradePrice(k, 1); btn = `<button class="btn primary" data-buy="skill:${k.id}" ${WALLET < price ? "disabled" : ""}>${WALLET < price ? "Votos insuficientes" : "Desbloquear"}</button>`; }
-      else if (max) btn = `<button class="btn" disabled>Nível máximo</button>`;
-      else if (nxt > cap) btn = `<button class="btn" disabled>🔒 Nível ${nxt}: ${capReason(nxt)}</button>`;
-      else { price = upgradePrice(k, nxt); btn = `<button class="btn primary" data-buy="skill:${k.id}" ${WALLET < price ? "disabled" : ""}>${WALLET < price ? "Votos insuficientes" : "Evoluir para nível " + nxt}</button>`; }
+      let btn, dsc = skillDesc(k, own ? lv : 1);
+      if (max) btn = `<button class="btn" disabled>Nível máximo</button>`;
+      else if (lvl < req[nxt-1]) btn = `<button class="btn" disabled>🔒 Requer nível ${req[nxt-1]} de jogador</button>`;
+      else if (SKILL_POINTS < cost) btn = `<button class="btn" disabled>Faltam pontos (${cost} pt${cost>1?"s":""})</button>`;
+      else btn = `<button class="btn primary" data-buy="skill:${k.id}">${own ? "Evoluir para o nível " + nxt : "Aprender"} · ${cost} pt${cost>1?"s":""}</button>`;
       h += `<div class="card2 ${own ? "owned" : ""}"><div class="ic">${k.icon}</div><b>${k.name}</b>
-        <div>${pips} <small>${own ? "Nível " + lv + "/3" : "Não comprada"}</small></div>
-        <div class="dsc">${dsc}${own && !max && nxt <= cap ? `<br><small>Próximo: ${skillDesc(k, nxt)}</small>` : ""}</div>
-        <div class="pr">${price ? "🗳️ " + fmtVotes(price) : (own ? "✔ Comprada" : "")}</div>${btn}</div>`;
+        <div>${pips} <small>${own ? "Nível " + lv + "/3" : "Não aprendida"}</small></div>
+        <div class="dsc">${dsc}${own && !max ? `<br><small>Próximo: ${skillDesc(k, nxt)}</small>` : ""}</div>
+        <div class="pr"><small>Níveis exigidos: ${req.map((q, i) => `<span style="${lvl >= q ? "color:#4cd964" : "opacity:.75"}">${q}${i < 2 ? " · " : ""}</span>`).join("")}</small></div>${btn}</div>`;
     });
   }
-  $("shopBody").innerHTML = h + "</div>" + (shopTab === "skills" ? '<div class="note">Comprar skills novas deixa o inimigo mais forte (mais vida no chefão, reforços e bombas), mas <b>evoluir o nível</b> só ajuda você. Ameaça atual: <b>' + threatName() + '</b>. Teto de nível agora: <b>' + skillCap() + '</b>' + (skillCap() < 3 ? ' (nível ' + (skillCap()+1) + ': ' + capReason(skillCap()+1) + ')' : '') + '.</div>' : "");
+  $("shopBody").innerHTML = h + "</div>" + (shopTab === "skills" ? '<div class="note">Você ganha pontos de skill a cada nível (e 1 extra nos níveis 3, 6, 9…). Aprender skills deixa o inimigo mais forte (mais vida no chefão, reforços e bombas), mas <b>evoluir o nível</b> só ajuda você. Ameaça atual: <b>' + threatName() + '</b>.</div>' : '<div class="note">A grana vem do saque dos adversários que você derruba. Mochila: no máximo 9 de cada item; usar em batalha não tem limite.</div>');
   const m = $("shopMsg"); m.textContent = msg || ""; m.style.color = ok === false ? "#ff8a7a" : "#4cd964";
 }
 function openShop(tab) { shopTab = tab || shopTab; renderShop(); $("shop").classList.remove("hidden"); }
@@ -2462,21 +2643,15 @@ function closeShop() { $("shop").classList.add("hidden"); refreshShopButtons(); 
 function buy(kind, id) {
   setTimeout(saveGame, 0);
   if (kind === "item") {
-    if (ITEMS[id] >= ITEM_MAX[id] || WALLET < ITEM_PRICE[id]) return;
-    WALLET -= ITEM_PRICE[id]; ITEMS[id]++; tone(660,.1,"square",.07); tone(990,.15,"square",.07,0,.09);
+    if (ITEMS[id] >= ITEM_MAX[id] || MONEY < ITEM_PRICE[id]) return;
+    MONEY -= ITEM_PRICE[id]; ITEMS[id]++; Sfx.coin(true);
     renderShop(`Comprou +1 ${ITEM_DEFS.find(d => d.id === id).name}!`, true);
   } else {
     const k = SKILLS.find(x => x.id === id); if (!k) return;
-    if (!skillOn(id)) {
-      const pr = upgradePrice(k, 1); if (WALLET < pr) return;
-      WALLET -= pr; OWNED.add(id); SKLV[id] = 1; [523,659,784,1047].forEach((f,i) => tone(f,.15,"triangle",.09,0,i*.07));
-      renderShop(`Skill desbloqueada: ${k.name}!`, true);
-    } else {
-      const nxt = skillLv(id) + 1, pr = upgradePrice(k, nxt);
-      if (nxt > 3 || nxt > skillCap() || WALLET < pr) return;
-      WALLET -= pr; SKLV[id] = nxt; [659,784,988,1319].forEach((f,i) => tone(f,.15,"triangle",.09,0,i*.07));
-      renderShop(`${k.name} evoluiu para o nível ${nxt}!`, true);
-    }
+    const nxt = skillLv(id) + 1, cost = SKILL_COST[nxt-1];
+    if (nxt > 3 || playerLevel() < SKILL_REQ[id][nxt-1] || SKILL_POINTS < cost) return;
+    SKILL_POINTS -= cost; OWNED.add(id); SKLV[id] = nxt; [523,659,784,1047].forEach((f,i) => tone(f,.15,"triangle",.09,0,i*.07));
+    renderShop(nxt === 1 ? `Skill aprendida: ${k.name}!` : `${k.name} evoluiu para o nível ${nxt}!`, true);
   }
   refreshShopButtons();
 }
@@ -2505,7 +2680,7 @@ function resumeGame() {
 }
 function restoreLevelStart() {                    // desfaz o que foi ganho/gasto na fase em andamento
   if (G.levelStartVotes !== undefined) G.votes = G.levelStartVotes;
-  if (G.walletSnap !== undefined) WALLET = G.walletSnap;
+  if (G.walletSnap !== undefined) MONEY = G.walletSnap;
   if (G.itemsSnap) Object.assign(ITEMS, G.itemsSnap);
 }
 $("pauseBtn").onclick = pauseGame;
@@ -2517,10 +2692,10 @@ function refreshDevBtn() {
   $("devBtn").textContent = DEV_MODE ? "🛠 Modo desenvolvedor: ATIVO (todas as fases liberadas)" : "🛠 Modo desenvolvedor: desligado";
 }
 $("resetSaveBtn").onclick = () => {
-  if (!confirm("Apagar todo o progresso salvo (fases desbloqueadas, skills, itens e votos da loja)? O recorde de votos é mantido.")) return;
+  if (!confirm("Apagar todo o progresso salvo (fases, nível, votos, skills, itens e grana)? O recorde de votos é mantido.")) return;
   resetSave(); buildMenu(); refreshShopButtons(); $("mute").textContent = muted ? "🔇" : "🔊"; alert("Progresso apagado.");
 };
-$("devBtn").onclick = () => { DEV_MODE = !DEV_MODE; if (DEV_MODE) WALLET = Math.max(WALLET, 99999); refreshDevBtn(); buildMenu(); refreshShopButtons(); };
+$("devBtn").onclick = () => { DEV_MODE = !DEV_MODE; if (DEV_MODE) { MONEY = Math.max(MONEY, 99999); SKILL_POINTS = Math.max(SKILL_POINTS, 99); } refreshDevBtn(); buildMenu(); refreshShopButtons(); };
 refreshDevBtn();
 
 /* ================================================================
@@ -2528,7 +2703,7 @@ refreshDevBtn();
    - salva entre as fases (nunca no meio de uma partida) e ao fechar a aba
    - o modo desenvolvedor nunca grava nem lê o saldo de teste
    ================================================================ */
-const SAVE_KEY = "spb_save_v1", SAVE_VERSION = 1;
+const SAVE_KEY = "spb_save_v1", SAVE_VERSION = 2;
 const storage = {
   get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
   set(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } },
@@ -2538,7 +2713,7 @@ function snapshotForSave() {
   const inLevel = G.phase === "battle";                 // no meio da fase vale o estado do início dela
   return {
     v: SAVE_VERSION,
-    wallet: inLevel && G.walletSnap !== undefined ? G.walletSnap : WALLET,
+    money: inLevel && G.walletSnap !== undefined ? G.walletSnap : MONEY, votes: inLevel && G.levelStartVotes !== undefined ? G.levelStartVotes : G.votes, sp: SKILL_POINTS, spLevel: SP_LEVEL,
     skills: [...OWNED], sklv: Object.fromEntries([...OWNED].map(id => [id, skillLv(id)])), bossLosses: BOSS_LOSSES,
     items: inLevel && G.itemsSnap ? { ...G.itemsSnap } : { ...ITEMS },
     prog: { flavio: PROG.flavio, lula: PROG.lula },
@@ -2553,13 +2728,18 @@ function saveGame() {
 function loadGame() {
   const raw = storage.get(SAVE_KEY); if (!raw) return false;
   try {
-    const d = JSON.parse(raw); if (!d || d.v !== SAVE_VERSION) return false;
+    const d = JSON.parse(raw); if (!d || (d.v !== SAVE_VERSION && d.v !== 1)) return false;
     const num = (x, max) => Math.max(0, Math.min(max, Math.floor(Number(x) || 0)));
-    WALLET = num(d.wallet, 1e9);
+    if (d.v === 1) {                                       // save antigo: mantém fases liberadas e preferências; economia e skills recomeçam
+      ["flavio","lula"].forEach(sd => { PROG[sd] = Math.max(1, num(d.prog && d.prog[sd], LEVELS.length)); CLEARED[sd] = LEVELS.map((_, i) => !!(d.cleared && d.cleared[sd] && d.cleared[sd][i])); });
+      muted = !!(d.prefs && d.prefs.muted); Music.on = !(d.prefs && d.prefs.music === false); return true;
+    }
+    MONEY = num(d.money, 1e9); G.votes = num(d.votes, 1e9); SKILL_POINTS = num(d.sp, 999); SP_LEVEL = num(d.spLevel, MAX_LEVEL);
     OWNED.clear(); Object.keys(SKLV).forEach(k => delete SKLV[k]);
     (d.skills || []).forEach(id => { if (SKILLS.some(k => k.id === id)) { OWNED.add(id); SKLV[id] = Math.max(1, Math.min(3, Math.floor(Number(d.sklv && d.sklv[id]) || 1))); } });
     BOSS_LOSSES = num(d.bossLosses, 99);
     Object.keys(ITEM_MAX).forEach(id => { ITEMS[id] = num(d.items && d.items[id], ITEM_MAX[id]); });
+    if (levelOf(G.votes) > SP_LEVEL) { for (let n = SP_LEVEL + 1; n <= levelOf(G.votes); n++) SKILL_POINTS += spForLevel(n); SP_LEVEL = levelOf(G.votes); }
     ["flavio","lula"].forEach(sd => {
       PROG[sd] = Math.max(1, num(d.prog && d.prog[sd], LEVELS.length));
       CLEARED[sd] = LEVELS.map((_, i) => !!(d.cleared && d.cleared[sd] && d.cleared[sd][i]));
@@ -2570,7 +2750,7 @@ function loadGame() {
 }
 function resetSave() {
   storage.del(SAVE_KEY);
-  resetItems(); WALLET = 0; OWNED.clear(); Object.keys(SKLV).forEach(k => delete SKLV[k]); BOSS_LOSSES = 0;
+  resetItems(); MONEY = 0; G.votes = 0; SKILL_POINTS = 0; SP_LEVEL = 0; OWNED.clear(); Object.keys(SKLV).forEach(k => delete SKLV[k]); BOSS_LOSSES = 0;
   PROG.flavio = PROG.lula = 1; CLEARED.flavio = []; CLEARED.lula = [];
 }
 ["pagehide","visibilitychange"].forEach(ev => addEventListener(ev, () => { if (ev !== "visibilitychange" || document.hidden) saveGame(); }));
@@ -2597,9 +2777,8 @@ function buildMenu() {
   if (!menuSide) { wrap.classList.add("hidden"); return; }
   wrap.classList.remove("hidden");
   const done = CLEARED[menuSide].filter(Boolean).length;
-  const run = G.runOver ? 0 : G.votes;
-  $("levelsTitle").textContent = `2 · Trilha de ${CHARS[menuSide].short}: escolha a fase (${done}/${LEVELS.length} vencidas)` +
-    (run > 0 ? ` · 🗳️ ${fmtVotes(run)} votos acumulados` : "");
+  const lvn = playerLevel(), nxtXp = lvn >= MAX_LEVEL ? null : xpForLevel(lvn + 1) - G.votes;
+  $("levelsTitle").textContent = `2 · Trilha de ${CHARS[menuSide].short}: escolha a fase (${done}/${LEVELS.length} vencidas) · Nv ${lvn} · 🗳️ ${fmtVotes(G.votes)} votos` + (nxtXp !== null ? ` (faltam ${fmtVotes(nxtXp)} para o nível ${lvn+1})` : " (nível máximo)");
   grid.innerHTML = "";
   LEVELS.forEach((L, i) => {
     const sc = SCENARIOS.find(x => x.id === L.scn), en = CHARS[TRACKS[menuSide][i]];
@@ -2656,7 +2835,7 @@ document.querySelectorAll(".card").forEach(card => card.onclick = () => {
   menuSide = card.dataset.side; buildMenu();
 });
 const hadSave = loadGame();
-if (DEV_MODE) WALLET = Math.max(WALLET, 99999);
+if (DEV_MODE) { MONEY = Math.max(MONEY, 99999); SKILL_POINTS = Math.max(SKILL_POINTS, 99); }
 $("mute").textContent = muted ? "🔇" : "🔊"; $("musicBtn").classList.toggle("off", !Music.on);
 refreshShopButtons();
 buildMenu();
@@ -2666,8 +2845,8 @@ function newGame(playerKey, levelIdx = 0) {
   const L = LEVELS[levelIdx];
   G.side = [playerKey, other];
   G.levelIdx = levelIdx; G.level = levelIdx + 1; G.lastWin = false;
-  if (G.runOver) { G.votes = 0; G.runOver = false; }          // game over / campanha zerada: nova jornada
-  G.combo = 0; shownVotes = G.votes; $("votesNum").textContent = fmtVotes(G.votes); renderCombo();
+  G.loot = newLoot(); G.levelStartVotes = G.votes; G.walletSnap = MONEY; G.itemsSnap = { ...ITEMS };
+  G.combo = 0; shownVotes = G.votes; $("votesNum").textContent = fmtVotes(G.votes); renderCombo(); renderStats();
   G.enemy = { ...CHARS[TRACKS[playerKey][levelIdx]], boss: !!L.boss };
   G.ng = !!L.ng; G.ngz = L.ng ? { minions:new Set() } : null;
   G.defs = [FLEET, L.defs ? L.defs.map(d => ({...d})) : L.def.map(i => FLEET[i])];
@@ -2715,6 +2894,7 @@ onFrame = function(time, delta) {
     shownVotes += (G.votes - shownVotes) * Math.min(1, dt*9);
     if (Math.abs(G.votes - shownVotes) < 1) shownVotes = G.votes;
     $("votesNum").textContent = fmtVotes(shownVotes);
+    renderStats(shownVotes);
   }
 
   // cronômetro da partida (120 s)
@@ -2747,7 +2927,7 @@ onFrame = function(time, delta) {
   GFX.setFocus(isMobile() && (G.phase==="battle" || G.phase==="place") ? (G.phase==="place" ? 0 : (G.turn===0 ? 1 : 0)) : -1);
   GFX.frame(dt, t);
 };
-if (DEV_MODE) window.__dbg = { ui, finish, playerFire, startLevel, hazardDrop, arrowRain, bombRain, fireBurn };   // ganchos para teste (só com ?dev=1)
+if (DEV_MODE) window.__dbg = { ui, finish, rollLoot, playerFire, startLevel, hazardDrop, arrowRain, bombRain, fireBurn };   // ganchos para teste (só com ?dev=1)
 READY = true;
 applyScenario(SCENARIOS[0]);
 } // fim de startGame

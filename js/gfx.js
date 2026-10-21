@@ -420,6 +420,23 @@ const GFX = (() => {
     n.rot = Math.random()*6.28;
     decals.push(n); return n;
   }
+  /* butim: moeda/item salta do corpo, brilha e sobe com o valor */
+  function pickup(pos, kind, text, color = "#ffd23a") {
+    const isCoin = kind === "coin", key = isCoin ? "coin" : "itemic_" + kind;
+    tex(key, () => isCoin ? Art.coin() : Art.itemIcon(kind));
+    const n = new Node(img(key, isCoin ? 26 : 34), "fx"); n.bias = 2000;
+    const lk = "pk_" + text + color; tex(lk, () => Art.label(text, color));
+    const lab = new Node(img(lk), "fx"); lab.bias = 2100; lab.alpha = 0;
+    const vx = (Math.random() - .5)*1.2, vz = (Math.random() - .5)*.8;
+    flash({ x:pos.x, y:.5, z:pos.z }, isCoin ? 0xffd23a : 0x8cf0ff, .5, .45);
+    addFx(1.9, t => {
+      const k = Math.min(1, t/.55), bounce = t < .55 ? Math.sin(Math.PI*k)*1.5 : t < .8 ? Math.sin(Math.PI*(t - .55)/.25)*.35 : 0;
+      let y = .25 + bounce, a = 1;
+      if (t > 1.3) { const q = (t - 1.3)/.6; y += q*2.2; a = 1 - q; }
+      n.at(pos.x + vx*k, y, pos.z + vz*k); n.alpha = a; if (isCoin) n.fx = Math.abs(Math.cos(t*9));
+      lab.at(pos.x + vx, .6 + t*.9 + .3, pos.z + vz); lab.alpha = Math.min(1, t*4)*(t > 1.5 ? Math.max(0, 1 - (t - 1.5)/.4) : 1);
+    }, () => { n.destroy(); lab.destroy(); });
+  }
   /* sombra projetada no chão por objetos no ar */
   function makeGroundShadow() {
     tex("blob", () => Art.blob());
@@ -724,7 +741,7 @@ const GFX = (() => {
     Node, nodes, drop, fixed, markers, tileCenter,
     makeFan, makeUnit, makeBossFan, makeCaptain, updateFan, updateCaptain, captainThrow, chantBoost,
     makeMoto, makeBus, makeSoundTruck, makeHeli, makeThrow, makeBullet, makeArrow, makeBomb, makeUmbrella, makeConeMark,
-    makeRing, setRing, addDecal, makeGroundShadow, clearMarkers, burst, flash, makeHint, makeFlame, flicker, flameKey,
+    makeRing, setRing, addDecal, makeGroundShadow, pickup, clearMarkers, burst, flash, makeHint, makeFlame, flicker, flameKey,
     setTile, setFrameColor, setPreview, clearPreview, D_GROUND, D_BOARD, D_FLAT, D_SORT, D_FX, D_HINT
   };
 })();

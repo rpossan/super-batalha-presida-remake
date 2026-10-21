@@ -430,6 +430,27 @@ const Sfx = (() => {
     sunk() { const e = get(), t = now(); [67, 72, 76, 79].forEach((n, i) => e.brass(t + i*.09, mf(n), .3, .9)); e.crash(t + .27, .45, 1.2); e.taiko(t, .6); },
     power() { const e = get(), t = now(); e.riser(t, .7, .8); e.voice({ t, f:880, dur:.7, vol:.14, a:.05, r:.1, glide:{ from:.25, time:.65 }, oscs:[{ type:"sawtooth", det:-7 }, { type:"sawtooth", det:7 }], lp:[400, 5000, .65], rev:.3 }); },
     radar() { const e = get(), t = now(); [0, .34].forEach((d, i) => e.voice({ t:t + d, f:i ? 1100 : 1480, dur:.5, vol:i ? .1 : .16, a:.004, d:.4, s:.02, r:.3, oscs:[{ type:"sine" }, { type:"sine", mul:2.01, gain:.2 }], rev:.55 })); },
+    tick() { const e = get(), t = now(); e.voice({ t, f:1480, dur:.03, vol:.07, a:.001, r:.02, oscs:[{ type:"square" }], lp:[4000, 2500, .03] }); },
+    coin(item) { const e = get(), t = now(); [item ? 1568 : 1318, item ? 2093 : 1760].forEach((f, i) => e.voice({ t:t + i*.065, f, dur:.16, vol:.11, a:.001, d:.14, s:.01, r:.1, oscs:[{ type:"sine" }, { type:"sine", mul:2.01, gain:.25 }], rev:.3 })); },
+    sp() { const e = get(), t = now(); [1568, 2349].forEach((f, i) => e.bell(t + i*.07, f, .5, 1.1)); },
+    /* fanfarra de vitória (original): metais, tímpano e brilho de sinos */
+    fanfare() {
+      const e = get(), t = now() + .02, B = (d, n, l, v = 1) => e.brass(t + d, mf(n), l, v);
+      [0, .11, .22].forEach(d => B(d, 72, .1, .9)); B(.33, 76, .5, 1); B(.88, 74, .16, .9); B(1.04, 76, .16, .9); B(1.2, 79, .8, 1.1);
+      B(2.1, 77, .16, .9); B(2.26, 79, .16, .9); B(2.42, 81, .16, .9); B(2.58, 84, .9, 1.15);
+      [0, 1.2, 2.58].forEach((d, i) => { e.timpani(t + d, mf(48), 1, .8); e.crash(t + d + .02, .5 + i*.1, 1.8); });
+      e.strings(t + 2.58, [60, 64, 67, 72], 2.2, 1.3); e.strings(t + 1.2, [57, 60, 64], 1.2, .8);
+      [84, 88, 91, 96].forEach((n, i) => e.bell(t + 2.65 + i*.09, mf(n), 1.4, .9));
+    },
+    /* subiu de nível: harpa ascendente com brilho */
+    levelUp() {
+      const e = get(), t = now(); [72, 76, 79, 84, 88, 91, 96].forEach((n, i) => { e.pluck(t + i*.07, mf(n), .6, .9, { rev:.4 }); e.bell(t + i*.07, mf(n + 12), .9, .6); });
+      e.brass(t + .5, mf(84), .9, 1); e.brass(t + .5, mf(79), .9, .8); e.timpani(t, mf(48), 1, .7); e.crash(t + .45, .6, 1.8); e.strings(t + .5, [64, 67, 72, 76], 1.6, 1.1);
+    },
+    defeat() {
+      const e = get(), t = now() + .02; [[57, 0, .55], [55, .6, .55], [53, 1.2, 1.5]].forEach(([n, d, l]) => { e.brass(t + d, mf(n), l, .9); e.brass(t + d, mf(n - 12), l, .6); });
+      e.timpani(t, mf(33), 1, 1); e.timpani(t + 1.2, mf(29), 1, 1.4); e.strings(t + .6, [45, 48, 53], 2, .9);
+    },
     place() { const e = get(), t = now(); e.voice({ t, f:420, dur:.07, vol:.4, a:.001, r:.04, glide:{ from:2, time:.03 } }); e.noise({ t, dur:.03, vol:.12, type:"bandpass", f:2200, q:1.2 }); },
   };
 })();
