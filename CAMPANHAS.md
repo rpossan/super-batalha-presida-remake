@@ -133,6 +133,8 @@ Funções do pacote (`ending.chapters` etc.) recebem o idioma como último argum
 
 ## Prompts para criar conteúdo com IA
 
+> Para **cenários**, use o roteiro padronizado em **[PROMPTS-CENARIOS.md](PROMPTS-CENARIOS.md)**: ficha, prompts prontos (cenário completo, só dados, ajustes, variações, revisão e tradução) e checklist de aceite. Os prompts abaixo cobrem campanhas inteiras, personagens, skills e itens.
+
 Dê à IA estes arquivos como referência: `CAMPANHAS.md`, `js/campaigns/examples/copa-exemplo.js` e `js/campaigns/br2026.js`.
 
 **Nova campanha completa**

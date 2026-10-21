@@ -277,7 +277,7 @@ O jogador é identificado por um login **anônimo** do navegador. Limpar os dado
 
 A tela inicial tem o **mapa de campanhas**: cada cartão é um *mundo* (uma campanha), com as próximas já visíveis e bloqueadas ("em breve"). O nível, os votos, as skills e os itens do jogador valem em todas, e cada campanha guarda o seu próprio progresso.
 
-Cada campanha é **um arquivo** em [`js/campaigns/`](js/campaigns) (lados, personagens, cenários com desenho, fases, itens, skills, frases e final). Para adicionar um cenário, um personagem ou uma campanha inteira, inclusive pedindo a uma IA, veja o **[Guia de campanhas](CAMPANHAS.md)**. Para validar um pacote: `node tools/check-campaigns.mjs`.
+Cada campanha é **um arquivo** em [`js/campaigns/`](js/campaigns) (lados, personagens, cenários com desenho, fases, itens, skills, frases e final). Para adicionar um cenário, um personagem ou uma campanha inteira, inclusive pedindo a uma IA, veja o **[Guia de campanhas](CAMPANHAS.md)**. Para criar **cenários novos** com prompts prontos e checklist: **[PROMPTS-CENARIOS.md](PROMPTS-CENARIOS.md)**. Para validar um pacote: `node tools/check-campaigns.mjs`.
 
 ---
 
