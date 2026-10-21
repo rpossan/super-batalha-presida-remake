@@ -1959,7 +1959,7 @@ async function showResults(R, done) {
   }
   await wait(450);
   /* grana */
-  const gain = R.loot.money + R.moneyBonus, t1 = performance.now(), d1 = Math.max(600, Math.min(1800, gain*2));
+  const gain = Math.max(0, R.loot.money + R.moneyBonus - R.lostMoney), t1 = performance.now(), d1 = Math.max(600, Math.min(1800, gain*2));
   let m = 0, lt = 0;
   while (m < gain && !resultsSkip) { m = Math.min(gain, (performance.now() - t1)/d1*gain); $("rMoney").textContent = "R$ " + fmtVotes(m); if (performance.now() - lt > 70) { lt = performance.now(); try { Sfx.coin(); } catch (e) {} } await rsleep(28); }
   $("rMoney").textContent = "R$ " + fmtVotes(gain);
