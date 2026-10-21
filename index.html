@@ -221,6 +221,36 @@
                  background:rgba(3,6,10,.82); backdrop-filter:blur(4px); }
   #coffeeModal .box { background:linear-gradient(#1c2638,#111823); border:2px solid #ffd23a; border-radius:18px; padding:20px; width:min(380px,100%);
                       text-align:center; box-shadow:0 12px 40px #000a; max-height:100%; overflow:auto; position:relative; }
+  #profileModal { position:fixed; inset:0; z-index:34; display:flex; align-items:center; justify-content:center; padding:12px; background:rgba(3,6,10,.88); backdrop-filter:blur(4px); }
+  #profileModal .box { background:linear-gradient(#1c2638,#111823); border:2px solid #ffd23a; border-radius:18px; padding:18px; width:min(460px,100%); box-shadow:0 12px 40px #000a; max-height:100%; overflow:auto; position:relative; text-align:left; }
+  #profileModal h2 { margin:0 0 10px; font-size:22px; text-align:center; }
+  #profileModal .close { position:absolute; top:8px; right:10px; background:none; border:0; color:#fff; font-size:22px; cursor:pointer; opacity:.8; }
+  #profileModal .prow { display:flex; gap:14px; align-items:center; margin-bottom:12px; }
+  #pAvatar { flex:none; line-height:0; filter:drop-shadow(2px 3px 0 #000a); } #pAvatar svg { width:104px; height:104px; }
+  #profileModal .pside { flex:1; min-width:0; } #profileModal label { font-size:12px; letter-spacing:1.5px; text-transform:uppercase; color:var(--amarelo); font-weight:800; }
+  #pNick { width:100%; margin-top:5px; padding:10px 12px; font:800 18px system-ui,sans-serif; color:#fff; background:#0b111a; border:2px solid #fff3; border-radius:10px; outline:none; box-sizing:border-box; }
+  #pNick:focus { border-color:var(--amarelo); }
+  #pTag { display:block; margin-top:5px; font-size:12px; opacity:.7; } #pErr { min-height:16px; margin-top:3px; font-size:12px; font-weight:700; color:#ff8a7a; }
+  #pOpts .orow { display:flex; align-items:center; gap:8px; margin:6px 0; } #pOpts .olbl { width:92px; flex:none; font-size:12px; opacity:.8; font-weight:700; }
+  #pOpts .oset { display:flex; flex-wrap:wrap; gap:6px; }
+  #pOpts .sw { width:28px; height:28px; border-radius:50%; border:2px solid #fff3; cursor:pointer; padding:0; position:relative; }
+  #pOpts .sw.none { background:repeating-linear-gradient(45deg,#2a3342 0 5px,#161d29 5px 10px); }
+  #pOpts .sw.sel { border-color:#fff; box-shadow:0 0 0 2px var(--amarelo); }
+  #pOpts .pill { padding:5px 10px; border-radius:999px; border:2px solid #fff3; background:#1d2636; color:#fff; font:700 12px system-ui,sans-serif; cursor:pointer; }
+  #pOpts .pill.sel { border-color:var(--amarelo); background:#3a3510; }
+  #profileModal .actions { display:flex; gap:10px; justify-content:center; margin-top:14px; flex-wrap:wrap; }
+  #profileModal details { margin-top:10px; border:1px solid #fff2; border-radius:12px; background:#0b111a; } #profileModal summary { cursor:pointer; padding:9px 12px; font-weight:800; font-size:13px; }
+  #profileModal details > div, #profileModal details > p, #profileModal details > textarea { margin:0 12px 10px; }
+  #profileModal details p { font-size:12px; opacity:.8; line-height:1.4; }
+  #pStatsBody { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; } #pStatsBody .st { background:#1a2332; border-radius:10px; padding:7px 6px; text-align:center; } #pStatsBody .st b { display:block; font-size:16px; color:var(--amarelo); font-variant-numeric:tabular-nums; } #pStatsBody .st small { font-size:10.5px; opacity:.75; }
+  #bkText { width:calc(100% - 24px); height:62px; resize:vertical; background:#0b111a; color:#cfe3ff; border:1px solid #fff3; border-radius:8px; font:11px ui-monospace,Consolas,monospace; padding:6px; box-sizing:border-box; }
+  #profileModal .bkrow { display:flex; gap:8px; flex-wrap:wrap; margin:0 12px 10px; } #profileModal .bkrow .btn { font-size:12.5px; padding:7px 11px; } #bkMsg { min-height:16px; font-size:12px; font-weight:700; margin:0 12px 10px; }
+  #profileChip { position:absolute; top:10px; right:12px; z-index:3; display:flex; align-items:center; gap:8px; padding:5px 12px 5px 6px; border-radius:999px; border:2px solid #fff3; background:rgba(14,18,26,.82); color:#fff; cursor:pointer; text-align:left; transition:.15s; }
+  #profileChip:hover { border-color:var(--amarelo); } #profileChip svg { width:36px; height:36px; display:block; }
+  #profileChip b { display:block; font-size:14px; line-height:1.1; max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } #profileChip small { display:block; font-size:10.5px; opacity:.7; }
+  #sideA svg { width:17px; height:17px; vertical-align:-3px; margin-right:4px; }
+  #endWho { display:flex; align-items:center; gap:12px; justify-content:center; font:900 clamp(18px,3.2vw,28px) Impact,"Arial Black",sans-serif; letter-spacing:1px; margin-bottom:4px; } #endWho svg { width:clamp(44px,8vh,70px); height:clamp(44px,8vh,70px); }
+  @media (max-width:560px) { #profileChip { top:6px; right:6px; } #profileChip small { display:none; } }
   #coffeeModal h2 { margin:0 0 4px; font-size:22px; }
   #coffeeModal p { margin:4px 0 10px; opacity:.9; font-size:14px; line-height:1.4; }
   #coffeeModal .qr { background:#fff; border-radius:12px; padding:8px; width:min(230px,70vw); margin:6px auto 12px; line-height:0; }
@@ -470,6 +500,7 @@
 </div>
 
 <div id="menu" class="overlay abs">
+  <button id="profileChip" aria-label="Seu perfil"></button>
   <div id="logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 368" role="img" aria-label="Super Presida Batalha">
   <defs>
     <linearGradient id="gp" x1="0" x2="1"><stop offset="0" stop-color="#00b947"/><stop offset=".5" stop-color="#ffe600"/><stop offset="1" stop-color="#ff3b30"/></linearGradient>
@@ -568,8 +599,9 @@
   <div id="endBars"><i></i><i></i></div>
   <div id="endChap"></div>
   <div id="endArtStage" class="stage"><div id="endArt"></div><div id="endCaption"></div></div>
-  <div id="endJourney" class="stage"><h2>A SUA JORNADA</h2><div id="jRows"></div><div id="jTotal"><span class="lbl">Tempo total</span><b id="jTotalT">0:00</b></div></div>
+  <div id="endJourney" class="stage"><h2 id="jTitle">A SUA JORNADA</h2><div id="jRows"></div><div id="jTotal"><span class="lbl">Tempo total</span><b id="jTotalT">0:00</b></div></div>
   <div id="endScore" class="stage">
+    <div id="endWho"></div>
     <div class="lbl">Seus votos</div>
     <div class="big" id="endVotes">0</div>
     <div class="rec" id="endRecord"></div>
@@ -615,6 +647,27 @@
       <button class="btn" id="pExit">⌂ Sair para o menu principal</button>
     </div>
     <p class="small">Reiniciar ou sair desfaz os votos e itens gastos nesta fase.</p>
+  </div>
+</div>
+
+<div id="profileModal" class="hidden" role="dialog" aria-modal="true" aria-label="Seu perfil">
+  <div class="box">
+    <button class="close hidden" id="profileClose" aria-label="Fechar">✕</button>
+    <h2 id="profileTitle">Crie o seu jogador</h2>
+    <div class="prow">
+      <div id="pAvatar"></div>
+      <div class="pside"><label for="pNick">Seu nome</label><input id="pNick" maxlength="14" placeholder="Seu nick" autocomplete="off" spellcheck="false"><small id="pTag"></small><div id="pErr"></div></div>
+    </div>
+    <div id="pOpts"></div>
+    <details id="pStats"><summary>📊 Estatísticas</summary><div id="pStatsBody"></div></details>
+    <details id="pBackup"><summary>💾 Backup e transferência</summary>
+      <p>Seus dados ficam só neste navegador. Gere um código ou um arquivo para guardar uma cópia ou levar o progresso a outro aparelho.</p>
+      <div class="bkrow"><button class="btn" id="bkCopy">📋 Copiar código</button><button class="btn" id="bkFile">⬇️ Baixar arquivo</button></div>
+      <textarea id="bkText" placeholder="Para restaurar, cole aqui o código de backup" spellcheck="false"></textarea>
+      <div class="bkrow"><button class="btn" id="bkImport">⬆️ Importar código</button><label class="btn" style="cursor:pointer">📂 Importar arquivo<input type="file" id="bkFileIn" accept=".json,.txt,text/plain,application/json" hidden></label></div>
+      <div id="bkMsg"></div>
+    </details>
+    <div class="actions"><button class="btn" id="pRandom">🎲 Aleatório</button><button class="btn primary" id="pSave">Salvar</button></div>
   </div>
 </div>
 
@@ -735,6 +788,10 @@ const SKILLS = [
 /* nível do jogador exigido para aprender cada nível de cada skill, e custo em pontos de skill */
 const SKILL_REQ = { folego:[1,4,8], instituto:[2,5,9], guardachuva:[3,6,10], supertiro:[5,8,12], empolgacao:[7,10,14] };
 const SKILL_COST = [1, 2, 3];
+const STATS = { wins:0, losses:0 };             // vitórias e derrotas em batalhas concluídas
+let SAVE_LOCK = false;                         // true durante a importação de backup (evita o autosave sobrescrever)
+let PROFILE = null;                            // perfil do jogador: { id, nick, av } (guardado à parte do progresso)
+const playerNick = () => PROFILE ? PROFILE.nick : "Você";
 let MONEY = DEV_MODE ? 99999 : 0;             // grana (R$)
 let SKILL_POINTS = DEV_MODE ? 99 : 0;         // pontos de skill disponíveis
 let SP_LEVEL = 0;                             // nível até o qual os pontos já foram creditados
@@ -1855,6 +1912,7 @@ function finish(winner, reason) {
   G.phase = "over"; G.busy = true; ui();
   Object.values(G.fans[1]).forEach(f => f.visible = true);     // revela a torcida adversária
   const draw = winner === null, youWin = winner === 0;
+  if (!draw) { if (youWin) STATS.wins++; else STATS.losses++; }
   const s = draw ? null : SIDES[G.side[winner]];
   draw ? sfx.sunk() : youWin ? sfx.win() : sfx.lose();
   if (draw) { captainReact(0,"jump"); captainReact(1,"jump"); }
@@ -1932,7 +1990,7 @@ async function showResults(R, done) {
   const wait = ms => resultsSkip ? Promise.resolve() : rsleep(ms);
   resultsSkip = false; el.classList.remove("hidden");
   $("rTitle").textContent = R.win ? "VITÓRIA!" : "DERROTA"; $("rTitle").className = R.win ? "" : "lose";
-  $("rFace").innerHTML = faceSVG(ch, 72, false); $("rName").textContent = ch.name;
+  $("rFace").innerHTML = PROFILE ? avatarSVG(72) : faceSVG(ch, 72, false); $("rName").textContent = PROFILE ? `${PROFILE.nick} · ${ch.name}` : ch.name;
   ["rBonusRow","rMoneyRow","rItems","rGo"].forEach(id => $(id).classList.add("hidden"));
   $("rExp").textContent = "0"; $("rMoney").textContent = "R$ 0"; $("rSP").textContent = fmtVotes(R.spBefore);
   const setXP = (xp, lv) => {
@@ -2010,7 +2068,7 @@ function ui() {
   if (!s0) return;
   $("roundText").innerHTML = (G.scn ? `<span class="scn-name">📍 ${G.scn.short}</span>` : "") +
     (G.phase==="battle" || G.phase==="over" ? ` · Rodada <b>${G.round}</b>` : "");
-  $("sideA").textContent = `${s0.short} (você)`; $("sideA").style.background = s0.css;
+  $("sideA").innerHTML = `${PROFILE ? avatarSVG(17) : ""}${esc(playerNick())} · ${s0.short}`; $("sideA").style.background = s0.css;
   $("sideB").textContent = `${G.enemy ? G.enemy.short : s1.short} (CPU)` + (G.phase==="battle" ? ` ⚡${G.energy[1]}` : "");  $("sideB").style.background = s1.css;
   $("pauseBtn").classList.toggle("hidden", !(G.phase==="battle" || G.phase==="place"));
   $("sideA").style.color = s0.key==="flavio" ? "#ffdf00" : "#fff";
@@ -2388,6 +2446,7 @@ function rotateView(d) {
 $("zoomIn").onclick = () => GFX.zoomBy(1.25); $("zoomOut").onclick = () => GFX.zoomBy(1/1.25);
 $("viewReset").onclick = () => GFX.resetView(); $("rotL").onclick = () => rotateView(-1); $("rotR").onclick = () => rotateView(1);
 addEventListener("keydown", e => {
+  if (e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;                 // digitando (ex.: o nick) não aciona atalhos do jogo
   const k = e.key.toLowerCase();
   if (k === "escape" && !$("shop").classList.contains("hidden")) { closeShop(); return; }
   if (k === "escape" && !$("coffeeModal").classList.contains("hidden")) return;
@@ -2690,6 +2749,8 @@ function startEnding(side) {
   $("endTimeRec").textContent = `Melhor tempo: ${fmtTime(isTimeRec || !prevBest ? runTime : prevBest)}`;
   $("endNewTime").classList.toggle("hidden", !isTimeRec);
   $("endVotes").textContent = "0"; $("endTime").textContent = "0:00";
+  $("endWho").innerHTML = PROFILE ? `${avatarSVG(70)}<span>${esc(PROFILE.nick)}</span>` : "";
+  $("jTitle").textContent = PROFILE ? `A JORNADA DE ${PROFILE.nick.toUpperCase()}` : "A SUA JORNADA";
   // linha do tempo da campanha: uma linha por fase vencida
   const rows = LEVELS.slice(0, bossIdx + 1).map((L, i) => {
     const sc = SCENARIOS.find(x => x.id === L.scn), en = CHARS[TRACKS[side][i]];
@@ -2702,7 +2763,7 @@ function startEnding(side) {
   $("credits").innerHTML = `
     <h3>SUPER PRESIDA BATALHA</h3>
     <div class="dim">${side === "lula" ? "A trilha do " + CHARS.lula.short : "A trilha do " + CHARS.flavio.short} · fim</div>
-    <div class="dim" style="margin-top:34px;opacity:1;font-size:1.05em">Parabéns! Você levou ${ch.short} até o Planalto em <b>${fmtTime(runTime)}</b>.</div>
+    <div class="dim" style="margin-top:34px;opacity:1;font-size:1.05em">Parabéns${PROFILE ? ", <b>" + esc(PROFILE.nick) + "</b>" : ""}! Você levou ${ch.short} até o Planalto em <b>${fmtTime(runTime)}</b>.</div>
     <div class="role">Um jogo criado por</div><div class="name">rpossan</div>
     <div class="role">Direção e roteiro</div><div class="name">rpossan</div>
     <div class="role">Programação</div><div class="name">rpossan</div>
@@ -2911,7 +2972,7 @@ function snapshotForSave() {
   return {
     v: SAVE_VERSION,
     money: inLevel && G.walletSnap !== undefined ? G.walletSnap : MONEY, votes: inLevel && G.levelStartVotes !== undefined ? G.levelStartVotes : G.votes, sp: SKILL_POINTS - (inLevel && G.itemUse ? G.itemUse.plano : 0), spLevel: SP_LEVEL,
-    skills: [...OWNED], sklv: Object.fromEntries([...OWNED].map(id => [id, skillLv(id)])), bossLosses: BOSS_LOSSES,
+    skills: [...OWNED], sklv: Object.fromEntries([...OWNED].map(id => [id, skillLv(id)])), bossLosses: BOSS_LOSSES, stats: { wins: STATS.wins, losses: STATS.losses },
     items: inLevel && G.itemsSnap ? { ...G.itemsSnap } : { ...ITEMS },
     prog: { flavio: PROG.flavio, lula: PROG.lula },
     playtime: { flavio: PLAYTIME.flavio.map(t => Math.round((t || 0)*10)/10), lula: PLAYTIME.lula.map(t => Math.round((t || 0)*10)/10) },
@@ -2920,7 +2981,7 @@ function snapshotForSave() {
   };
 }
 function saveGame() {
-  if (DEV_MODE) return;                                 // testes não contaminam o jogo real
+  if (DEV_MODE || SAVE_LOCK) return;                    // testes não contaminam o jogo real
   storage.set(SAVE_KEY, JSON.stringify(snapshotForSave()));
 }
 function loadGame() {
@@ -2935,7 +2996,7 @@ function loadGame() {
     MONEY = num(d.money, 1e9); G.votes = num(d.votes, 1e9); SKILL_POINTS = num(d.sp, 999); SP_LEVEL = num(d.spLevel, MAX_LEVEL);
     OWNED.clear(); Object.keys(SKLV).forEach(k => delete SKLV[k]);
     (d.skills || []).forEach(id => { if (SKILLS.some(k => k.id === id)) { OWNED.add(id); SKLV[id] = Math.max(1, Math.min(3, Math.floor(Number(d.sklv && d.sklv[id]) || 1))); } });
-    BOSS_LOSSES = num(d.bossLosses, 99);
+    BOSS_LOSSES = num(d.bossLosses, 99); STATS.wins = num(d.stats && d.stats.wins, 1e6); STATS.losses = num(d.stats && d.stats.losses, 1e6);
     Object.keys(ITEM_MAX).forEach(id => { ITEMS[id] = num(d.items && d.items[id], ITEM_MAX[id]); });
     if (levelOf(G.votes) > SP_LEVEL) { for (let n = SP_LEVEL + 1; n <= levelOf(G.votes); n++) SKILL_POINTS += spForLevel(n); SP_LEVEL = levelOf(G.votes); }
     ["flavio","lula"].forEach(sd => {
@@ -2950,21 +3011,25 @@ function loadGame() {
 function resetSave() {
   storage.del(SAVE_KEY);
   resetItems(); MONEY = 0; G.votes = 0; SKILL_POINTS = 0; SP_LEVEL = 0; OWNED.clear(); Object.keys(SKLV).forEach(k => delete SKLV[k]); BOSS_LOSSES = 0;
-  PROG.flavio = PROG.lula = 1; CLEARED.flavio = []; CLEARED.lula = []; PLAYTIME.flavio = []; PLAYTIME.lula = []; lastClock = -1;
+  PROG.flavio = PROG.lula = 1; CLEARED.flavio = []; CLEARED.lula = []; PLAYTIME.flavio = []; PLAYTIME.lula = []; lastClock = -1; STATS.wins = STATS.losses = 0;
 }
 ["pagehide","visibilitychange"].forEach(ev => addEventListener(ev, () => { if (ev !== "visibilitychange" || document.hidden) saveGame(); }));
 
 const hexCss = n => "#" + n.toString(16).padStart(6,"0");
 /* rosto estilizado do personagem para os cartões de fase */
+let faceUid = 0;
 function faceSVG(ch, size, boss) {
-  const camp = SIDES[ch.camp] || NG_SIDE, hs = ch.hairStyle || "short", hair = hexCss(ch.hair), skin = hexCss(ch.skin);
-  let h = `<svg viewBox="0 0 64 64" width="${size}" height="${size}"><circle cx="32" cy="32" r="30" fill="${camp.css}" stroke="${camp.cssAlt}" stroke-width="3"/>`;
+  const camp = ch.bg ? { css:ch.bg[0], cssAlt:ch.bg[1] } : (SIDES[ch.camp] || NG_SIDE), hs = ch.hairStyle || "short", hair = hexCss(ch.hair), skin = hexCss(ch.skin), id = "fc" + (++faceUid);
+  let h = `<svg viewBox="0 0 64 64" width="${size}" height="${size}"><defs><clipPath id="${id}"><circle cx="32" cy="32" r="30"/></clipPath></defs><circle cx="32" cy="32" r="30" fill="${camp.css}" stroke="${camp.cssAlt}" stroke-width="3"/>`;
   if (hs==="long" || hs==="bob") h += `<rect x="14" y="20" width="36" height="${hs==="long"?36:26}" rx="12" fill="${hair}"/>`;
+  if (ch.shirt != null) h += `<g clip-path="url(#${id})"><path d="M5 66 C7 52 18 48 32 48 C46 48 57 52 59 66Z" fill="${hexCss(ch.shirt)}" stroke="#0007" stroke-width="1.2"/><rect x="27" y="43" width="10" height="9" rx="3" fill="${skin}"/></g>`;
   h += `<ellipse cx="32" cy="36" rx="15" ry="17" fill="${skin}"/>`;
-  if (hs !== "bald") h += `<path d="M16 33 C14 13 50 13 48 33 C44 23 20 23 16 33Z" fill="${hair}"/>`;
+  if (hs === "buzz") h += `<path d="M17 32 C16 18 48 18 47 32 C43 26 21 26 17 32Z" fill="${hair}"/>`;
+  else if (hs !== "bald") h += `<path d="M16 33 C14 13 50 13 48 33 C44 23 20 23 16 33Z" fill="${hair}"/>`;
   if (ch.beard) h += `<path d="M18 39 C20 57 44 57 46 39 C42 47 22 47 18 39Z" fill="${hexCss(ch.beardColor || ch.hair)}"/>`;
-  h += `<circle cx="26" cy="36" r="1.8" fill="#111"/><circle cx="38" cy="36" r="1.8" fill="#111"/>`;
-  if (ch.glasses) h += `<circle cx="26" cy="36" r="5" fill="none" stroke="#111" stroke-width="1.6"/><circle cx="38" cy="36" r="5" fill="none" stroke="#111" stroke-width="1.6"/><path d="M31 36h2" stroke="#111" stroke-width="1.6"/>`;
+  if (ch.cap != null) h += `<path d="M15 31 C14 9 50 9 49 31Z" fill="${hexCss(ch.cap)}" stroke="#0006" stroke-width="1.2"/><rect x="11" y="29" width="42" height="4.5" rx="2.2" fill="${hexCss(ch.cap)}" stroke="#0006" stroke-width="1.2"/>`;
+  h += `<circle cx="26" cy="37" r="1.8" fill="#111"/><circle cx="38" cy="37" r="1.8" fill="#111"/>`;
+  if (ch.glasses) h += `<circle cx="26" cy="37" r="5" fill="none" stroke="#111" stroke-width="1.6"/><circle cx="38" cy="37" r="5" fill="none" stroke="#111" stroke-width="1.6"/><path d="M31 37h2" stroke="#111" stroke-width="1.6"/>`;
   if (boss) h += `<path d="M19 14 L22 4 L32 11 L42 4 L45 14Z" fill="#ffd23a" stroke="#3b2600" stroke-width="1.5"/>`;
   return h + "</svg>";
 }
@@ -3033,11 +3098,158 @@ document.querySelectorAll(".card").forEach(card => card.onclick = () => {
   actx && actx.state==="suspended" && actx.resume();
   menuSide = card.dataset.side; buildMenu();
 });
+/* ================================================================
+   Perfil do jogador: nick + avatar (guardado à parte do progresso: apagar o progresso não apaga o perfil)
+   ================================================================ */
+const PROFILE_KEY = "spb_profile_v1";
+const esc = t => String(t).replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+const AV = {
+  skin:[0xf8d6b8, 0xf2c9a5, 0xe8b48c, 0xd49a6a, 0xa8734a, 0x6e4a30],
+  hair:[0x15110e, 0x2b1d14, 0x6b4a2a, 0xb5651d, 0xd9b36a, 0x8a8a92, 0xf2f2f2, 0xc2185b],
+  hairStyle:[["short","Curto"], ["buzz","Raspado"], ["bob","Chanel"], ["long","Longo"], ["bald","Careca"]],
+  cap:[null, 0xd7191c, 0x1d3b8f, 0x18a74a, 0x222222, 0xffd23a],
+  shirt:[0x2f7bff, 0xd7191c, 0x18a74a, 0xffd23a, 0x7b3fbf, 0x222222, 0xf2f2f2, 0xff7a2a],
+  bg:[["#1d3b8f","#8fb4ff"], ["#7b1fa2","#e1b0ff"], ["#00796b","#8ff0d6"], ["#b3541e","#ffc89a"], ["#455a64","#cfd8dc"], ["#c2185b","#ffb3d1"]],
+};
+const avIdx = (v, n) => Math.max(0, Math.min(n - 1, Math.floor(Number(v) || 0)));
+const cleanAv = a => { a = a || {}; return { skin:avIdx(a.skin, AV.skin.length), hair:avIdx(a.hair, AV.hair.length), hs:avIdx(a.hs, AV.hairStyle.length), cap:avIdx(a.cap, AV.cap.length), shirt:avIdx(a.shirt, AV.shirt.length), bg:avIdx(a.bg, AV.bg.length), glasses:!!a.glasses, beard:!!a.beard }; };
+const randomAv = () => cleanAv({ skin:rand(AV.skin.length), hair:rand(AV.hair.length), hs:rand(AV.hairStyle.length), cap:Math.random() < .3 ? 1 + rand(AV.cap.length - 1) : 0, shirt:rand(AV.shirt.length), bg:rand(AV.bg.length), glasses:Math.random() < .25, beard:Math.random() < .2 });
+function avToChar(a) { a = cleanAv(a); return { skin:AV.skin[a.skin], hair:AV.hair[a.hair], hairStyle:AV.hairStyle[a.hs][0], glasses:a.glasses, beard:a.beard, cap:AV.cap[a.cap], shirt:AV.shirt[a.shirt], bg:AV.bg[a.bg] }; }
+const avatarSVG = (size, av) => faceSVG(avToChar(av || (PROFILE && PROFILE.av)), size, false);
+const profileTag = id => "#" + String(id).slice(0, 4).toUpperCase();
+function genId() { try { const b = new Uint8Array(4); crypto.getRandomValues(b); return [...b].map(x => x.toString(16).padStart(2, "0")).join(""); } catch (e) { return Math.random().toString(16).slice(2, 10).padEnd(8, "0"); } }
+/* nick: 3 a 14 caracteres (letras, números, espaço, _ . -) e sem palavrões */
+const BAD_SUBSTR = ["caralho", "buceta", "arrombad", "porra", "merda", "foder", "foda-se", "fodase", "viado", "bosta", "otario", "retardad", "nazi", "estupr", "pedofil"];
+const BAD_WORD = ["puta", "putas", "pqp", "fdp", "cu", "cuzao", "pau", "piru", "pinto", "rola", "xota", "vsf", "tnc"];
+const norm = t => t.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/0/g, "o").replace(/[1!]/g, "i").replace(/3/g, "e").replace(/4/g, "a").replace(/5/g, "s").replace(/\$/g, "s");
+function checkNick(raw) {
+  const nick = raw.replace(/[^\p{L}\p{N} _.\-]/gu, "").replace(/\s+/g, " ").trim();
+  if (nick.length < 3) return { err:"Use pelo menos 3 caracteres (letras, números, espaço, _ . -)." };
+  const n = norm(nick), compact = n.replace(/[ _.\-]/g, "");
+  if (BAD_SUBSTR.some(w => compact.includes(w)) || n.split(/[ _.\-]+/).some(w => BAD_WORD.includes(w))) return { err:"Esse nome não é permitido. Escolha outro." };
+  return { nick };
+}
+function loadProfile() {
+  try {
+    const d = JSON.parse(storage.get(PROFILE_KEY) || "null");
+    if (!d || typeof d.nick !== "string" || !checkNick(d.nick).nick) return false;
+    PROFILE = { id:/^[0-9a-f]{8}$/.test(d.id) ? d.id : genId(), nick:checkNick(d.nick).nick, av:cleanAv(d.av) }; return true;
+  } catch (e) { return false; }
+}
+const saveProfile = () => storage.set(PROFILE_KEY, JSON.stringify({ v:1, id:PROFILE.id, nick:PROFILE.nick, av:PROFILE.av }));
+function renderProfileChip() {
+  const c = $("profileChip"); if (!PROFILE) { c.classList.add("hidden"); return; }
+  c.classList.remove("hidden");
+  c.innerHTML = `${avatarSVG(36)}<span><b>${esc(PROFILE.nick)}</b><small>${profileTag(PROFILE.id)} · editar ✏️</small></span>`;
+}
+
+/* ---- estatísticas e backup (sem servidor): o progresso sai e entra por código ou arquivo ---- */
+function renderProfileStats() {
+  $("pStats").classList.toggle("hidden", !PROFILE);
+  if (!PROFILE) return;
+  const done = sd => CLEARED[sd].filter(Boolean).length, sk = [...OWNED].reduce((a, id) => a + skillLv(id), 0);
+  const total = trailTime("flavio") + trailTime("lula"), bf = parseFloat(storage.get("spb_best_time_flavio")) || 0, bl = parseFloat(storage.get("spb_best_time_lula")) || 0;
+  const t = (v, l) => `<div class="st"><b>${v}</b><small>${l}</small></div>`;
+  $("pStatsBody").innerHTML = t(playerLevel(), "Nível") + t(fmtVotes(G.votes), "Votos") + t("R$ " + fmtVotes(MONEY), "Grana")
+    + t(`${done("flavio")}/${LEVELS.length}`, "Fases · Flávio") + t(`${done("lula")}/${LEVELS.length}`, "Fases · Lula") + t(`${sk}/15`, "Skills (níveis)")
+    + t(STATS.wins, "Vitórias") + t(STATS.losses, "Derrotas") + t(fmtTime(total), "Tempo de jogo")
+    + t(bf ? fmtTime(bf) : "—", "Melhor · Flávio") + t(bl ? fmtTime(bl) : "—", "Melhor · Lula") + t(fmtVotes(getRecord()), "Recorde de votos");
+}
+function buildBackup() {
+  saveGame();
+  return { app:"super-presida-batalha-remake", v:1, at:new Date().toISOString(),
+    profile: PROFILE ? { id:PROFILE.id, nick:PROFILE.nick, av:PROFILE.av } : null,
+    save: (() => { try { return JSON.parse(storage.get(SAVE_KEY) || "null"); } catch (e) { return null; } })(),
+    record: getRecord(), best: { flavio:storage.get("spb_best_time_flavio"), lula:storage.get("spb_best_time_lula") } };
+}
+const encodeBackup = o => "SPB1:" + btoa(unescape(encodeURIComponent(JSON.stringify(o))));
+function decodeBackup(text) {
+  let t = String(text || "").trim(), o;
+  if (t[0] === "{") o = JSON.parse(t); else { t = t.replace(/^SPB1:/, "").replace(/\s+/g, ""); o = JSON.parse(decodeURIComponent(escape(atob(t)))); }
+  if (!o || o.app !== "super-presida-batalha-remake") throw new Error("Esse código não é um backup deste jogo.");
+  if (o.profile && !(checkNick(String(o.profile.nick || "")).nick && /^[0-9a-f]{8}$/.test(o.profile.id))) throw new Error("O perfil do backup é inválido.");
+  if (o.save && (typeof o.save !== "object" || (o.save.v !== SAVE_VERSION && o.save.v !== 1))) throw new Error("O progresso do backup é de uma versão incompatível.");
+  return o;
+}
+function applyBackup(o) {
+  SAVE_LOCK = true;                                                 // o autosave (ao recarregar) não pode sobrescrever o que foi importado
+  if (o.profile) storage.set(PROFILE_KEY, JSON.stringify({ v:1, id:o.profile.id, nick:checkNick(o.profile.nick).nick, av:cleanAv(o.profile.av) }));
+  if (o.save) storage.set(SAVE_KEY, JSON.stringify(o.save));
+  if (Number(o.record) > 0) setRecord(Math.floor(Number(o.record)));
+  ["flavio", "lula"].forEach(sd => { const v = parseFloat(o.best && o.best[sd]); if (v > 0) storage.set("spb_best_time_" + sd, String(v)); });
+  location.reload();
+}
+function importBackup(text) {
+  const msg = $("bkMsg"); msg.style.color = "#ff8a7a";
+  try {
+    const o = decodeBackup(text);
+    if (!confirm("Substituir o perfil e o progresso deste navegador pelos do backup?" + (o.profile ? `\n\nJogador: ${o.profile.nick}` : ""))) return;
+    applyBackup(o);
+  } catch (e) { msg.textContent = e.message && !/JSON|atob|URI|token|string/i.test(e.message) ? e.message : "Código inválido. Confira se copiou o código inteiro."; }
+}
+const bkOk = t => { const m = $("bkMsg"); m.style.color = "#4cd964"; m.textContent = t; };
+$("bkCopy").onclick = () => { const code = encodeBackup(buildBackup()); copyText(code, ""); $("bkText").value = code; bkOk("Código copiado! Guarde-o em um lugar seguro."); };
+$("bkFile").onclick = () => {
+  const blob = new Blob([JSON.stringify(buildBackup(), null, 1)], { type:"application/json" }), a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = `super-presida-batalha-${(PROFILE ? PROFILE.nick : "backup").replace(/[^\p{L}\p{N}_-]+/gu, "_")}.json`;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); bkOk("Arquivo de backup baixado.");
+};
+$("bkImport").onclick = () => importBackup($("bkText").value);
+$("bkFileIn").onchange = e => { const f = e.target.files[0]; e.target.value = ""; if (!f) return; if (f.size > 2e6) { $("bkMsg").textContent = "Arquivo grande demais."; return; } const r = new FileReader(); r.onload = () => importBackup(String(r.result)); r.readAsText(f); };
+
+let profDraft = null, profMandatory = false;
+function renderProfile() {
+  const d = profDraft, a = d.av;
+  $("pAvatar").innerHTML = avatarSVG(104, a);
+  $("pTag").textContent = "Seu código: " + profileTag(PROFILE ? PROFILE.id : (d.id || (d.id = genId())));
+  const sw = (k, list, none) => list.map((c, i) => `<button class="sw ${c == null ? "none" : ""} ${a[k] === i ? "sel" : ""}" data-k="${k}" data-i="${i}" style="${c == null ? "" : "background:" + c}" aria-label="${k} ${i + 1}" title="${c == null ? none : ""}"></button>`).join("");
+  const pill = (k, labels) => labels.map((t, i) => `<button class="pill ${a[k] === i ? "sel" : ""}" data-k="${k}" data-i="${i}">${t}</button>`).join("");
+  $("pOpts").innerHTML =
+    `<div class="orow"><span class="olbl">Pele</span><div class="oset">${sw("skin", AV.skin.map(hexCss))}</div></div>
+     <div class="orow"><span class="olbl">Cabelo</span><div class="oset">${pill("hs", AV.hairStyle.map(x => x[1]))}</div></div>
+     <div class="orow"><span class="olbl">Cor do cabelo</span><div class="oset">${sw("hair", AV.hair.map(hexCss))}</div></div>
+     <div class="orow"><span class="olbl">Boné</span><div class="oset">${sw("cap", AV.cap.map(c => c == null ? null : hexCss(c)), "Sem boné")}</div></div>
+     <div class="orow"><span class="olbl">Camisa</span><div class="oset">${sw("shirt", AV.shirt.map(hexCss))}</div></div>
+     <div class="orow"><span class="olbl">Fundo</span><div class="oset">${sw("bg", AV.bg.map(b => b[0]))}</div></div>
+     <div class="orow"><span class="olbl">Extras</span><div class="oset"><button class="pill ${a.glasses ? "sel" : ""}" data-t="glasses">👓 Óculos</button><button class="pill ${a.beard ? "sel" : ""}" data-t="beard">🧔 Barba</button></div></div>`;
+}
+function openProfile(mandatory) {
+  profMandatory = !!mandatory;
+  profDraft = PROFILE ? { nick:PROFILE.nick, av:{ ...PROFILE.av } } : { nick:"", av:randomAv() };
+  $("profileTitle").textContent = PROFILE ? "Seu perfil" : "Crie o seu jogador";
+  $("pSave").textContent = PROFILE ? "Salvar" : "Começar a jogar";
+  $("profileClose").classList.toggle("hidden", profMandatory);
+  $("pNick").value = profDraft.nick; $("pErr").textContent = "";
+  renderProfile(); renderProfileStats(); $("bkMsg").textContent = ""; $("bkText").value = ""; $("pBackup").open = false; $("pStats").open = false;
+  $("profileModal").classList.remove("hidden");
+  if (!isMobile()) setTimeout(() => $("pNick").focus(), 60);
+}
+function closeProfile() { if (profMandatory) return; $("profileModal").classList.add("hidden"); }
+function submitProfile() {
+  const r = checkNick($("pNick").value);
+  if (!r.nick) { $("pErr").textContent = r.err; return; }
+  PROFILE = { id:PROFILE ? PROFILE.id : (profDraft.id || genId()), nick:r.nick, av:cleanAv(profDraft.av) };
+  saveProfile(); profMandatory = false; $("profileModal").classList.add("hidden");
+  renderProfileChip(); ui(); try { Sfx.coin(true); } catch (e) {}
+}
+$("pOpts").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.t) profDraft.av[b.dataset.t] = !profDraft.av[b.dataset.t]; else if (b.dataset.k) profDraft.av[b.dataset.k] = Number(b.dataset.i);
+  renderProfile();
+});
+$("pRandom").onclick = () => { profDraft.av = randomAv(); renderProfile(); };
+$("pSave").onclick = submitProfile;
+$("pNick").addEventListener("keydown", e => { if (e.key === "Enter") submitProfile(); else if (e.key === "Escape") closeProfile(); });
+$("pNick").addEventListener("input", () => { $("pErr").textContent = ""; });
+$("profileClose").onclick = closeProfile;
+$("profileChip").onclick = () => openProfile(false);
+
 const hadSave = loadGame();
 if (DEV_MODE) { MONEY = Math.max(MONEY, 99999); SKILL_POINTS = Math.max(SKILL_POINTS, 99); }
 $("mute").textContent = muted ? "🔇" : "🔊"; $("musicBtn").classList.toggle("off", !Music.on);
 refreshShopButtons();
 buildMenu();
+if (loadProfile()) renderProfileChip(); else { renderProfileChip(); openProfile(true); }       // primeira vez: cria o perfil antes de jogar
 
 function newGame(playerKey, levelIdx = 0) {
   const other = playerKey==="flavio" ? "lula" : "flavio";

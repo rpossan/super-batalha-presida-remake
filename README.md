@@ -79,6 +79,7 @@ quando fazer uma pesquisa para descobrir onde o adversário se esconde e qual po
 | 🎬 **Final cinematográfico** | Ao vencer o chefão: câmera passeando pela festa com fogos e confete, a cena da posse, a **linha do tempo da sua campanha** (fase a fase, com o tempo de cada uma) e créditos. [Veja a seção](#-o-final). |
 | 🏆 **Nível, votos e recorde** | Votos são experiência (nunca zeram), com tela de resultados e *LEVEL UP!*; combo e recorde pessoal. |
 | ⏱️ **Cronômetro de jogo** | O relógio do topo conta o tempo jogado na trilha (pausa e menu não contam, e ele não encerra a partida). Ao zerar, o final mostra o tempo por fase e o melhor tempo. |
+| 🙋 **Perfil do jogador** | Crie o seu **nick** e monte o **avatar** (pele, cabelo, boné, camisa, fundo, óculos, barba). Aparece no menu, na batalha, nos resultados e no final, com estatísticas e **backup**. [Veja a seção](#-seu-perfil). |
 | 🎵 **Trilha sonora própria** | Uma música diferente por cenário (samba, baião, milonga, tambores, marcha…), gerada por código. |
 | 📱 **Funciona no celular** | A câmera acompanha o turno: na sua vez, só a arena do adversário, para dar precisão no toque. |
 
@@ -237,6 +238,20 @@ Como a progressão agora é mais lenta e o jogo começa sem itens, os números d
 
 ---
 
+## 🙋 Seu perfil
+
+Na primeira vez que abre o jogo você cria o **nome (nick)** e monta o **avatar**. Clique no seu avatar no canto do menu para editar quando quiser.
+
+<p align="center"><img src="docs/img/perfil_editor.png" alt="Editor de perfil" height="420">&nbsp;<img src="docs/img/perfil_stats.png" alt="Estatísticas e backup" height="420"></p>
+
+- **Nick:** de 3 a 14 caracteres, com filtro simples de palavrões. O jogo gera um código curto (`Nick#4F2A`) para diferenciar nomes iguais.
+- **Avatar:** montado por opções (sem upload de imagem): pele, cabelo, cor, boné, camisa, fundo, óculos e barba.
+- **Estatísticas:** nível, votos, grana, fases vencidas por trilha, skills, vitórias e derrotas, tempo de jogo e melhores tempos.
+- **Backup (sem servidor):** em *Backup e transferência* você copia um **código** ou baixa um **arquivo** com perfil e progresso, e importa em outro aparelho ou depois de limpar o navegador.
+- O perfil fica guardado **à parte do progresso**: "Apagar progresso salvo" não apaga o seu nick nem o avatar.
+
+---
+
 ## 🕹️ Como jogar
 
 1. Escolha o lado e a fase.
@@ -278,7 +293,7 @@ Para rodar localmente, abra o `index.html` no navegador. Para criar um cenário 
 
 O jogo **salva sozinho no seu navegador** (`localStorage`), mesmo hospedado no GitHub Pages. Nada vai para servidor nenhum.
 
-- **O que é salvo:** fases desbloqueadas e vencidas (nas duas trilhas), nível e votos, grana, pontos de skill, skills aprendidas, itens, **tempo de jogo de cada fase**, recorde (votos e melhor tempo) e as preferências de som e música.
+- **O que é salvo:** perfil (nick e avatar), vitórias e derrotas, fases desbloqueadas e vencidas (nas duas trilhas), nível e votos, grana, pontos de skill, skills aprendidas, itens, **tempo de jogo de cada fase**, recorde (votos e melhor tempo) e as preferências de som e música.
 - **Quando salva:** entre as fases (ao terminar uma fase, comprar na loja ou voltar ao menu) e ao fechar a aba. Não salva no meio de uma partida: se você fechar durante uma fase, volta ao estado do início dela.
 - **Onde fica:** só naquele navegador e aparelho; não sincroniza entre computador e celular. Limpar os dados do site, usar aba anônima ou trocar de navegador perde o progresso.
 - **Apagar:** botão **"🗑 Apagar progresso salvo"** no menu principal.
