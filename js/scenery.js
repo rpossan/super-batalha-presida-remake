@@ -15,9 +15,17 @@ const Scenery = (() => {
   const rint = n => Math.floor(Math.random()*n);
   const pick = a => a[rint(a.length)];
   const rgba = (c, a) => { const [r, g, b] = rgb(c); return `rgba(${r},${g},${b},${a})`; };
-  const P = (x, y, z) => [(x + z)*HW, (z - x)*HH - y*HY];
+  const P = (x, y, z) => GFX.P(x, y, z);
 
   let env = null;                                   // { objs, keys, ticks, cache, ground }
+
+  function hull(pts) {                                      // envoltória convexa (monotone chain)
+    const p = [...pts].sort((a, b) => a[0] - b[0] || a[1] - b[1]), cr = (o, a, b) => (a[0] - o[0])*(b[1] - o[1]) - (a[1] - o[1])*(b[0] - o[0]);
+    const lo = [], up = [];
+    p.forEach(q => { while (lo.length >= 2 && cr(lo[lo.length - 2], lo[lo.length - 1], q) <= 0) lo.pop(); lo.push(q); });
+    [...p].reverse().forEach(q => { while (up.length >= 2 && cr(up[up.length - 2], up[up.length - 1], q) <= 0) up.pop(); up.push(q); });
+    return lo.slice(0, -1).concat(up.slice(0, -1));
+  }
 
   /* ================================================================
      CHÃO: um canvas grande em coordenadas de mundo (px)
@@ -62,16 +70,17 @@ const Scenery = (() => {
         const q = P(cx, 0, cz), r = (rx + rz)/2*SQ2*HW;
         x.save(); x.translate(q[0], q[1]); x.scale(1, HH/HW); const gr = x.createRadialGradient(0, 0, 0, 0, 0, r); gr.addColorStop(0, rgba(color, alpha)); gr.addColorStop(1, rgba(color, 0)); x.fillStyle = gr; x.beginPath(); x.arc(0, 0, r, 0, 7); x.fill(); x.restore();
       },
-      /* sombra projetada (luz vinda do alto-esquerdo da tela: a sombra cai para +z) */
+      /* sombra projetada (luz vinda do alto-esquerdo da tela: a sombra cai para a direita-baixo) */
       shadowBox(cx, cz, w, d, h) {
-        const L = h*.62, x0 = cx - w/2, x1 = cx + w/2, z0 = cz - d/2, z1 = cz + d/2 + L, sh = L*.18;
-        path(sx, [[x0, z0], [x1, z0], [x1 + sh, z1], [x0 + sh, z1]]); sx.fillStyle = "#000"; sx.fill();
+        const off = [h*.62*HW*1.1, h*.62*HH], base = [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([a, b]) => P(cx + a*w/2, 0, cz + b*d/2));
+        const pts = hull([...base, ...base.map(q => [q[0] + off[0], q[1] + off[1]])]);
+        sx.fillStyle = "#000"; sx.beginPath(); pts.forEach((q, i) => i ? sx.lineTo(q[0], q[1]) : sx.moveTo(q[0], q[1])); sx.closePath(); sx.fill();
       },
       shadowRound(cx, cz, r, h) {
-        const L = h*.62, q = P(cx, 0, cz), q2 = P(cx + L*.18, 0, cz + L);
-        sx.fillStyle = "#000"; sx.beginPath(); sx.ellipse(q[0], q[1], r*SQ2*HW*1.05, r*SQ2*HH*1.05, 0, 0, 7); sx.fill();
+        const q = P(cx, 0, cz), q2 = [q[0] + h*.62*HW*1.1, q[1] + h*.62*HH], rx = r*SQ2*HW*1.05, ry = r*SQ2*HH*1.05;
+        sx.fillStyle = "#000"; sx.beginPath(); sx.ellipse(q[0], q[1], rx, ry, 0, 0, 7); sx.fill();
         const dx = q2[0] - q[0], dy = q2[1] - q[1], len = Math.hypot(dx, dy), an = Math.atan2(dy, dx);
-        sx.save(); sx.translate(q[0], q[1]); sx.rotate(an); const rr = r*SQ2*HH*1.05*.95 + r*SQ2*HW*.18; sx.beginPath(); sx.moveTo(0, -rr); sx.lineTo(len, -rr*.7); sx.arc(len, 0, rr*.7, -Math.PI/2, Math.PI/2); sx.lineTo(0, rr); sx.closePath(); sx.fill(); sx.restore();
+        sx.save(); sx.translate(q[0], q[1]); sx.rotate(an); const rr = ry*.95 + rx*.12; sx.beginPath(); sx.moveTo(0, -rr); sx.lineTo(len, -rr*.7); sx.arc(len, 0, rr*.7, -Math.PI/2, Math.PI/2); sx.lineTo(0, rr); sx.closePath(); sx.fill(); sx.restore();
       },
       /* oclusão ambiente: escurecimento suave ao redor da base de objetos */
       ao(cx, cz, rx, rz, a = .35) { g.blob(cx, cz, rx*1.25, rz*1.25, 0x000000, a); },
@@ -106,94 +115,108 @@ const Scenery = (() => {
      KIT DE DESENHO ISOMÉTRICO PARA PEÇAS
      ================================================================ */
   function drawKit(ctx, ox, oy) {
-    const p = (x, y, z) => [ox + (x + z)*HW, oy + (z - x)*HH - y*HY];
+    const p = (x, y, z) => { const r = GFX.rot(x, z); return [ox + (r[0] + r[1])*HW, oy + (r[1] - r[0])*HH - y*HY]; };
     const path = pts => { ctx.beginPath(); pts.forEach(([a, b], i) => i ? ctx.lineTo(a, b) : ctx.moveTo(a, b)); ctx.closePath(); };
     const face = (pts3, fill, stroke = "rgba(0,0,0,.35)", lw = 1) => {
       path(pts3.map(q => p(q[0], q[1], q[2]))); ctx.fillStyle = fill; ctx.fill();
       if (stroke) { ctx.lineWidth = lw; ctx.strokeStyle = stroke; ctx.stroke(); }
     };
-    /* plano de uma fachada: u horizontal, v vertical, em unidades do mundo */
-    const onFace = (side, x0, x1, z0, z1, y0, draw) => {
-      const o = side === "L" ? p(x0, y0, z0) : p(x0, y0, z1);
-      ctx.save(); ctx.transform(HW, side === "L" ? HH : -HH, 0, -HY, o[0], o[1]); draw(); ctx.restore();
+    /* ordenação de pintor: cada primitiva entra numa fila e é desenhada de trás para frente na vista atual */
+    const Q = [];
+    const keyOf = (x, y, z) => { const r = GFX.rot(x, z); return (r[1] - r[0]) + y*.001; };
+    const enq = (x, y, z, fn) => Q.push({ k:keyOf(x, y, z), n:Q.length, fn });
+    const flush = () => { Q.sort((a, b) => a.k - b.k || a.n - b.n).forEach(q => q.fn()); Q.length = 0; };
+    /* um lado é visível se a normal (rodada) aponta para o observador */
+    const seen = (nx, nz) => { const r = GFX.rot(nx, nz); return r[1] - r[0] > 0 ? (r[0] < 0 ? "L" : "R") : null; };
+    const sidesOf = (x0, x1, z0, z1) => [
+      { n:[-1, 0], ox:x0, oz:z0, ux:0, uz:1, len:z1 - z0 }, { n:[1, 0], ox:x1, oz:z0, ux:0, uz:1, len:z1 - z0 },
+      { n:[0, -1], ox:x0, oz:z0, ux:1, uz:0, len:x1 - x0 }, { n:[0, 1], ox:x0, oz:z1, ux:1, uz:0, len:x1 - x0 },
+    ].map(s => ({ ...s, vis:seen(s.n[0], s.n[1]) })).filter(s => s.vis);
+    /* plano de fachada: u ao longo do lado, v para cima (unidades do mundo) */
+    const onPlane = (ox_, oy_, oz_, ux, uz, draw) => {
+      const o = p(ox_, oy_, oz_), r = GFX.rot(ux, uz);
+      ctx.save(); ctx.transform((r[0] + r[1])*HW, (r[1] - r[0])*HH, 0, -HY, o[0], o[1]); draw(); ctx.restore();
     };
-    const K = {
-      ctx, p, face, onFace,
-      /* caixa com fachada. o.style: glass|concrete|apart|white|ruin|adobe|stone|wood|plain */
-      box(x, z, w, d, y0, h, color, o = {}) {
-        const x0 = x - w/2, x1 = x + w/2, z0 = z - d/2, z1 = z + d/2, y1 = y0 + h, style = o.style || "plain";
-        face([[x0, y0, z0], [x0, y0, z1], [x0, y1, z1], [x0, y1, z0]], css(shade(color, 1.05)), null);
-        face([[x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1]], css(shade(color, .84)), null);
-        const paintFace = (side, len) => {
-          K.onFace(side, x0, x1, z0, z1, y0, () => {
-            ctx.beginPath(); ctx.rect(0, 0, len, h); ctx.clip();
-            FACADE[style](ctx, len, h, { color, side, ...o });
-            ctx.fillStyle = side === "L" ? "rgba(255,246,225,.07)" : "rgba(10,14,30,.28)"; ctx.fillRect(0, 0, len, h);
-            const ao = ctx.createLinearGradient(0, 0, 0, Math.min(2.4, h)); ao.addColorStop(0, "rgba(0,0,0,.42)"); ao.addColorStop(1, "rgba(0,0,0,0)"); ctx.fillStyle = ao; ctx.fillRect(0, 0, len, Math.min(2.4, h));
-            const top = ctx.createLinearGradient(0, h, 0, h - .9); top.addColorStop(0, "rgba(255,255,255,.14)"); top.addColorStop(1, "rgba(255,255,255,0)"); ctx.fillStyle = top; ctx.fillRect(0, h - .9, len, .9);
-          });
-        };
-        paintFace("L", d); paintFace("R", w);
-        ctx.strokeStyle = "rgba(0,0,0,.4)"; ctx.lineWidth = 1;
-        const e = (a, b) => { const A = p(...a), B = p(...b); ctx.beginPath(); ctx.moveTo(A[0], A[1]); ctx.lineTo(B[0], B[1]); ctx.stroke(); };
-        e([x0, y0, z1], [x0, y1, z1]); e([x0, y0, z0], [x0, y1, z0]); e([x1, y0, z1], [x1, y1, z1]);
-        if (o.roof !== false) K.roof(x0, x1, z0, z1, y1, o.roofStyle || (style === "ruin" ? "ruin" : "flat"), o);
-      },
-      roof(x0, x1, z0, z1, y, kind, o = {}) {
-        const base = o.roofColor ?? (kind === "ruin" ? 0x3a3530 : 0x8a8d90);
-        const A = p(x0, y, z0), B = p(x1, y, z1);
-        face([[x0, y, z0], [x1, y, z0], [x1, y, z1], [x0, y, z1]], lin(ctx, A[0], A[1], B[0], B[1], [[0, css(shade(base, 1.2))], [1, css(shade(base, .85))]]), "rgba(0,0,0,.4)");
-        ctx.save(); path([p(x0, y, z0), p(x1, y, z0), p(x1, y, z1), p(x0, y, z1)]); ctx.clip();
-        for (let i = 0; i < 90; i++) { const q = p(rnd(x0, x1), y, rnd(z0, z1)); ctx.fillStyle = `rgba(${rint(2) ? "255,255,255" : "0,0,0"},${rnd(.03, .1)})`; ctx.fillRect(q[0], q[1], rnd(1, 3), rnd(.6, 1.6)); }
-        ctx.restore();
-        K.slab(x0, z0, x1, z1, y, .22);
-        if (kind === "ruin") { K.rubble((x0 + x1)/2, (z0 + z1)/2, y, Math.min(x1 - x0, z1 - z0)*.35); return; }
-        const w = x1 - x0, d = z1 - z0;
-        if (w > 2.4 && d > 2.4 && o.rooftop !== false) {
-          const n = 1 + rint(3);
-          for (let i = 0; i < n; i++) {
-            const cx = rnd(x0 + .7, x1 - .7), cz = rnd(z0 + .7, z1 - .7), t = rint(3);
-            if (t === 0) K.box(cx, cz, rnd(.7, 1.2), rnd(.6, 1), y + .22, rnd(.35, .6), 0xb8bcc0, { roof:false });
-            else if (t === 1) { K.cyl(cx, cz, .42, y + .22, .8, 0xc9c0b0); K.cyl(cx, cz, .46, y + 1.0, .08, 0x777777); }
-            else for (let k = 0; k < 2; k++) K.box(cx + k*.55, cz, .45, .45, y + .22, .3, 0xd0d2d4, { roof:false });
-          }
-          if (Math.random() < .35) K.cyl(rnd(x0 + .4, x1 - .4), rnd(z0 + .4, z1 - .4), .03, y + .22, 1.6, 0x888888);
+    const K = { ctx, p, face, flush };
+
+    /* ---- caixa ---- */
+    function boxNow(x, z, w, d, y0, h, color, o = {}) {
+      const x0 = x - w/2, x1 = x + w/2, z0 = z - d/2, z1 = z + d/2, y1 = y0 + h, style = o.style || "plain";
+      const sides = sidesOf(x0, x1, z0, z1);
+      sides.forEach(s => {
+        const ex = s.ox + s.ux*s.len, ez = s.oz + s.uz*s.len;
+        face([[s.ox, y0, s.oz], [ex, y0, ez], [ex, y1, ez], [s.ox, y1, s.oz]], css(s.vis === "L" ? shade(color, 1.05) : shade(color, .84)), null);
+        onPlane(s.ox, y0, s.oz, s.ux, s.uz, () => {
+          ctx.beginPath(); ctx.rect(0, 0, s.len, h); ctx.clip();
+          FACADE[style](ctx, s.len, h, { color, side:s.vis, ...o });
+          ctx.fillStyle = s.vis === "L" ? "rgba(255,246,225,.07)" : "rgba(10,14,30,.28)"; ctx.fillRect(0, 0, s.len, h);
+          const ao = ctx.createLinearGradient(0, 0, 0, Math.min(2.4, h)); ao.addColorStop(0, "rgba(0,0,0,.42)"); ao.addColorStop(1, "rgba(0,0,0,0)"); ctx.fillStyle = ao; ctx.fillRect(0, 0, s.len, Math.min(2.4, h));
+          const top = ctx.createLinearGradient(0, h, 0, h - .9); top.addColorStop(0, "rgba(255,255,255,.14)"); top.addColorStop(1, "rgba(255,255,255,0)"); ctx.fillStyle = top; ctx.fillRect(0, h - .9, s.len, .9);
+        });
+      });
+      ctx.strokeStyle = "rgba(0,0,0,.4)"; ctx.lineWidth = 1;
+      sides.forEach(s => { [[s.ox, s.oz], [s.ox + s.ux*s.len, s.oz + s.uz*s.len]].forEach(([ex, ez]) => { const A = p(ex, y0, ez), B = p(ex, y1, ez); ctx.beginPath(); ctx.moveTo(A[0], A[1]); ctx.lineTo(B[0], B[1]); ctx.stroke(); }); });
+      if (o.roof !== false) roofNow(x0, x1, z0, z1, y1, o.roofStyle || (style === "ruin" ? "ruin" : "flat"), o);
+      else face([[x0, y1, z0], [x1, y1, z0], [x1, y1, z1], [x0, y1, z1]], css(o.top ?? shade(color, 1.15)), "rgba(0,0,0,.35)");
+    }
+    function roofNow(x0, x1, z0, z1, y, kind, o = {}) {
+      const base = o.roofColor ?? (kind === "ruin" ? 0x3a3530 : 0x8a8d90);
+      const A = p(x0, y, z0), B = p(x1, y, z1);
+      face([[x0, y, z0], [x1, y, z0], [x1, y, z1], [x0, y, z1]], lin(ctx, A[0], A[1], B[0], B[1], [[0, css(shade(base, 1.2))], [1, css(shade(base, .85))]]), "rgba(0,0,0,.4)");
+      ctx.save(); path([p(x0, y, z0), p(x1, y, z0), p(x1, y, z1), p(x0, y, z1)]); ctx.clip();
+      for (let i = 0; i < 90; i++) { const q = p(rnd(x0, x1), y, rnd(z0, z1)); ctx.fillStyle = `rgba(${rint(2) ? "255,255,255" : "0,0,0"},${rnd(.03, .1)})`; ctx.fillRect(q[0], q[1], rnd(1, 3), rnd(.6, 1.6)); }
+      ctx.restore();
+      sidesOf(x0, x1, z0, z1).forEach(s => { const ex = s.ox + s.ux*s.len, ez = s.oz + s.uz*s.len; face([[s.ox, y, s.oz], [ex, y, ez], [ex, y + .22, ez], [s.ox, y + .22, s.oz]], s.vis === "L" ? "rgba(225,225,220,.9)" : "rgba(200,200,196,.9)", "rgba(0,0,0,.3)"); });
+      if (kind === "ruin") { const cx = (x0 + x1)/2, cz = (z0 + z1)/2, r = Math.min(x1 - x0, z1 - z0)*.35; for (let i = 0; i < 9; i++) { const a = rnd(0, 6.28), rr = rnd(0, r), w = rnd(.2, .6); boxNow(cx + Math.cos(a)*rr, cz + Math.sin(a)*rr, w, w*rnd(.7, 1.3), y + .2, rnd(.15, .5), pick([0x2a2420, 0x3a332c, 0x4a4238]), { roof:false }); } return; }
+      const w = x1 - x0, d = z1 - z0;
+      if (w > 2.4 && d > 2.4 && o.rooftop !== false) {
+        const n = 1 + rint(3);
+        for (let i = 0; i < n; i++) {
+          const cx = rnd(x0 + .7, x1 - .7), cz = rnd(z0 + .7, z1 - .7), t = rint(3);
+          if (t === 0) boxNow(cx, cz, rnd(.7, 1.2), rnd(.6, 1), y + .22, rnd(.35, .6), 0xb8bcc0, { roof:false });
+          else if (t === 1) { cylNow(cx, cz, .42, y + .22, .8, 0xc9c0b0); cylNow(cx, cz, .46, y + 1.0, .08, 0x777777); }
+          else for (let k = 0; k < 2; k++) boxNow(cx + k*.55, cz, .45, .45, y + .22, .3, 0xd0d2d4, { roof:false });
         }
-      },
-      slab(x0, z0, x1, z1, y, h) {
-        face([[x0, y, z1], [x1, y, z1], [x1, y + h, z1], [x0, y + h, z1]], "rgba(200,200,196,.9)", "rgba(0,0,0,.3)");
-        face([[x0, y, z0], [x0, y, z1], [x0, y + h, z1], [x0, y + h, z0]], "rgba(225,225,220,.9)", "rgba(0,0,0,.3)");
-      },
-      rubble(cx, cz, y, r) {
-        for (let i = 0; i < 9; i++) { const a = rnd(0, 6.28), rr = rnd(0, r), w = rnd(.2, .6); K.box(cx + Math.cos(a)*rr, cz + Math.sin(a)*rr, w, w*rnd(.7, 1.3), y + .2, rnd(.15, .5), pick([0x2a2420, 0x3a332c, 0x4a4238]), { roof:false }); }
-      },
-      cyl(x, z, r, y0, h, color, o = {}) {
-        const rx = r*SQ2*HW, ry = r*SQ2*HH, b = p(x, y0, z), t = p(x, y0 + h, z);
-        const g = lin(ctx, b[0] - rx, 0, b[0] + rx, 0, [[0, css(shade(color, 1.28))], [.35, css(shade(color, 1.05))], [.7, css(shade(color, .72))], [1, css(shade(color, .5))]]);
-        ctx.beginPath(); ctx.moveTo(b[0] - rx, b[1]); ctx.lineTo(t[0] - rx, t[1]); ctx.ellipse(t[0], t[1], rx, ry, 0, Math.PI, 0, false); ctx.lineTo(b[0] + rx, b[1]); ctx.ellipse(b[0], b[1], rx, ry, 0, 0, Math.PI, false); ctx.closePath();
-        ctx.fillStyle = g; ctx.fill(); ctx.lineWidth = .8; ctx.strokeStyle = "rgba(0,0,0,.35)"; ctx.stroke();
-        ctx.beginPath(); ctx.ellipse(t[0], t[1], rx, ry, 0, 0, 7); ctx.fillStyle = css(o.top ?? shade(color, 1.15)); ctx.fill(); ctx.stroke();
-      },
-      cone(x, z, r, y0, h, color) {
-        const rx = r*SQ2*HW, ry = r*SQ2*HH, b = p(x, y0, z), t = p(x, y0 + h, z);
-        const g = lin(ctx, b[0] - rx, 0, b[0] + rx, 0, [[0, css(shade(color, 1.25))], [.5, css(color)], [1, css(shade(color, .5))]]);
-        ctx.beginPath(); ctx.moveTo(b[0] - rx, b[1]); ctx.lineTo(t[0], t[1]); ctx.lineTo(b[0] + rx, b[1]); ctx.ellipse(b[0], b[1], rx, ry, 0, 0, Math.PI, false); ctx.closePath();
-        ctx.fillStyle = g; ctx.fill(); ctx.lineWidth = .8; ctx.strokeStyle = "rgba(0,0,0,.35)"; ctx.stroke();
-      },
-      pyr(x, z, w, d, y0, h, color, tex) {
-        const x0 = x - w/2, x1 = x + w/2, z0 = z - d/2, z1 = z + d/2, ap = [x, y0 + h, z];
-        face([[x0, y0, z0], [x0, y0, z1], ap], css(shade(color, 1.0)), "rgba(0,0,0,.35)");
-        face([[x0, y0, z1], [x1, y0, z1], ap], css(shade(color, .68)), "rgba(0,0,0,.35)");
-        if (tex === "tile") for (let i = 1; i < 7; i++) { const t = i/7, a = p(x0 + (x - x0)*t, y0 + h*t, z0 + (z - z0)*t), b = p(x0 + (x - x0)*t, y0 + h*t, z1 + (z - z1)*t); ctx.strokeStyle = "rgba(0,0,0,.18)"; ctx.lineWidth = .8; ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke(); }
-      },
-      ball(x, y, z, r, color, sy = 1, o = {}) {
-        const c = p(x, y, z), R = r*HW*1.12;
-        const g = rad(ctx, c[0], c[1], R*.1, R*1.05, [[0, css(shade(color, 1.32))], [.5, css(color)], [1, css(shade(color, .55))]], c[0] - R*.35, c[1] - R*.4*sy);
-        ctx.beginPath(); ctx.ellipse(c[0], c[1], R, R*sy, 0, 0, 7); ctx.fillStyle = g; ctx.fill();
-        if (o.outline !== false) { ctx.lineWidth = .8; ctx.strokeStyle = "rgba(0,0,0,.3)"; ctx.stroke(); }
-      },
-      line(a, b, w, color, alpha = 1) { const A = p(...a), B = p(...b); ctx.beginPath(); ctx.moveTo(A[0], A[1]); ctx.lineTo(B[0], B[1]); ctx.lineWidth = w; ctx.strokeStyle = rgba(color, alpha); ctx.stroke(); },
-    };
+        if (Math.random() < .35) cylNow(rnd(x0 + .4, x1 - .4), rnd(z0 + .4, z1 - .4), .03, y + .22, 1.6, 0x888888);
+      }
+    }
+    function cylNow(x, z, r, y0, h, color, o = {}) {
+      const rx = r*SQ2*HW, ry = r*SQ2*HH, b = p(x, y0, z), t = p(x, y0 + h, z);
+      const g = lin(ctx, b[0] - rx, 0, b[0] + rx, 0, [[0, css(shade(color, 1.28))], [.35, css(shade(color, 1.05))], [.7, css(shade(color, .72))], [1, css(shade(color, .5))]]);
+      ctx.beginPath(); ctx.moveTo(b[0] - rx, b[1]); ctx.lineTo(t[0] - rx, t[1]); ctx.ellipse(t[0], t[1], rx, ry, 0, Math.PI, 0, false); ctx.lineTo(b[0] + rx, b[1]); ctx.ellipse(b[0], b[1], rx, ry, 0, 0, Math.PI, false); ctx.closePath();
+      ctx.fillStyle = g; ctx.fill(); ctx.lineWidth = .8; ctx.strokeStyle = "rgba(0,0,0,.35)"; ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(t[0], t[1], rx, ry, 0, 0, 7); ctx.fillStyle = css(o.top ?? shade(color, 1.15)); ctx.fill(); ctx.stroke();
+    }
+    function coneNow(x, z, r, y0, h, color) {
+      const rx = r*SQ2*HW, ry = r*SQ2*HH, b = p(x, y0, z), t = p(x, y0 + h, z);
+      const g = lin(ctx, b[0] - rx, 0, b[0] + rx, 0, [[0, css(shade(color, 1.25))], [.5, css(color)], [1, css(shade(color, .5))]]);
+      ctx.beginPath(); ctx.moveTo(b[0] - rx, b[1]); ctx.lineTo(t[0], t[1]); ctx.lineTo(b[0] + rx, b[1]); ctx.ellipse(b[0], b[1], rx, ry, 0, 0, Math.PI, false); ctx.closePath();
+      ctx.fillStyle = g; ctx.fill(); ctx.lineWidth = .8; ctx.strokeStyle = "rgba(0,0,0,.35)"; ctx.stroke();
+    }
+    function pyrNow(x, z, w, d, y0, h, color, tex) {
+      const x0 = x - w/2, x1 = x + w/2, z0 = z - d/2, z1 = z + d/2, ap = [x, y0 + h, z];
+      sidesOf(x0, x1, z0, z1).forEach(s => {
+        const ex = s.ox + s.ux*s.len, ez = s.oz + s.uz*s.len;
+        face([[s.ox, y0, s.oz], [ex, y0, ez], ap], css(shade(color, s.vis === "L" ? 1.0 : .68)), "rgba(0,0,0,.35)");
+        if (tex === "tile") for (let i = 1; i < 7; i++) { const t = i/7, a = p(s.ox + (x - s.ox)*t, y0 + h*t, s.oz + (z - s.oz)*t), b = p(ex + (x - ex)*t, y0 + h*t, ez + (z - ez)*t); ctx.strokeStyle = "rgba(0,0,0,.18)"; ctx.lineWidth = .8; ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke(); }
+      });
+    }
+    function ballNow(x, y, z, r, color, sy = 1, o = {}) {
+      const c = p(x, y, z), R = r*HW*1.12;
+      const g = rad(ctx, c[0], c[1], R*.1, R*1.05, [[0, css(shade(color, 1.32))], [.5, css(color)], [1, css(shade(color, .55))]], c[0] - R*.35, c[1] - R*.4*sy);
+      ctx.beginPath(); ctx.ellipse(c[0], c[1], R, R*sy, 0, 0, 7); ctx.fillStyle = g; ctx.fill();
+      if (o.outline !== false) { ctx.lineWidth = .8; ctx.strokeStyle = "rgba(0,0,0,.3)"; ctx.stroke(); }
+    }
+    /* ---- primitivas públicas (entram na fila de profundidade) ---- */
+    K.box = (x, z, w, d, y0, h, color, o) => enq(x, y0 + h, z, () => boxNow(x, z, w, d, y0, h, color, o));
+    K.cyl = (x, z, r, y0, h, color, o) => enq(x, y0 + h*.5, z, () => cylNow(x, z, r, y0, h, color, o));
+    K.cone = (x, z, r, y0, h, color) => enq(x, y0 + h*.5, z, () => coneNow(x, z, r, y0, h, color));
+    K.pyr = (x, z, w, d, y0, h, color, tex) => enq(x, y0 + h*.5, z, () => pyrNow(x, z, w, d, y0, h, color, tex));
+    K.ball = (x, y, z, r, color, sy, o) => enq(x, y, z, () => ballNow(x, y, z, r, color, sy, o));
+    K.face = (pts3, fill, stroke, lw) => { const c = pts3.reduce((a, q) => [a[0] + q[0]/pts3.length, a[1] + q[1]/pts3.length, a[2] + q[2]/pts3.length], [0, 0, 0]); enq(c[0], c[1], c[2], () => face(pts3, fill, stroke, lw)); };
+    K.line = (a, b, w, color, alpha = 1) => enq((a[0] + b[0])/2, (a[1] + b[1])/2, (a[2] + b[2])/2, () => { const A = p(...a), B = p(...b); ctx.beginPath(); ctx.moveTo(A[0], A[1]); ctx.lineTo(B[0], B[1]); ctx.lineWidth = w; ctx.strokeStyle = rgba(color, alpha); ctx.stroke(); });
+    /* desenho num plano vertical (u ao longo de (ux,uz), v para cima): rodas, janelas, faixas */
+    K.plane = (x, y, z, ux, uz, fn) => enq(x + ux*.0001, y, z, () => onPlane(x, y, z, ux, uz, () => fn(ctx)));
     return K;
   }
 
@@ -280,7 +303,7 @@ const Scenery = (() => {
       const c = document.createElement("canvas"); c.width = Math.ceil(W*QS); c.height = Math.ceil(Hh*QS);
       const x = c.getContext("2d"); x.scale(QS, QS); x.lineJoin = "round"; x.lineCap = "round";
       const ox = W/2, oy = (rx + rz)*HH + h*HY + pad;
-      draw(drawKit(x, ox, oy));
+      const K = drawKit(x, ox, oy); draw(K); K.flush();
       GFX.scene.textures.addCanvas(k, c);
       env.keys.push(k);
       env.cache[k] = { w:W, h:Hh, ox, oy };
@@ -433,14 +456,16 @@ const Scenery = (() => {
   /* carro (eixo x) */
   function car(x, z, color) {
     piece("car" + color, 1.6, 1.0, 1.4, K => {
-      const { ctx } = K, L = 2.3, Wd = 1.05;
+      const L = 2.3, Wd = 1.05, cw = 1.2, cd = .9, cx = -.1;
       K.box(0, 0, L, Wd, .22, .46, color, { roof:false });
-      K.face([[-L*.2, .66, -Wd*.42], [L*.28, .66, -Wd*.42], [L*.28, .66, Wd*.42], [-L*.2, .66, Wd*.42]], css(shade(color, 1.18)), "rgba(0,0,0,.4)");
-      K.face([[-L*.3, .68, Wd*.46], [L*.32, .68, Wd*.46], [L*.2, 1.05, Wd*.38], [-L*.2, 1.05, Wd*.38]], "#1d2a38", "rgba(0,0,0,.5)");
-      K.face([[-L*.3, .68, -Wd*.46], [-L*.3, .68, Wd*.46], [-L*.2, 1.05, Wd*.38], [-L*.2, 1.05, -Wd*.38]], "#22303f", "rgba(0,0,0,.5)");
-      K.face([[-L*.2, 1.05, -Wd*.38], [L*.2, 1.05, -Wd*.38], [L*.2, 1.05, Wd*.38], [-L*.2, 1.05, Wd*.38]], css(shade(color, 1.1)), "rgba(0,0,0,.4)");
-      K.face([[-L*.1, .7, Wd*.47], [L*.2, .7, Wd*.47], [L*.14, 1.0, Wd*.4], [-L*.1, 1.0, Wd*.4]], "rgba(180,210,235,.28)", null);
-      [-L*.32, L*.32].forEach(wx => { const c0 = K.p(wx, .18, Wd/2 + .01), r = .24*HW; ctx.fillStyle = "#101114"; ctx.beginPath(); ctx.ellipse(c0[0], c0[1], r*.95, r*.85, -.45, 0, 7); ctx.fill(); ctx.fillStyle = "#9aa0a8"; ctx.beginPath(); ctx.ellipse(c0[0], c0[1], r*.45, r*.4, -.45, 0, 7); ctx.fill(); });
+      K.box(cx, 0, cw, cd, .68, .4, shade(color, 1.05), { roof:false, top:shade(color, 1.18) });
+      const glass = (u, v, w, h, c = "#1d2a38") => (ctx) => { ctx.fillStyle = c; ctx.fillRect(u, v, w, h); ctx.fillStyle = "rgba(200,225,245,.3)"; ctx.beginPath(); ctx.moveTo(u, v + h*.5); ctx.lineTo(u + w*.5, v + h); ctx.lineTo(u + w*.78, v + h); ctx.lineTo(u, v + h*.2); ctx.fill(); };
+      [-1, 1].forEach(sd => {
+        K.plane(cx - cw/2, .68, sd*cd/2 + sd*.004, 1, 0, glass(.08, .06, cw - .16, .28));            // vidros laterais
+        K.plane(cx + sd*cw/2 + sd*.004, .68, -cd/2, 0, 1, glass(.08, .06, cd - .16, .28, "#22303f"));   // para-brisa e vidro traseiro
+        K.plane(-L/2, 0, sd*Wd/2 + sd*.004, 1, 0, ctx => [.18, .82].forEach(f => { const u = L*f, v = .22; ctx.fillStyle = "#101114"; ctx.beginPath(); ctx.arc(u, v, .24, 0, 7); ctx.fill(); ctx.fillStyle = "#9aa0a8"; ctx.beginPath(); ctx.arc(u, v, .11, 0, 7); ctx.fill(); }));   // rodas
+      });
+      K.plane(L/2 + .004, .3, -Wd*.3, 0, 1, ctx => { ctx.fillStyle = "rgba(255,245,200,.9)"; ctx.fillRect(0, 0, Wd*.6, .12); });
     }, x, z, 0, { shadowBox:[2.4, 1.1, 1.1] });
   }
   const lamp = (x, z, h = 5) => piece("lamp" + h, .9, .9, h + .6, K => {
@@ -523,7 +548,7 @@ const Scenery = (() => {
     const hill = (x, z, r, hgt, n) => {
       piece("hill" + r + n + rint(3), r + 1, r + 1, hgt + 3, K => {
         const { ctx } = K;
-        K.ball(0, 0, 0, r, 0x466f34, hgt/(r*1.12)*.9, { outline:false });
+        K.ball(0, 0, 0, r, 0x466f34, hgt/(r*1.12)*.9, { outline:false }); K.flush();
         ctx.save(); ctx.globalAlpha = .9;
         for (let i = 0; i < r*55; i++) { const a = rnd(0, 6.28), d = Math.sqrt(Math.random())*r*.95, hx = Math.cos(a)*d, hz = Math.sin(a)*d*.8, hy = Math.max(0, hgt*(1 - (d/(r*.95))**2)*.9); const q = K.p(hx, hy, hz); ctx.fillStyle = rgba(pick([0x1f5a28, 0x2a6a30, 0x356f2c, 0x4a8a38, 0x16461e]), rnd(.5, .95)); ctx.beginPath(); ctx.ellipse(q[0], q[1], rnd(1.6, 3.6), rnd(1.2, 2.4), 0, 0, 7); ctx.fill(); }
         ctx.restore();
@@ -536,7 +561,7 @@ const Scenery = (() => {
       g.shadowRound(x, z, r*.8, hgt);
     };
     hill(-18, -27, 8, 5, 70); hill(7, -31, 9, 6, 80); hill(-31, -14, 7, 4.5, 60); hill(24, -21, 7, 4.5, 60);
-    piece("pao", 5.5, 5.5, 12, K => { const { ctx } = K; K.ball(0, 0, 0, 5, 0x8a867a, 2.1, { outline:false }); for (let i = 0; i < 160; i++) { const q = K.p(rnd(-3, 3), rnd(0, 7), rnd(-2, 2)); ctx.fillStyle = `rgba(${rint(2) ? "255,255,255" : "40,40,35"},${rnd(.05, .14)})`; ctx.fillRect(q[0], q[1], rnd(2, 8), rnd(1, 3)); } K.ball(2.4, 1.2, 1.2, 2.5, 0x3f7a34, .9); K.ball(-1, 3.4, -1, 1.7, 0x978f80, 1); }, 29, -10, 0);
+    piece("pao", 5.5, 5.5, 12, K => { const { ctx } = K; K.ball(0, 0, 0, 5, 0x8a867a, 2.1, { outline:false }); K.flush(); for (let i = 0; i < 160; i++) { const q = K.p(rnd(-3, 3), rnd(0, 7), rnd(-2, 2)); ctx.fillStyle = `rgba(${rint(2) ? "255,255,255" : "40,40,35"},${rnd(.05, .14)})`; ctx.fillRect(q[0], q[1], rnd(2, 8), rnd(1, 3)); } K.ball(2.4, 1.2, 1.2, 2.5, 0x3f7a34, .9); K.ball(-1, 3.4, -1, 1.7, 0x978f80, 1); }, 29, -10, 0);
     [[-24, 9], [-30, -3], [-27, 12], [24, 10], [30, -2], [28, 13], [-13, -14], [14, -15], [-33, 5]].forEach(([x, z]) => palm(x, z, rnd(3, 4)));
     [[-22, -9], [-28, 6], [26, 5], [20, 12], [-12, 13]].forEach(([x, z]) => bush(x, z, rnd(.6, .9)));
     E.cloudShadows(.1); E.grade({ sat:1.15, con:1.05, bri:1.02 });
@@ -558,10 +583,10 @@ const Scenery = (() => {
     piece("torre", 2, 2, 12, K => { K.cyl(0, 0, .8, 0, 7.4, 0xdadada); K.cyl(0, 0, 1.8, 7.4, 1.7, 0x4a8fbf, { top:0x2f3a4a }); K.cyl(0, 0, 1.95, 9.1, .28, 0x2f3a4a); K.cyl(0, 0, .06, 9.4, 2.2, 0x333333); }, 24, -14, 0); g.shadowRound(24, -14, 1, 9);
     piece("plane", 9, 9, 6, K => {
       const tail = 0x1e6fd1;
-      K.box(0, 0, 16, 3.2, .8, .26, 0xd5dae0, { roof:false });
+      K.box(-4.4, 0, 7.2, 3.2, .8, .26, 0xd5dae0, { roof:false }); K.box(4.4, 0, 7.2, 3.2, .8, .26, 0xd5dae0, { roof:false });
       K.box(0, 0, 1.6, 13, .75, 1.6, 0xf4f5f7, { roof:false });
       K.ball(0, 1.5, 6.6, .85, 0xf4f5f7, 1); K.ball(0, 1.45, -6.6, .8, 0xf0f1f4, .9);
-      for (let i = 0; i < 16; i++) K.face([[.81, 1.5, -5 + i*.62], [.81, 1.5, -4.75 + i*.62], [.81, 1.75, -4.75 + i*.62], [.81, 1.75, -5 + i*.62]], "#2a3a4a", null);
+      [-1, 1].forEach(sd => K.plane(sd*.81, 1.5, -5.5, 0, 1, ctx => { for (let i = 0; i < 17; i++) { ctx.fillStyle = "#2a3a4a"; ctx.fillRect(i*.62, 0, .26, .26); } }));
       K.face([[-.2, 1.5, 6.9], [.2, 1.5, 6.9], [.2, 1.8, 6.5], [-.2, 1.8, 6.5]], "#1a2530", "rgba(0,0,0,.5)");
       K.box(0, -6.2, .35, 1.8, 1.5, 3.4, tail, { roof:false }); K.box(0, -6.4, 4.6, 1.4, 1.55, .2, 0xd5dae0, { roof:false });
       K.box(0, 0, 1.62, 13.1, 1.15, .22, tail, { roof:false });
@@ -583,7 +608,7 @@ const Scenery = (() => {
     g.poly([[-44, -34], [44, -34], [44, 34], [-44, 34]], "terra");
     for (let i = 0; i < 40; i++) g.blob(rnd(-34, 34), rnd(-26, 26), rnd(1.2, 3.4), rnd(.9, 2.4), pick([0x8a6234, 0xe0bd82]), rnd(.12, .3));
     [[-26, -26, 9, 5], [-4, -32, 10, 5.5], [20, -28, 9, 5], [32, -12, 8, 4.5], [-34, -8, 8, 4]].forEach(([x, z, r, h]) => {
-      piece("serra" + r + rint(3), r + 1, r + 1, h + 1, K => { const { ctx } = K; K.ball(0, 0, 0, r, 0xa8693a, h/(r*1.12)*.9, { outline:false });
+      piece("serra" + r + rint(3), r + 1, r + 1, h + 1, K => { const { ctx } = K; K.ball(0, 0, 0, r, 0xa8693a, h/(r*1.12)*.9, { outline:false }); K.flush();
         for (let i = 0; i < r*38; i++) { const q = K.p(rnd(-r*.85, r*.85), rnd(0, h*.8), rnd(-r*.5, r*.5)); ctx.fillStyle = `rgba(${pick(["120,70,36", "210,150,90", "90,55,30", "150,100,60"])},${rnd(.08, .3)})`; ctx.fillRect(q[0], q[1], rnd(3, 16), rnd(1, 3)); } }, x, z, 0);
       g.shadowRound(x, z, r*.8, h);
     });
@@ -708,7 +733,7 @@ const Scenery = (() => {
     const tank = (x, z, flip, sc = 1) => piece("tank" + flip, 3.4, 2.2, 3.2, K => {
       const { ctx } = K;
       K.box(0, 1.25, 5, .75, .1, .8, 0x1c1f17, { roof:false }); K.box(0, -1.25, 5, .75, .1, .8, 0x1c1f17, { roof:false });
-      for (let i = 0; i < 9; i++) { const q = K.p(-2.2 + i*.55, .5, 1.62); ctx.fillStyle = "#3a3f30"; ctx.beginPath(); ctx.ellipse(q[0], q[1], 4.5, 4, -.45, 0, 7); ctx.fill(); ctx.strokeStyle = "#111"; ctx.lineWidth = .6; ctx.stroke(); }
+      [-1, 1].forEach(sd => K.plane(-2.4, .1, sd*1.62 + sd*.004, 1, 0, ctx => { for (let i = 0; i < 9; i++) { ctx.fillStyle = "#3a3f30"; ctx.beginPath(); ctx.arc(.2 + i*.55, .4, .2, 0, 7); ctx.fill(); ctx.strokeStyle = "#111"; ctx.lineWidth = .02; ctx.stroke(); } }));
       K.box(0, 0, 4.6, 2.3, .4, .5, 0x4a5636, { roofColor:0x4a5636, rooftop:false }); K.box(0, 0, 3.1, 1.9, .9, .72, 0x55633f, { rooftop:false });
       K.cyl(.2, 0, .85, 1.6, .5, 0x4f5c3a); K.box(2.2, 0, 3.6, .22, 2.0, .22, 0x22281a, { roof:false }); K.box(-.8, .4, .5, .4, 2.1, .4, 0x66744a, { roof:false });
     }, x, z, 0, { scale:sc*.85, flip });
@@ -793,9 +818,9 @@ const Scenery = (() => {
       },
       mushroom(x, z) {                                         // cogumelo nuclear em camadas de fumaça
         const k = make("nuke", 9, 9, 22, K => {
-          const { ctx } = K; K.cyl(0, 0, 3.2, 0, 14, 0x6a4a38);
+          const { ctx } = K; K.cyl(0, 0, 3.2, 0, 14, 0x6a4a38); K.flush();
           for (let i = 0; i < 900; i++) { const y = rnd(0, 15), r = 3.2 - y*.05 + rnd(-.4, .6), a = rnd(0, 6.28), q = K.p(Math.cos(a)*r*.8, y, Math.sin(a)*r*.8); ctx.fillStyle = rgba(pick([0x8a5a40, 0x5a3a2a, 0xa06a48, 0x3a2418]), rnd(.2, .6)); ctx.beginPath(); ctx.arc(q[0], q[1], rnd(2, 6), 0, 7); ctx.fill(); }
-          [[0, 15, 7, .55], [-5, 17, 5, .6], [5, 17, 5, .6], [0, 19.6, 5.4, .62], [-2.4, 13, 5, .5], [2.4, 13, 5, .5]].forEach(([bx, by, r, sy]) => { K.ball(bx, by, 0, r*.46, 0x7a4a34, sy*2.2, { outline:false });
+          [[0, 15, 7, .55], [-5, 17, 5, .6], [5, 17, 5, .6], [0, 19.6, 5.4, .62], [-2.4, 13, 5, .5], [2.4, 13, 5, .5]].forEach(([bx, by, r, sy]) => { K.ball(bx, by, 0, r*.46, 0x7a4a34, sy*2.2, { outline:false }); K.flush();
             for (let i = 0; i < 260; i++) { const a = rnd(0, 6.28), d = Math.sqrt(Math.random())*r*.46*HW*1.1, q = K.p(bx, by, 0); ctx.fillStyle = rgba(pick([0xa6693f, 0x5a3626, 0xc4824a, 0x3a2418, 0xff8a2a]), rnd(.15, .5)); ctx.beginPath(); ctx.ellipse(q[0] + Math.cos(a)*d, q[1] + Math.sin(a)*d*sy*2.2*.6, rnd(2, 6), rnd(1.5, 4), 0, 0, 7); ctx.fill(); } });
           K.ball(0, 15.5, 0, 6, 0xff8a1a, .5, { outline:false });
         });

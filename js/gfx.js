@@ -15,9 +15,15 @@ const GFX = (() => {
   const texInfo = {};                              // key -> descritor da arte (origem, tamanho)
 
   /* ---------- projeção ---------- */
-  const P = (x, y, z) => [(x + z)*HW, (z - x)*HH - y*HY];
-  const unproj = (sx, sy) => { const u = sx/HW, v = sy/HH; return { x:(u - v)/2, z:(u + v)/2 }; };   // chão (y=0)
-  const depthOf = (x, z) => (z - x)*HH;
+  /* vista: yaw 0..3 gira o mundo em passos de 90° (as peças do cenário são redesenhadas para cada vista) */
+  let yaw = 0;
+  const rot = (x, z) => yaw === 0 ? [x, z] : yaw === 1 ? [z, -x] : yaw === 2 ? [-x, -z] : [-z, x];
+  const P = (x, y, z) => { const r = rot(x, z); return [(r[0] + r[1])*HW, (r[1] - r[0])*HH - y*HY]; };
+  const unproj = (sx, sy) => {                                    // chão (y=0)
+    const u = sx/HW, v = sy/HH, a = (u - v)/2, b = (u + v)/2;
+    return yaw === 0 ? { x:a, z:b } : yaw === 1 ? { x:-b, z:a } : yaw === 2 ? { x:-a, z:-b } : { x:b, z:-a };
+  };
+  const depthOf = (x, z) => { const r = rot(x, z); return (r[1] - r[0])*HH; };
   const rand = n => Math.floor(Math.random()*n);
 
   /* ---------- texturas ---------- */
@@ -328,37 +334,39 @@ const GFX = (() => {
     c.add([sh, img(key)]);
     return new Node(c);
   }
-  /* dir: +1 = anda no sentido +x (visual: direita-cima), -1 = sentido -x */
+  /* inclinação/espelho da arte lateral para o eixo (ax, az) de deslocamento no mundo, na vista atual */
+  function axisLook(ax, az) { const a = P(0, 0, 0), b = P(ax, 0, az), sx = b[0] - a[0], sy = b[1] - a[1]; return { shear:sy/sx, mirror:sx < 0, tag:(sy/sx > 0 ? "p" : "n") + (sx < 0 ? "m" : "r") }; }
+  /* dir: +1 = anda no sentido +x, -1 = sentido -x (a direção na tela depende da vista) */
   function makeMoto(sideKey, dir) {
-    const s = cfg.SIDES[sideKey], shirt = s.shirts[rand(s.shirts.length)];
+    const s = cfg.SIDES[sideKey], shirt = s.shirts[rand(s.shirts.length)], L = axisLook(dir, 0);
     const fl = tex("flag_" + sideKey, () => Art.flag(sideKey));
-    const key = ["moto", sideKey, shirt, dir > 0 ? "R" : "L"].join("_");
-    const n = vehicleNode(key, () => Art.sheared(96, 70, 48, 63, -.5, dir < 0, x => Art.drawMoto(x, { main:s.main, alt:s.alt, shirt, flag:fl })), 64);
+    const key = ["moto", sideKey, shirt, L.tag].join("_");
+    const n = vehicleNode(key, () => Art.sheared(96, 70, 48, 63, L.shear, L.mirror, x => Art.drawMoto(x, { main:s.main, alt:s.alt, shirt, flag:fl })), 64);
     n.sc = 1.0; return n;
   }
-  /* ônibus que anda no sentido -z (desce a coluna: visual esquerda-cima) */
+  /* ônibus que anda no sentido -z (desce a coluna) */
   function makeBus(sideKey, len) {
-    const s = cfg.SIDES[sideKey], L = Math.round(len*68);
+    const s = cfg.SIDES[sideKey], Ln = Math.round(len*68), L = axisLook(0, -1);
     const fl = tex("flag_" + sideKey, () => Art.flag(sideKey));
-    const key = ["bus", sideKey, L].join("_");
-    const n = vehicleNode(key, () => Art.sheared(L + 6, 70, (L + 6)/2, 63, .5, true, x => Art.drawBus(x, { main:s.main, alt:s.alt, flag:fl }, L)), L*.7); n.sc = 1.3; return n;
+    const key = ["bus", sideKey, Ln, L.tag].join("_");
+    const n = vehicleNode(key, () => Art.sheared(Ln + 6, 70, (Ln + 6)/2, 63, L.shear, L.mirror, x => Art.drawBus(x, { main:s.main, alt:s.alt, flag:fl }, Ln)), Ln*.7); n.sc = 1.3; return n;
   }
   function makeSoundTruck(sideKey, dir) {
-    const s = cfg.SIDES[sideKey];
+    const s = cfg.SIDES[sideKey], L = axisLook(dir, 0);
     const fl = tex("flag_" + sideKey, () => Art.flag(sideKey));
-    const key = ["truck", sideKey, dir > 0 ? "R" : "L"].join("_");
-    const n = vehicleNode(key, () => Art.sheared(124, 90, 62, 70, -.5, dir < 0, x => Art.drawTruck(x, { main:s.main, alt:s.alt, flag:fl })), 90); n.sc = 1.3; return n;
+    const key = ["truck", sideKey, L.tag].join("_");
+    const n = vehicleNode(key, () => Art.sheared(124, 90, 62, 70, L.shear, L.mirror, x => Art.drawTruck(x, { main:s.main, alt:s.alt, flag:fl })), 90); n.sc = 1.3; return n;
   }
   function makeHeli(sideKey, dir) {
-    const s = cfg.SIDES[sideKey];
-    const key = ["heli", sideKey, dir > 0 ? "R" : "L"].join("_");
-    tex(key, () => Art.sheared(110, 70, 55, 40, -.5, dir < 0, x => { x.translate(54, 14); Art.drawHeli(x, { main:s.main, alt:s.alt }); }));
+    const s = cfg.SIDES[sideKey], L = axisLook(dir, 0);
+    const key = ["heli", sideKey, L.tag].join("_");
+    tex(key, () => Art.sheared(110, 70, 55, 40, L.shear, L.mirror, x => { x.translate(54, 14); Art.drawHeli(x, { main:s.main, alt:s.alt }); }));
     tex("shadow", () => Art.shadow());
     const c = scene.add.container(0, 0);
     const sh = img("shadow", 64); sh.setAlpha(.6);
     const im = img(key);
     tex("rotor", () => Art.rotor(86));
-    const ro = img("rotor"); ro.setPosition(-2*dir, -52);
+    const ro = img("rotor"); ro.setPosition(-2*(L.mirror ? -1 : 1), -52);
     c.add([sh, im, ro]);
     const n = new Node(c); n.u = { rotor:ro, shadow:sh };
     return n;
@@ -529,14 +537,16 @@ const GFX = (() => {
     for (let b = 0; b < 2; b++) {
       const cx = BXs()[b], half = n/2 + .3, thick = .42;
       const fc = frameCols[b];
-      // sombra projetada no chão
-      g.fillStyle(0x000000, .22); { const a = P(cx - half - .5, 0, -half + .6), bb = P(cx + half + .1, 0, -half + .6), c = P(cx + half + .1, 0, half + .6), d = P(cx - half - .5, 0, half + .6);
-        g.beginPath(); g.moveTo(a[0], a[1] + 14); g.lineTo(bb[0], bb[1] + 14); g.lineTo(c[0], c[1] + 14); g.lineTo(d[0], d[1] + 14); g.closePath(); g.fillPath(); }
-      // laterais da moldura (faces visíveis: -x e +z)
-      const A = P(cx - half, 0, -half), B = P(cx - half, 0, half), C = P(cx + half, 0, half);
-      const lift = thick*HY;
-      g.fillStyle(sh(fc, .62), 1); g.beginPath(); g.moveTo(A[0], A[1]); g.lineTo(B[0], B[1]); g.lineTo(B[0], B[1] + lift); g.lineTo(A[0], A[1] + lift); g.closePath(); g.fillPath();
-      g.fillStyle(sh(fc, .42), 1); g.beginPath(); g.moveTo(B[0], B[1]); g.lineTo(C[0], C[1]); g.lineTo(C[0], C[1] + lift); g.lineTo(B[0], B[1] + lift); g.closePath(); g.fillPath();
+      // sombra projetada no chão (deslocada na tela)
+      { const cs = [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([sx, sz]) => P(cx + sx*(half + .3), 0, sz*(half + .3)));
+        g.fillStyle(0x000000, .22); g.beginPath(); cs.forEach((q, i) => i ? g.lineTo(q[0] + 12, q[1] + 16) : g.moveTo(q[0] + 12, q[1] + 16)); g.closePath(); g.fillPath(); }
+      // laterais da moldura: as duas arestas que encostam no canto mais baixo da tela
+      const lift = thick*HY, cs = [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([sx, sz]) => P(cx + sx*half, 0, sz*half));
+      let bi = 0; cs.forEach((q, i) => { if (q[1] > cs[bi][1]) bi = i; });
+      [(bi + 3)%4, (bi + 1)%4].forEach(oi => {
+        const A = cs[oi], B = cs[bi], left = A[0] < B[0];
+        g.fillStyle(sh(fc, left ? .62 : .42), 1); g.beginPath(); g.moveTo(A[0], A[1]); g.lineTo(B[0], B[1]); g.lineTo(B[0], B[1] + lift); g.lineTo(A[0], A[1] + lift); g.closePath(); g.fillPath();
+      });
       // topo da moldura
       g.fillStyle(sh(fc, .92), 1); diamond(g, cx, 0, half); g.fillPath();
       g.lineStyle(2, sh(fc, 1.25), .9); diamond(g, cx, 0, half); g.strokePath();
@@ -546,9 +556,10 @@ const GFX = (() => {
         const tc = tileCenter(b, r, c), col = tileCol[b][r][c], mk = tileMark[b][r][c];
         g.fillStyle(col, 1); diamond(g, tc.x, tc.z, .47); g.fillPath();
         // brilho no topo e sombra embaixo
-        const a = P(tc.x - .47, 0, tc.z - .47), bq = P(tc.x + .47, 0, tc.z - .47), cq = P(tc.x + .47, 0, tc.z + .47), d = P(tc.x - .47, 0, tc.z + .47);
-        g.lineStyle(1.6, sh(col, 1.35), .75); g.beginPath(); g.moveTo(d[0], d[1]); g.lineTo(a[0], a[1]); g.lineTo(bq[0], bq[1]); g.strokePath();
-        g.lineStyle(1.6, sh(col, .55), .85); g.beginPath(); g.moveTo(bq[0], bq[1]); g.lineTo(cq[0], cq[1]); g.lineTo(d[0], d[1]); g.strokePath();
+        const q4 = [P(tc.x - .47, 0, tc.z - .47), P(tc.x + .47, 0, tc.z - .47), P(tc.x + .47, 0, tc.z + .47), P(tc.x - .47, 0, tc.z + .47)];
+        const top = q4.reduce((m, q) => q[1] < m[1] ? q : m), bot = q4.reduce((m, q) => q[1] > m[1] ? q : m), lef = q4.reduce((m, q) => q[0] < m[0] ? q : m), rig = q4.reduce((m, q) => q[0] > m[0] ? q : m);
+        g.lineStyle(1.6, sh(col, 1.35), .75); g.beginPath(); g.moveTo(bot[0], bot[1]); g.lineTo(lef[0], lef[1]); g.lineTo(top[0], top[1]); g.strokePath();
+        g.lineStyle(1.6, sh(col, .55), .85); g.beginPath(); g.moveTo(top[0], top[1]); g.lineTo(rig[0], rig[1]); g.lineTo(bot[0], bot[1]); g.strokePath();
         if (mk) drawMark(g, tc, mk, t);
       }
     }
@@ -584,7 +595,7 @@ const GFX = (() => {
   /* ================================================================
      Picking e câmera
      ================================================================ */
-  const view = { W:0, H:0, dpr:1, cx:0, cy:0, zoom:1, goalCx:0, goalCy:0, goalZoom:1, focus:-1, inited:false };
+  const view = { W:0, H:0, dpr:1, cx:0, cy:0, zoom:1, goalCx:0, goalCy:0, goalZoom:1, focus:-1, inited:false, uz:1, panX:0, panY:0 };
   function screenToWorld(px, py) {                     // px, py em px CSS
     const d = view.dpr, z = view.zoom*d;
     const wx = cam.scrollX + cam.width/2 + (px*d - cam.width/2)/z;
@@ -628,12 +639,12 @@ const GFX = (() => {
     const box = view.focus >= 0 && mobile ? boardBox(view.focus) : arenaBox();
     const bw = box.x1 - box.x0, bh = box.y1 - box.y0;
     let z = Math.min((W - pad*2)/bw, (freeH - pad)/bh);
-    z = Math.max(.28, Math.min(z, mobile ? 1.1 : 1.25));
+    z = Math.max(.28, Math.min(z, mobile ? 1.1 : 1.25))*view.uz;
     view.goalZoom = z;
-    view.goalCx = (box.x0 + box.x1)/2;
+    view.goalCx = (box.x0 + box.x1)/2 + view.panX;
     // centro do conteúdo no meio da faixa livre (entre HUD e painel)
     const midY = topH + freeH/2;
-    view.goalCy = (box.y0 + box.y1)/2 - (midY - H/2)/z;
+    view.goalCy = (box.y0 + box.y1)/2 - (midY - H/2)/z + view.panY;
   }
   function applyCam() {
     const d = view.dpr, z = view.zoom*d;
@@ -641,6 +652,18 @@ const GFX = (() => {
     cam.setScroll(view.cx - cam.width/2, view.cy - cam.height/2);
   }
   function setFocus(b) { view.focus = b; }
+  /* zoom e deslocamento controlados pelo jogador */
+  const clampPan = () => { const m = 900*Math.max(0, view.uz - .7); view.panX = Math.max(-m, Math.min(m, view.panX)); view.panY = Math.max(-m, Math.min(m, view.panY)); };
+  function zoomBy(f) { view.uz = Math.max(.55, Math.min(3.2, view.uz*f)); clampPan(); }
+  function panBy(dx, dy) { view.panX -= dx/view.zoom; view.panY -= dy/view.zoom; clampPan(); }
+  function resetView() { view.uz = 1; view.panX = 0; view.panY = 0; }
+  function setYaw(k) { yaw = ((k%4) + 4)%4; boardDirty = true; if (view.inited) { layoutGoal(); view.cx = view.goalCx; view.cy = view.goalCy; view.zoom = view.goalZoom; applyCam(); } }
+  /* canto mais baixo (na tela) do tabuleiro b, afastado de pad casas: usado para as dicas flutuantes */
+  function boardLowPoint(b, pad = .9) {
+    const n = N(), half = n/2, cx = BXs()[b]; let best = null;
+    [[-1, -1], [1, -1], [1, 1], [-1, 1]].forEach(([sx, sz]) => { const q = P(cx + sx*half, 0, sz*half); if (!best || q[1] > best.y) best = { y:q[1], x:cx + sx*(half + pad), z:sz*(half + pad) }; });
+    return best;
+  }
   function resize() {
     view.W = window.innerWidth; view.H = window.innerHeight; view.dpr = Math.min(window.devicePixelRatio || 1, 2);
     game.scale.resize(Math.round(view.W*view.dpr), Math.round(view.H*view.dpr));
@@ -696,7 +719,7 @@ const GFX = (() => {
   }
 
   return {
-    init, frame, pinToScreen, grade, puff, smoke, runFx, addFx, resize, setFocus, shake, pick, P, unproj, depthOf, tex, img, flagKey, texInfo,
+    init, frame, pinToScreen, grade, puff, smoke, zoomBy, panBy, resetView, setYaw, boardLowPoint, rot, get yaw() { return yaw; }, runFx, addFx, resize, setFocus, shake, pick, P, unproj, depthOf, tex, img, flagKey, texInfo,
     get scene() { return scene; }, get cam() { return cam; }, get view() { return view; }, get cfg() { return cfg; },
     Node, nodes, drop, fixed, markers, tileCenter,
     makeFan, makeUnit, makeBossFan, makeCaptain, updateFan, updateCaptain, captainThrow, chantBoost,

@@ -11,6 +11,10 @@
   * { box-sizing:border-box; }
   html,body { margin:0; height:100%; overflow:hidden; background:#10151c; color:#fff; font-family:"Segoe UI",system-ui,sans-serif; user-select:none; -webkit-user-select:none; }
   canvas { display:block; }
+  #viewCtl { right:10px; top:50%; transform:translateY(-50%); flex-direction:column; gap:6px; z-index:3; pointer-events:auto; }
+  .vbtn { width:42px; height:42px; border-radius:12px; border:1px solid #fff3; background:rgba(14,18,26,.78); color:#fff; font:700 20px/1 'Segoe UI',system-ui,sans-serif; cursor:pointer; backdrop-filter:blur(6px); transition:.15s; }
+  .vbtn:hover { background:rgba(58,70,89,.9); transform:translateY(-1px); }
+  body.mobile .vbtn { width:36px; height:36px; font-size:17px; }
   #game { position:fixed; inset:0; overflow:hidden; background:#1a1d22; }
   .abs { position:absolute; }
   #top { top:0; left:0; right:0; padding:10px 14px 18px; display:grid; grid-template-columns:1fr auto 1fr auto; align-items:start; gap:14px; background:linear-gradient(#000c,#0000); pointer-events:none; }
@@ -340,6 +344,13 @@
 </head>
 <body>
 <div id="game"></div>
+<div id="viewCtl" class="abs" style="display:none">
+  <button class="vbtn" id="zoomIn" title="Aproximar (+ ou roda do mouse)">＋</button>
+  <button class="vbtn" id="zoomOut" title="Afastar (− ou roda do mouse)">－</button>
+  <button class="vbtn" id="rotL" title="Girar a vista para a esquerda (Q)">⟲</button>
+  <button class="vbtn" id="rotR" title="Girar a vista para a direita (E)">⟳</button>
+  <button class="vbtn" id="viewReset" title="Restaurar a vista (0)">⌖</button>
+</div>
 
 <div id="top" class="abs">
   <div class="fighter left">
@@ -2103,24 +2114,65 @@ function updateHoverPreview() {
   }
 }
 const cv = pscene.game.canvas;
-cv.addEventListener("pointermove", e => { G.hover = pick(e); updateHoverPreview(); });
-cv.addEventListener("pointerdown", e => {
-  if (G.paused) return;
-  actx && actx.state==="suspended" && actx.resume();
-  const h = pick(e); G.hover = h; if (!h) return;
+/* toque/clique numa casa: coloca a torcida ou atira */
+function tapTile(h) {
+  if (G.paused || !h) return;
   if (G.phase==="place" && h.b===0) {
     const idx = G.fleets[0].length; if (idx>=FLEET.length) return;
     const cells = shipCells(h.r,h.c,FLEET[idx].len,G.horiz);
     if (!canPlace(0,cells)) return;
     placeShip(0,idx,cells); sfx.place(); refreshAll(); ui(); updateHoverPreview();
   } else if (G.phase==="battle" && h.b===1) playerFire(h.r,h.c);
+}
+/* gestos: arrastar move a câmera, pinça e roda do mouse dão zoom; um toque sem arrastar vira clique */
+const ptrs = new Map(); let drag = null, pinch0 = 0;
+cv.addEventListener("pointerdown", e => {
+  actx && actx.state==="suspended" && actx.resume();
+  ptrs.set(e.pointerId, { x:e.clientX, y:e.clientY });
+  try { cv.setPointerCapture(e.pointerId); } catch (err) {}
+  if (ptrs.size === 1) drag = { id:e.pointerId, x:e.clientX, y:e.clientY, lx:e.clientX, ly:e.clientY, moved:false, button:e.button };
+  else if (ptrs.size === 2) { drag = null; const [a,b] = [...ptrs.values()]; pinch0 = Math.hypot(a.x-b.x, a.y-b.y) || 1; }
 });
+cv.addEventListener("pointermove", e => {
+  const pt = ptrs.get(e.pointerId); if (pt) { pt.x = e.clientX; pt.y = e.clientY; }
+  if (ptrs.size === 2) {
+    const [a,b] = [...ptrs.values()], d = Math.hypot(a.x-b.x, a.y-b.y) || 1;
+    GFX.zoomBy(d/pinch0); pinch0 = d; return;
+  }
+  if (drag && e.pointerId === drag.id) {
+    if (!drag.moved && Math.hypot(e.clientX-drag.x, e.clientY-drag.y) > 9) { drag.moved = true; G.hover = null; clearPreview(); }
+    if (drag.moved) { GFX.panBy(e.clientX-drag.lx, e.clientY-drag.ly); drag.lx = e.clientX; drag.ly = e.clientY; return; }
+  }
+  if (e.pointerType !== "touch") { G.hover = pick(e); updateHoverPreview(); }
+});
+const endPtr = e => {
+  const wasDrag = drag && e.pointerId === drag.id ? drag : null;
+  ptrs.delete(e.pointerId); try { cv.releasePointerCapture(e.pointerId); } catch (err) {}
+  if (wasDrag && !wasDrag.moved && e.type === "pointerup" && wasDrag.button === 0) { const h = pick(e); G.hover = h; tapTile(h); }
+  if (wasDrag) drag = null;
+  if (ptrs.size < 2) pinch0 = 0;
+};
+cv.addEventListener("pointerup", endPtr); cv.addEventListener("pointercancel", endPtr);
+cv.addEventListener("wheel", e => { e.preventDefault(); GFX.zoomBy(e.deltaY < 0 ? 1.12 : 1/1.12); }, { passive:false });
+/* girar a vista em passos de 90°: o cenário é redesenhado para cada ângulo */
+let turning = false;
+function rotateView(d) {
+  if (turning || !pscene) return; turning = true;
+  const cam = GFX.cam; cam.fadeOut(140, 8, 10, 14);
+  setTimeout(() => {
+    GFX.setYaw(GFX.yaw + d); applyScenario(G.scn || SCENARIOS[0]);
+    cam.fadeIn(260, 8, 10, 14); setTimeout(() => { turning = false; }, 300);
+  }, 190);
+}
+$("zoomIn").onclick = () => GFX.zoomBy(1.25); $("zoomOut").onclick = () => GFX.zoomBy(1/1.25);
+$("viewReset").onclick = () => GFX.resetView(); $("rotL").onclick = () => rotateView(-1); $("rotR").onclick = () => rotateView(1);
 addEventListener("keydown", e => {
   const k = e.key.toLowerCase();
   if (k === "escape" && !$("shop").classList.contains("hidden")) { closeShop(); return; }
   if (k === "escape" && !$("coffeeModal").classList.contains("hidden")) return;
   if (k === "escape" && (G.phase==="battle" || G.phase==="place")) { G.paused ? resumeGame() : pauseGame(); return; }
   if (G.paused) return;
+  if (k==="+" || k==="=") GFX.zoomBy(1.2); else if (k==="-" || k==="_") GFX.zoomBy(1/1.2); else if (k==="0") GFX.resetView(); else if (k==="q") rotateView(-1); else if (k==="e") rotateView(1);
   if (k==="r" && G.phase==="place") { G.horiz = !G.horiz; ui(); updateHoverPreview(); }
   if (G.phase==="battle") {
     const map = {"1":"normal","2":"radar","3":"cross","4":"ultra"};
@@ -2686,9 +2738,10 @@ onFrame = function(time, delta) {
   // dicas flutuantes (sob o canto de frente de cada tabuleiro)
   const bob = Math.sin(t*4)*.12;
   hintAttack.visible = !isMobile() && G.phase==="battle" && G.turn===0 && !G.busy;
-  hintAttack.at(BX[1]-N/2-.9, -.9+bob, N/2+.9);
+  { const lp = GFX.boardLowPoint(1); hintAttack.at(lp.x, -.9+bob, lp.z); }
   hintPlace.visible = !isMobile() && G.phase==="place" && G.fleets[0].length < FLEET.length;
-  hintPlace.at(BX[0]-N/2-.9, -.9+bob, N/2+.9);
+  { const lp = GFX.boardLowPoint(0); hintPlace.at(lp.x, -.9+bob, lp.z); }
+  $("viewCtl").style.display = G.phase==="menu" ? "none" : "flex";
 
   // câmera: visão geral, ou (celular) só a arena do turno atual
   GFX.setFocus(isMobile() && (G.phase==="battle" || G.phase==="place") ? (G.phase==="place" ? 0 : (G.turn===0 ? 1 : 0)) : -1);
