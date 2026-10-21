@@ -245,6 +245,24 @@
   #pStatsBody { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; } #pStatsBody .st { background:#1a2332; border-radius:10px; padding:7px 6px; text-align:center; } #pStatsBody .st b { display:block; font-size:16px; color:var(--amarelo); font-variant-numeric:tabular-nums; } #pStatsBody .st small { font-size:10.5px; opacity:.75; }
   #bkText { width:calc(100% - 24px); height:62px; resize:vertical; background:#0b111a; color:#cfe3ff; border:1px solid #fff3; border-radius:8px; font:11px ui-monospace,Consolas,monospace; padding:6px; box-sizing:border-box; }
   #profileModal .bkrow { display:flex; gap:8px; flex-wrap:wrap; margin:0 12px 10px; } #profileModal .bkrow .btn { font-size:12.5px; padding:7px 11px; } #bkMsg { min-height:16px; font-size:12px; font-weight:700; margin:0 12px 10px; }
+  .onlinebtn { display:flex; align-items:center; gap:14px; width:min(560px,92vw); margin:14px auto 4px; padding:14px 18px; border-radius:16px; cursor:pointer; text-align:left; color:#fff; position:relative;
+               border:3px solid #7fd0ff; background:linear-gradient(135deg,#1456c9,#0b2f7a 60%,#14306b); box-shadow:0 0 22px #2f9bff77, inset 0 0 18px #ffffff18; animation:onpulse 2.2s ease-in-out infinite; transition:transform .15s; }
+  .onlinebtn:hover { transform:scale(1.02); } .onlinebtn .ico { font-size:38px; line-height:1; } .onlinebtn b { display:block; font:900 24px/1.1 Impact,"Arial Black",sans-serif; letter-spacing:1.5px; }
+  .onlinebtn small { display:block; font-size:12.5px; opacity:.9; margin-top:3px; font-weight:600; } .onlinebtn em { position:absolute; top:-10px; right:14px; font:900 11px Impact,"Arial Black",sans-serif; letter-spacing:1px; background:#ff3b30; padding:2px 9px; border-radius:6px; transform:rotate(4deg); font-style:normal; }
+  @keyframes onpulse { 50% { box-shadow:0 0 34px #4db3ffaa, inset 0 0 18px #ffffff22; } }
+  #onlineModal, #inviteModal { position:fixed; inset:0; z-index:34; display:flex; align-items:center; justify-content:center; padding:12px; background:rgba(3,6,10,.88); backdrop-filter:blur(4px); } #inviteModal { z-index:36; }
+  #onlineModal .box, #inviteModal .box { background:linear-gradient(#1c2638,#111823); border:2px solid #7fd0ff; border-radius:18px; padding:18px; width:min(440px,100%); box-shadow:0 12px 40px #000a; max-height:100%; overflow:auto; position:relative; text-align:center; }
+  #onlineModal h2 { margin:0 0 6px; font-size:24px; } #onlineModal .close { position:absolute; top:8px; right:10px; background:none; border:0; color:#fff; font-size:22px; cursor:pointer; opacity:.8; }
+  #onStatus { font-size:12.5px; opacity:.9; margin-bottom:10px; } #onStatus .dot { display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:4px; } .dot.ok { background:#4cd964; } .dot.test { background:#ffd23a; } .dot.off { background:#ff9a5a; }
+  #onlineModal .onsec { margin:10px 0; text-align:left; } #onlineModal label { font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:var(--amarelo); font-weight:800; display:block; margin-bottom:4px; }
+  #onlineModal .idrow { display:flex; gap:8px; align-items:center; } #onMyId { flex:1; font:800 19px ui-monospace,Consolas,monospace; letter-spacing:2px; background:#0b111a; border:2px solid #fff3; border-radius:10px; padding:8px 12px; }
+  #onFriend { flex:1; min-width:0; padding:10px 12px; font:800 16px ui-monospace,Consolas,monospace; letter-spacing:1px; color:#fff; background:#0b111a; border:2px solid #fff3; border-radius:10px; outline:none; text-transform:uppercase; } #onFriend:focus { border-color:#7fd0ff; }
+  #onlineModal .sides { display:flex; gap:8px; } #onlineModal .sides .pill { flex:1; padding:9px; border-radius:10px; border:2px solid #fff3; background:#1d2636; color:#fff; font:800 14px system-ui,sans-serif; cursor:pointer; } #onlineModal .sides .pill.sel { border-color:var(--amarelo); background:#3a3510; }
+  #onlineModal .big { width:100%; font-size:18px; padding:13px; margin-top:4px; } #onlineModal .or { margin:12px 0 8px; font-size:12px; opacity:.7; letter-spacing:1px; text-transform:uppercase; }
+  #onSearch { padding:18px 0 6px; } #onSearch .spin { width:44px; height:44px; margin:0 auto 12px; border:5px solid #fff3; border-top-color:#7fd0ff; border-radius:50%; animation:onspin .9s linear infinite; } @keyframes onspin { to { transform:rotate(360deg); } }
+  #onSearchText { margin-bottom:12px; font-weight:700; } #onMsg { min-height:18px; margin-top:8px; font-size:13px; font-weight:700; } #onStats { font-size:12px; opacity:.75; margin-top:8px; } #onlineModal .note { font-size:11.5px; opacity:.65; margin-top:8px; line-height:1.4; }
+  #inviteModal .box { text-align:center; } #invAvatar svg { width:76px; height:76px; } #invText { margin:8px 0 14px; font-size:16px; line-height:1.4; } #inviteModal .row { display:flex; gap:10px; justify-content:center; }
+  body.online #items, body.online #itemsToggle, body.online #votes, body.online #statRow, body.online #combo { display:none !important; }
   #profileChip { position:absolute; top:10px; right:12px; z-index:3; display:flex; align-items:center; gap:8px; padding:5px 12px 5px 6px; border-radius:999px; border:2px solid #fff3; background:rgba(14,18,26,.82); color:#fff; cursor:pointer; text-align:left; transition:.15s; }
   #profileChip:hover { border-color:var(--amarelo); } #profileChip svg { width:36px; height:36px; display:block; }
   #profileChip b { display:block; font-size:14px; line-height:1.1; max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } #profileChip small { display:block; font-size:10.5px; opacity:.7; }
@@ -533,7 +551,8 @@
   </g>
 </svg></div>
   <p class="tag">Eleições 2026 em modo campanha: escolha seu lado, vença uma fase por vez e chegue ao chefão final.</p>
-  <div class="step">1 · Escolha o seu lado</div>
+  <button id="onlineBtn" class="onlinebtn"><span class="ico">🌐</span><span><b>JOGAR ONLINE</b><small>Duelo 1×1 contra outros jogadores · partida aleatória ou desafio pelo ID</small></span><em>NOVO</em></button>
+  <div class="step">📖 Campanha · 1 · Escolha o seu lado</div>
   <div class="choose">
     <div class="card f" data-side="flavio">Flávio Bolsonaro<small>PL · verde e amarelo<br>Poder final: Motociata (linha inteira)</small></div>
     <div class="card l" data-side="lula">Lula Molusco<small>PT · vermelho e estrela<br>Poder final: Caravana (coluna inteira)</small></div>
@@ -650,6 +669,28 @@
   </div>
 </div>
 
+<div id="onlineModal" class="hidden" role="dialog" aria-modal="true" aria-label="Modo online">
+  <div class="box">
+    <button class="close" id="onlineClose" aria-label="Fechar">✕</button>
+    <h2>🌐 Modo online</h2>
+    <div id="onStatus"></div>
+    <div class="onsec"><label>Seu ID (passe para um amigo)</label><div class="idrow"><div id="onMyId"></div><button class="btn" id="onCopyId">Copiar</button></div></div>
+    <div class="onsec"><label>Seu lado</label><div class="sides"><button class="pill" data-oside="flavio">Flávio</button><button class="pill" data-oside="lula">Lula</button></div></div>
+    <div id="onActions">
+      <button class="btn primary big" id="onRandom">🎲 Partida aleatória</button>
+      <div class="or">ou desafie pelo ID</div>
+      <div class="idrow"><input id="onFriend" placeholder="ID do amigo" maxlength="9" autocomplete="off" spellcheck="false"><button class="btn" id="onChallenge">⚔️ Desafiar</button></div>
+    </div>
+    <div id="onSearch" class="hidden"><div class="spin"></div><div id="onSearchText"></div><button class="btn" id="onCancel">Cancelar</button></div>
+    <div id="onMsg"></div>
+    <div id="onStats"></div>
+    <div class="note">Duelo 1×1 com as mesmas regras para os dois (sem skills nem itens). Não rende votos nem grana. Para receber um desafio, deixe esta tela aberta. Se não houver ninguém online, você enfrenta um jogador simulado.</div>
+  </div>
+</div>
+<div id="inviteModal" class="hidden" role="dialog" aria-modal="true" aria-label="Desafio recebido">
+  <div class="box"><div id="invAvatar"></div><div id="invText"></div><div class="row"><button class="btn primary" id="invAccept">⚔️ Aceitar</button><button class="btn" id="invDecline">Recusar</button></div></div>
+</div>
+
 <div id="profileModal" class="hidden" role="dialog" aria-modal="true" aria-label="Seu perfil">
   <div class="box">
     <button class="close hidden" id="profileClose" aria-label="Fechar">✕</button>
@@ -687,6 +728,8 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/phaser@4.2.1/dist/phaser.min.js"></script>
+<script src="js/online-config.js"></script>
+<script src="js/net.js"></script>
 <script src="js/music.js"></script>
 <script src="js/art.js"></script>
 <script src="js/people.js"></script>
@@ -788,7 +831,7 @@ const SKILLS = [
 /* nível do jogador exigido para aprender cada nível de cada skill, e custo em pontos de skill */
 const SKILL_REQ = { folego:[1,4,8], instituto:[2,5,9], guardachuva:[3,6,10], supertiro:[5,8,12], empolgacao:[7,10,14] };
 const SKILL_COST = [1, 2, 3];
-const STATS = { wins:0, losses:0 };             // vitórias e derrotas em batalhas concluídas
+const STATS = { wins:0, losses:0, owins:0, olosses:0 };             // vitórias e derrotas em batalhas concluídas
 let SAVE_LOCK = false;                         // true durante a importação de backup (evita o autosave sobrescrever)
 let PROFILE = null;                            // perfil do jogador: { id, nick, av } (guardado à parte do progresso)
 const playerNick = () => PROFILE ? PROFILE.nick : "Você";
@@ -798,8 +841,8 @@ let SP_LEVEL = 0;                             // nível até o qual os pontos j�
 const playerLevel = () => DEV_MODE ? MAX_LEVEL : levelOf(G.votes);
 const OWNED = new Set();                       // skills aprendidas
 const SKLV = {};                                 // nível de cada skill (1 a 3)
-const skillOn = id => OWNED.has(id);
-const skillLv = id => OWNED.has(id) ? Math.max(1, Math.min(3, SKLV[id] || 1)) : 0;
+const skillOn = id => !G.online && OWNED.has(id);          // no duelo online não há skills (regras iguais para os dois)
+const skillLv = id => (!G.online && OWNED.has(id)) ? Math.max(1, Math.min(3, SKLV[id] || 1)) : 0;
 /* valor da skill em cada nível (índice = nível - 1) */
 const LVT = { folego:[4,6,8], guardachuva:[3,5,7], supertiro:[3,4,5], empolgacao:[3,4,5], instituto:[[1,1],[1,2],[2,2]] };
 const lvVal = id => LVT[id][skillLv(id) - 1];
@@ -822,14 +865,14 @@ const THREAT_TIERS = [[28,"Extrema"],[21,"Crítica"],[14,"Alta"],[7,"Elevada"],[
 const threatName = () => (THREAT_TIERS.find(([min]) => threat() >= min) || [0,"Calma"])[1];
 const bossHp = () => 3 + Math.round(threat()/10);                                    // chefão: 3 a 6 de vida
 const extraGroups = div => [2,3,2].slice(0, Math.min(3, Math.floor(threat()/div)));   // reforços inimigos (tamanho dos grupos)
-const cpuExtraEnergy = () => { const L = LEVELS[G.levelIdx]; return (L.cpuBonus ? 1 : 0) + (threat() >= (L.ng ? 20 : 16) ? 1 : 0) + (L.ng && levelBonus() >= 8 ? 1 : 0); };
+const cpuExtraEnergy = () => { if (G.online) return 0; const L = LEVELS[G.levelIdx]; return (L.cpuBonus ? 1 : 0) + (threat() >= (L.ng ? 20 : 16) ? 1 : 0) + (L.ng && levelBonus() >= 8 ? 1 : 0); };
 const ARROWS_PER_TURN = 4;
 const zombieMax = () => (threat() >= 20 ? 4 : 5) - (levelBonus() >= 9 ? 1 : 0), zombieBite = () => 5 + Math.floor(threat()/10) + (levelBonus() >= 9 ? 1 : 0);
 const NG_SIDE = { key:"regime", name:"Regime", short:"Tirano", party:"Regime", main:0x39402a, alt:0xc9c27a, css:"#5b6636", cssAlt:"#e0da86",
   cross:"Bombardeio", ultra:"Blitz", ultraDesc:"linha inteira", ultraMode:"row", skin:0xd9b08c, hair:0x151515, shirts:[0x4a5230,0x39402a] };
 const COST = { normal:0, radar:2, cross:3, ultra:6 };
 const MAX_ENERGY = 9;
-const TURN_TIME = Infinity;    // segundos por jogada (Infinity = sem limite)
+let TURN_TIME = Infinity;    // segundos por jogada (Infinity = sem limite)
 const FLEET_TOTAL = FLEET.reduce((a,f) => a+f.len, 0);
 
 /* ================================================================
@@ -1451,7 +1494,7 @@ function resolveShots(targetB, cells, who, powerLabel, opts = {}) {
     maxT = Math.max(maxT, tm);
     setTimeout(() => {
       const res = applyShot(targetB, r, c, opts.noCone);
-      if (res !== "miss" && res !== "block") { hits++; if (who === 0) { gained += registerHit(); rollLoot(r, c, res === "sunk"); } }
+      if (res !== "miss" && res !== "block") { hits++; if (who === 0 && !G.online) { gained += registerHit(); rollLoot(r, c, res === "sunk"); } }
       if (res === "sunk") {
         const sh = G.boards[targetB][r][c].ship; sunkNames.push(G.fleets[targetB][sh].name);
       }
@@ -1518,14 +1561,15 @@ function doRadar(targetB, r, c, who, cb) {
    Turnos
    ================================================================ */
 function startBattle() {
-  G.phase = "battle"; G.turn = 0; G.round = 1; G.power = "normal"; G.firstTurn = true;
+  G.phase = "battle"; G.turn = G.online && !G.online.first ? 1 : 0; G.round = 1; G.power = "normal"; G.firstTurn = true;
   G.finished = false;
   G.furia = 0; G.repeatKind = "furia"; G.itemUse = { revive:0, furia:0, reforco:0, breja:0, plano:0 }; G.itemsSnap = { ...ITEMS }; G.loot = newLoot();
   G.combo = 0; G.levelStartVotes = G.votes; shownVotes = G.votes;
   $("votesNum").textContent = fmtVotes(G.votes); renderCombo(); renderStats();
   G.energy = [1, LEVELS[G.levelIdx].cpuBonus ? (LEVELS[G.levelIdx].ng ? 4 : 3) : 1]; lastEnergy = 1; $("log").innerHTML = ""; setupSkills();
   G.walletSnap = MONEY;
-  log(`⚔️ Fase ${G.level}: <b>${sname(0)}</b> contra <b>${G.enemy.name}</b> (${LEVELS[G.levelIdx].diff}).`);
+  if (G.online) log(`⚔️ Duelo online: <b>${esc(PROFILE.nick)}</b> contra <b>${esc(G.enemy.name)}</b>. ${G.online.first ? "Você começa!" : "O adversário começa."}`);
+  else log(`⚔️ Fase ${G.level}: <b>${sname(0)}</b> contra <b>${G.enemy.name}</b> (${LEVELS[G.levelIdx].diff}).`);
   if (LEVELS[G.levelIdx].boss) setTimeout(() => toast(`CHEFÃO: ${G.enemy.short.toUpperCase()}!`, "#ff5a4a"), 300);
   if (G.boss) log(`👑 ${G.enemy.short} é único, com ${G.boss.max} pontos de vida. A cada acerto ele muda de casa, escondido. Cada erro seu faz surgir um ${minionName()}; com ${bossMin()}, ${G.boss.kind==="lula" ? `eles explodem ${bossBl()} casas suas` : "ele recarrega a vida toda"}. Acerte os seguidores para eliminá-los!`);
   if (LEVELS[G.levelIdx].hazard === "bala") log("⚠️ Perigo do cenário: uma bala perdida cai do céu a cada turno: antes do seu ataque, na arena do adversário; antes do ataque dele, na sua.");
@@ -1563,6 +1607,10 @@ function startTurn(repeat) {
         setAction(`😮‍💨 ${sname(1)} descansou`, "#9aa7b5", "O chefão perdeu o fôlego e não atacou neste turno");
         log(`😮‍💨 ${sname(1)} descansou e não atacou.`);
         setTimeout(() => { if (G.phase === "battle") nextTurn(); }, 1400);
+      } else if (G.online) {
+        G.online.turnStart = Date.now(); G.online.processing = false;
+        setAction(`🤔 Vez de ${sname(1)}`, SIDES[G.side[1]].cssAlt, "Aguardando a jogada do adversário…");
+        setTimeout(() => G.online && G.online.pump(), 300);
       } else {
         setTimeout(cpuPlay, 1500);
         setAction(`🤔 Vez de ${sname(1)}`, SIDES[G.side[1]].cssAlt, "O adversário está escolhendo o alvo…");
@@ -1816,6 +1864,7 @@ function playerFire(r,c) {
   if (G.phase!=="battle" || G.turn!==0 || G.busy) return;
   const power = G.power, side = SIDES[G.side[0]];
   if (G.energy[0] < COST[power]) return;
+  if (G.online) { onlineFire(power, r, c); return; }
   if (power==="radar") { doRadar(1,r,c,0); G.power="normal"; return; }
   const cells = pattern(power,r,c).filter(([rr,cc]) => !G.boards[1][rr][cc].shot);
   if (!cells.length) return;
@@ -1908,6 +1957,7 @@ function cpuPlay() {
 
 
 function finish(winner, reason) {
+  if (G.online) return finishOnline(winner, reason);
   if (G.finished) return; G.finished = true;
   G.phase = "over"; G.busy = true; ui();
   Object.values(G.fans[1]).forEach(f => f.visible = true);     // revela a torcida adversária
@@ -2069,7 +2119,7 @@ function ui() {
   $("roundText").innerHTML = (G.scn ? `<span class="scn-name">📍 ${G.scn.short}</span>` : "") +
     (G.phase==="battle" || G.phase==="over" ? ` · Rodada <b>${G.round}</b>` : "");
   $("sideA").innerHTML = `${PROFILE ? avatarSVG(17) : ""}${esc(playerNick())} · ${s0.short}`; $("sideA").style.background = s0.css;
-  $("sideB").textContent = `${G.enemy ? G.enemy.short : s1.short} (CPU)` + (G.phase==="battle" ? ` ⚡${G.energy[1]}` : "");  $("sideB").style.background = s1.css;
+  $("sideB").innerHTML = (G.online ? faceSVG(G.enemy, 17) : "") + esc(`${G.enemy ? G.enemy.short : s1.short} (${G.online ? "online" : "CPU"})`) + (G.phase==="battle" ? ` ⚡${G.energy[1]}` : "");  $("sideB").style.background = s1.css;
   $("pauseBtn").classList.toggle("hidden", !(G.phase==="battle" || G.phase==="place"));
   $("sideA").style.color = s0.key==="flavio" ? "#ffdf00" : "#fff";
   const ft = $("focusTag");
@@ -2100,12 +2150,12 @@ function ui() {
     $("btnRotate").innerHTML = `${G.horiz?"↔":"↕"} Girar <kbd>R</kbd>`;
     $("shipChips").innerHTML = FLEET.map((f,i) =>
       `<div class="chip ${i<idx?"done":i===idx?"cur":""}" style="--sc:${s0.css}"><span class="sq">${"<i></i>".repeat(f.len)}</span>${f.name}</div>`).join("");
-    $("btnStart").disabled = idx < FLEET.length;
+    $("btnStart").disabled = idx < FLEET.length || !!(G.online && G.online.readySent);
     $("btnUndo").disabled = idx === 0;
   }
   if (G.phase==="battle" || G.phase==="over") {
     $("turnText").textContent = G.phase==="over" ? "Fim de jogo"
-      : G.turn===0 ? "Sua vez: escolha onde atirar" : `${s1.short} está planejando…`;
+      : G.turn===0 ? "Sua vez: escolha onde atirar" : `${G.enemy ? G.enemy.short : s1.short} está planejando…`;
     $("timerfill").style.width = G.turn===0 && G.phase==="battle" ? (G.timeLeft/TURN_TIME*100)+"%" : "0%";
     const e = G.energy[0];
     const rcst = COST.radar, marks = {[rcst-1]:"📊",2:"📣",5:"🏍️"}, markCost = {[rcst-1]:rcst,2:3,5:6};
@@ -2280,7 +2330,7 @@ const ITEM_DEFS = [
     svg:`<svg viewBox="0 0 40 40"><rect x="7" y="4" width="26" height="33" rx="3" fill="#f6f1de" stroke="#1a1a1a" stroke-width="2.4"/><rect x="14" y="2" width="12" height="6" rx="2" fill="#8a8f9c" stroke="#1a1a1a" stroke-width="2"/><path d="M12 15h16M12 20h16M12 25h10" stroke="#8b8573" stroke-width="2" stroke-linecap="round"/><path d="M28 24l2.2 4.4 4.8.7-3.5 3.4.9 4.8-4.4-2.3-4.3 2.3.8-4.8-3.4-3.4 4.8-.7z" fill="#ffd23a" stroke="#1a1a1a" stroke-width="1.6" stroke-linejoin="round"/></svg>` },
 ];
 function canUseItem(id) {
-  return G.phase==="battle" && G.turn===0 && !G.busy && ITEMS[id] > 0 && !(id==="furia" && G.furia>0);
+  return !G.online && G.phase==="battle" && G.turn===0 && !G.busy && ITEMS[id] > 0 && !(id==="furia" && G.furia>0);
 }
 function fallenFans() {
   const out = [];
@@ -2463,12 +2513,13 @@ addEventListener("keydown", e => {
 });
 $("btnRotate").onclick = () => { G.horiz = !G.horiz; ui(); updateHoverPreview(); };
 $("btnUndo").onclick = () => {
+  if (G.online && G.online.readySent) return;
   const sh = G.fleets[0].pop(); if (!sh) return;
   sh.cells.forEach(([r,c]) => { G.boards[0][r][c].ship = -1; const f = G.fans[0][r+","+c]; if (f) f.destroy(); delete G.fans[0][r+","+c]; });
   refreshAll(); ui(); updateHoverPreview();
 };
-$("btnRandom").onclick = () => { randomFleet(0); refreshAll(); ui(); updateHoverPreview(); sfx.place(); };
-$("btnStart").onclick = startBattle;
+$("btnRandom").onclick = () => { if (G.online && G.online.readySent) return; randomFleet(0); refreshAll(); ui(); updateHoverPreview(); sfx.place(); };
+$("btnStart").onclick = () => G.online ? onlineReady() : startBattle();
 $("mute").onclick = () => { muted = !muted; setTimeout(saveGame, 0); $("mute").textContent = muted ? "🔇" : "🔊"; musicVol(); };
 $("musicBtn").onclick = () => { Music.on = !Music.on; setTimeout(saveGame, 0); $("musicBtn").classList.toggle("off", !Music.on); musicVol(); };
 cv.addEventListener("contextmenu", e => { e.preventDefault(); if (G.phase==="place") { G.horiz = !G.horiz; ui(); updateHoverPreview(); } });
@@ -2927,6 +2978,7 @@ refreshShopButtons();
 const _setTimeout = window.setTimeout.bind(window);
 window.setTimeout = (fn, ms, ...a) => _setTimeout(function tick() { if (G.paused) _setTimeout(tick, 120); else fn(...a); }, ms);
 function pauseGame() {
+  if (G.online) { if (!onlineGameOver() && (G.phase === "battle" || G.phase === "place") && confirm("Desistir do duelo online? Você perde a partida.")) { G.online.ch.send("resign", {}); finish(1, "resign"); } return; }
   if (G.paused || !(G.phase === "battle" || G.phase === "place")) return;
   G.paused = true; $("pauseModal").classList.remove("hidden");
   try { actx && actx.state === "running" && actx.suspend(); } catch (e) {}
@@ -2972,7 +3024,7 @@ function snapshotForSave() {
   return {
     v: SAVE_VERSION,
     money: inLevel && G.walletSnap !== undefined ? G.walletSnap : MONEY, votes: inLevel && G.levelStartVotes !== undefined ? G.levelStartVotes : G.votes, sp: SKILL_POINTS - (inLevel && G.itemUse ? G.itemUse.plano : 0), spLevel: SP_LEVEL,
-    skills: [...OWNED], sklv: Object.fromEntries([...OWNED].map(id => [id, skillLv(id)])), bossLosses: BOSS_LOSSES, stats: { wins: STATS.wins, losses: STATS.losses },
+    skills: [...OWNED], sklv: Object.fromEntries([...OWNED].map(id => [id, skillLv(id)])), bossLosses: BOSS_LOSSES, stats: { wins: STATS.wins, losses: STATS.losses, owins: STATS.owins, olosses: STATS.olosses },
     items: inLevel && G.itemsSnap ? { ...G.itemsSnap } : { ...ITEMS },
     prog: { flavio: PROG.flavio, lula: PROG.lula },
     playtime: { flavio: PLAYTIME.flavio.map(t => Math.round((t || 0)*10)/10), lula: PLAYTIME.lula.map(t => Math.round((t || 0)*10)/10) },
@@ -2996,7 +3048,7 @@ function loadGame() {
     MONEY = num(d.money, 1e9); G.votes = num(d.votes, 1e9); SKILL_POINTS = num(d.sp, 999); SP_LEVEL = num(d.spLevel, MAX_LEVEL);
     OWNED.clear(); Object.keys(SKLV).forEach(k => delete SKLV[k]);
     (d.skills || []).forEach(id => { if (SKILLS.some(k => k.id === id)) { OWNED.add(id); SKLV[id] = Math.max(1, Math.min(3, Math.floor(Number(d.sklv && d.sklv[id]) || 1))); } });
-    BOSS_LOSSES = num(d.bossLosses, 99); STATS.wins = num(d.stats && d.stats.wins, 1e6); STATS.losses = num(d.stats && d.stats.losses, 1e6);
+    BOSS_LOSSES = num(d.bossLosses, 99); STATS.wins = num(d.stats && d.stats.wins, 1e6); STATS.losses = num(d.stats && d.stats.losses, 1e6); STATS.owins = num(d.stats && d.stats.owins, 1e6); STATS.olosses = num(d.stats && d.stats.olosses, 1e6);
     Object.keys(ITEM_MAX).forEach(id => { ITEMS[id] = num(d.items && d.items[id], ITEM_MAX[id]); });
     if (levelOf(G.votes) > SP_LEVEL) { for (let n = SP_LEVEL + 1; n <= levelOf(G.votes); n++) SKILL_POINTS += spForLevel(n); SP_LEVEL = levelOf(G.votes); }
     ["flavio","lula"].forEach(sd => {
@@ -3011,7 +3063,7 @@ function loadGame() {
 function resetSave() {
   storage.del(SAVE_KEY);
   resetItems(); MONEY = 0; G.votes = 0; SKILL_POINTS = 0; SP_LEVEL = 0; OWNED.clear(); Object.keys(SKLV).forEach(k => delete SKLV[k]); BOSS_LOSSES = 0;
-  PROG.flavio = PROG.lula = 1; CLEARED.flavio = []; CLEARED.lula = []; PLAYTIME.flavio = []; PLAYTIME.lula = []; lastClock = -1; STATS.wins = STATS.losses = 0;
+  PROG.flavio = PROG.lula = 1; CLEARED.flavio = []; CLEARED.lula = []; PLAYTIME.flavio = []; PLAYTIME.lula = []; lastClock = -1; STATS.wins = STATS.losses = STATS.owins = STATS.olosses = 0;
 }
 ["pagehide","visibilitychange"].forEach(ev => addEventListener(ev, () => { if (ev !== "visibilitychange" || document.hidden) saveGame(); }));
 
@@ -3066,6 +3118,7 @@ function buildMenu() {
   grid.appendChild(soon);
 }
 function showMenu() {
+  leaveOnline(); closeOnline();
   saveGame();
   musicStart("menu"); G.phase = "menu"; $("pauseBtn").classList.add("hidden");
   ["endscreen","placePanel","battlePanel","focusTag","action","ending"].forEach(id => $(id).classList.add("hidden"));
@@ -3091,6 +3144,7 @@ function ensureMenuMusic() {
 }
 ["pointerdown","keydown","touchstart"].forEach(ev => addEventListener(ev, ensureMenuMusic, { passive:true }));
 $("btnAgain").onclick = () => {
+  if (G.online) { showMenu(); openOnline(); return; }
   if (G.lastWin) showMenu();            // vitória: volta à tela inicial já com a próxima fase liberada
   else startLevel(G.levelIdx);          // derrota: tenta a mesma fase de novo
 };
@@ -3152,7 +3206,7 @@ function renderProfileStats() {
   const t = (v, l) => `<div class="st"><b>${v}</b><small>${l}</small></div>`;
   $("pStatsBody").innerHTML = t(playerLevel(), "Nível") + t(fmtVotes(G.votes), "Votos") + t("R$ " + fmtVotes(MONEY), "Grana")
     + t(`${done("flavio")}/${LEVELS.length}`, "Fases · Flávio") + t(`${done("lula")}/${LEVELS.length}`, "Fases · Lula") + t(`${sk}/15`, "Skills (níveis)")
-    + t(STATS.wins, "Vitórias") + t(STATS.losses, "Derrotas") + t(fmtTime(total), "Tempo de jogo")
+    + t(STATS.wins, "Vitórias") + t(STATS.losses, "Derrotas") + t(fmtTime(total), "Tempo de jogo") + t(STATS.owins, "Vitórias online") + t(STATS.olosses, "Derrotas online")
     + t(bf ? fmtTime(bf) : "—", "Melhor · Flávio") + t(bl ? fmtTime(bl) : "—", "Melhor · Lula") + t(fmtVotes(getRecord()), "Recorde de votos");
 }
 function buildBackup() {
@@ -3244,6 +3298,465 @@ $("pNick").addEventListener("input", () => { $("pErr").textContent = ""; });
 $("profileClose").onclick = closeProfile;
 $("profileChip").onclick = () => openProfile(false);
 
+/* ================================================================
+   Modo online: duelo 1×1 (partida aleatória ou por ID)
+   - cada cliente guarda o próprio tabuleiro e responde aos tiros do outro (o do adversário fica escondido);
+   - na hora de "começar" cada um envia um compromisso (hash) do tabuleiro; no fim os tabuleiros são
+     revelados e conferidos: quem respondeu algo diferente do que escondeu é flagrado;
+   - sem adversário disponível, entra um jogador simulado (conversa pelo mesmo protocolo);
+   - sem skills nem itens (regras iguais para os dois); não rende votos nem grana.
+   ================================================================ */
+const ONLINE_TURN_SECONDS = 45, ONLINE_SCENES = ["paulista", "poa", "rio", "sertao", "amazonia", "camboriu", "brasilia"];
+const hexRand = n => Array.from(crypto.getRandomValues(new Uint8Array(n)), b => b.toString(16).padStart(2, "0")).join("");
+async function sha256hex(s) {
+  try { const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)); return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join(""); }
+  catch (e) { let h = 2166136261; for (const ch of s) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619) >>> 0; } return "f" + h.toString(16); }   // contexto sem crypto.subtle: hash simples
+}
+const fmtId = id => id.slice(0, 4).toUpperCase() + "-" + id.slice(4).toUpperCase();
+const parseId = t => { const h = String(t || "").toLowerCase().replace(/[^0-9a-f]/g, ""); return h.length === 8 ? h : null; };
+const myPublic = side => ({ id:PROFILE.id, nick:PROFILE.nick, av:PROFILE.av, side });
+function sanePeer(p) {                                                  // valida o perfil que vem da rede
+  if (!p || typeof p.id !== "string" || !/^[0-9a-f]{8}$/.test(p.id)) return null;
+  const n = checkNick(String(p.nick || "")); if (!n.nick) return null;
+  return { id:p.id, nick:n.nick, av:cleanAv(p.av), side:p.side === "lula" ? "lula" : "flavio" };
+}
+const BOT_NAMES = ["Zé Pilha", "Carol_Rocha", "Marcão", "Tati Souza", "Bruno.Lima", "Dani Torres", "Leo_Mendes", "Fabi Alves", "Rafa Costa", "Gabi Nunes", "Thiago_P", "Mari Duarte", "Juninho", "Lu Ferreira", "Pedrão", "Cris Moura"];
+/* relógio que não sofre a "economia de bateria" das abas em segundo plano (roda num Worker) */
+function makeTicker(ms, fn) {
+  try { const url = URL.createObjectURL(new Blob([`setInterval(() => postMessage(0), ${ms})`], { type:"text/javascript" })), w = new Worker(url); w.onmessage = () => fn(); return { stop() { w.terminate(); URL.revokeObjectURL(url); } }; }
+  catch (e) { const id = setInterval(fn, ms); return { stop() { clearInterval(id); } }; }
+}
+const ON = { ch:null, userCh:null, lobbyCh:null, search:null, busy:false, side:"flavio", incoming:null };
+
+/* ---------------------------------------------------------------- jogador simulado (usado quando não há ninguém online) */
+function startBot(ch, prof) {
+  const botSide = prof.side, ultraMode = SIDES[botSide].ultraMode;
+  const own = Array.from({ length:N }, () => Array(N).fill(-1)), got = Array.from({ length:N }, () => Array(N).fill(false));
+  const layout = FLEET.map(() => []);
+  FLEET.forEach((def, idx) => {
+    for (let t = 0; t < 500; t++) {
+      const cells = shipCells(rand(N), rand(N), def.len, Math.random() < .5);
+      if (cells.every(([r, c]) => inb(r, c) && own[r][c] < 0)) { cells.forEach(([r, c]) => own[r][c] = idx); layout[idx] = cells; break; }
+    }
+  });
+  const salt = hexRand(16); let commit = null; sha256hex(salt + JSON.stringify(layout)).then(h => commit = h);
+  const know = Array.from({ length:N }, () => Array(N).fill(null)), hitsOn = FLEET.map(() => 0);   // o que o simulado sabe da sua arena
+  const scanned = Array.from({ length:N }, () => Array(N).fill(false));
+  let cfg = null, seq = 0, energy = 1, ready = false, oppReady = false, begun = false, over = false, revealed = false, gotHits = 0;
+  const total = FLEET.reduce((a, f) => a + f.len, 0), send = (e, p) => { if (!over || e === "reveal") ch.send(e, p); };
+  const hb = setInterval(() => ch.send("hb", {}), 4000);
+  const stop = () => { over = true; clearInterval(hb); };
+  const pat = (power, r, c, mode = ultraMode) => {
+    const out = [], add = (rr, cc) => { if (inb(rr, cc)) out.push([rr, cc]); };
+    if (power === "cross") { add(r, c); add(r - 1, c); add(r + 1, c); add(r, c - 1); add(r, c + 1); }
+    else if (power === "radar") { for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) add(r + dr, c + dc); }
+    else if (power === "ultra") { if (mode === "row") for (let cc = 0; cc < N; cc++) add(r, cc); else for (let rr = 0; rr < N; rr++) add(rr, c); }
+    else add(r, c);
+    return out;
+  };
+  const sunk = i => hitsOn[i] >= FLEET[i].len;
+  const wounded = () => { const w = []; for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) if (typeof know[r][c] === "number" && know[r][c] >= 0 && !sunk(know[r][c])) w.push([r, c]); return w; };
+  const unshot = () => { const u = []; for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) if (know[r][c] === null) u.push([r, c]); return u; };
+  function choose() {
+    const w = wounded(), u = unshot(); if (!u.length) return null;
+    let target = null;
+    if (w.length) {
+      const cand = [];
+      w.forEach(([r, c]) => [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(([dr, dc]) => { const rr = r + dr, cc = c + dc; if (inb(rr, cc) && know[rr][cc] === null) { cand.push([rr, cc]); if (w.some(([r2, c2]) => (r2 !== r || c2 !== c) && (r2 === rr || c2 === cc))) cand.push([rr, cc], [rr, cc]); } }));
+      if (cand.length) target = cand[rand(cand.length)];
+    }
+    if (!target) { const par = u.filter(([r, c]) => (r + c) % 2 === 0); const pool = par.length ? par : u; target = pool[rand(pool.length)]; }
+    let power = "normal", [r, c] = target;
+    if (energy >= COST.ultra && Math.random() < (w.length ? .5 : .7)) { power = "ultra"; if (!w.length) { const free = i => ultraMode === "row" ? know[i].filter(x => x === null).length : know.filter(rw => rw[i] === null).length; const idx = [...Array(N).keys()].sort((a, b) => free(b) - free(a)); const top = idx[rand(3)]; if (ultraMode === "row") r = top; else c = top; } }
+    else if (energy >= COST.cross && Math.random() < .4) { power = "cross"; r = Math.min(N - 2, Math.max(1, r)); c = Math.min(N - 2, Math.max(1, c)); }
+    return { power, r, c };
+  }
+  function act() {
+    if (over) return;
+    const w = wounded();
+    if (energy >= COST.radar && !w.length && Math.random() < .22) {
+      const [r, c] = (() => { const u = unshot(); const [a, b] = u[rand(u.length)]; return [Math.min(N - 2, Math.max(1, a)), Math.min(N - 2, Math.max(1, b))]; })();
+      const my = ++seq; pending[my] = m => { energy -= COST.radar; m.cells.forEach(([rr, cc, has]) => { scanned[rr][cc] = true; }); setTimeout(act, 900 + Math.random() * 800); };
+      send("radar", { seq:my, power:"radar", r, c }); return;
+    }
+    const pick = choose(); if (!pick) return;
+    const my = ++seq;
+    pending[my] = m => {
+      let hits = 0;
+      m.cells.forEach(([rr, cc, idx]) => { know[rr][cc] = idx >= 0 ? idx : -1; if (idx >= 0) { hitsOn[idx]++; hits++; } });
+      energy = Math.min(MAX_ENERGY, energy - COST[pick.power] + hits);
+    };
+    send("shot", { seq:my, power:pick.power, r:pick.r, c:pick.c });
+  }
+  const pending = {};
+  function startTurn(first) { if (over) return; if (!first) energy = Math.min(MAX_ENERGY, energy + 1); setTimeout(act, 1300 + Math.random() * 1800); }
+  function maybeBegin() { if (begun || !(ready && oppReady && cfg)) return; begun = true; if (cfg.first === "guest") startTurn(true); }
+  const answered = new Set();
+  ch.on("cfg", m => { if (cfg) return; cfg = m; setTimeout(() => { if (commit) { ready = true; send("ready", { commit }); maybeBegin(); } else setTimeout(() => { ready = true; send("ready", { commit }); maybeBegin(); }, 300); }, 1200 + Math.random() * 2200); });
+  ch.on("ready", () => { oppReady = true; maybeBegin(); });
+  ch.on("shot", m => {
+    if (answered.has(m.seq)) return; answered.add(m.seq);
+    const cells = pat(m.power, m.r, m.c, SIDES[cfg.hostSide].ultraMode).filter(([r, c]) => !got[r][c]);   // o poder final depende do lado de quem atira
+    const res = cells.map(([r, c]) => { got[r][c] = true; if (own[r][c] >= 0) gotHits++; return [r, c, own[r][c]]; });
+    send("shotres", { seq:m.seq, cells:res });
+    if (gotHits >= total) { stop(); return; }
+    startTurn(false);
+  });
+  ch.on("radar", m => { if (answered.has(m.seq)) return; answered.add(m.seq); send("radarres", { seq:m.seq, cells:pat("radar", m.r, m.c).map(([r, c]) => [r, c, own[r][c] >= 0 && !got[r][c] ? 1 : 0]) }); });
+  ch.on("shotres", m => { const f = pending[m.seq]; if (f) { delete pending[m.seq]; f(m); const all = know.flat().filter(x => typeof x === "number" && x >= 0).length; if (all >= total) { stop(); return; } } });
+  ch.on("radarres", m => { const f = pending[m.seq]; if (f) { delete pending[m.seq]; f(m); } });
+  ch.on("reveal", () => { if (!revealed) { revealed = true; send("reveal", { salt, layout }); } stop(); });
+  ch.on("resign", stop);
+  setTimeout(() => ch.send("hello", prof), 500 + Math.random() * 900);
+  return { stop };
+}
+
+/* ---------------------------------------------------------------- partida */
+function onlineGameOver() { return G.phase === "over" || G.finished; }
+function leaveOnline() {
+  const O = G.online;
+  if (O) { if (O.hbTimer) O.hbTimer.stop(); if (O.wdTimer) O.wdTimer.stop(); try { O.ch.close(); } catch (e) {} if (O.botHandle) O.botHandle.stop(); }
+  G.online = null; TURN_TIME = Infinity; $("timerbar").style.display = "none"; document.body.classList.remove("online");
+  stopSearch(true); $("btnStart").textContent = "▶ Começar a disputa";
+  if (ON.userCh) { try { ON.userCh.close(); } catch (e) {} ON.userCh = null; }
+}
+function newOnlineGame(O) {
+  G.online = O; G.paused = false; G.finished = false; G.lastWin = false;
+  G.side = [O.mySide, O.oppSide]; G.levelIdx = 0; G.level = 1; G.combo = 0; G.boss = null; G.ng = false; G.ngz = null;
+  G.loot = newLoot(); G.levelStartVotes = G.votes; G.walletSnap = MONEY; G.itemsSnap = { ...ITEMS };
+  G.enemy = { ...avToChar(O.opp.av), name:O.opp.nick, short:O.opp.nick, party:"Online", camp:O.oppSide, boss:false };
+  G.defs = [FLEET, FLEET];
+  G.phase = "place"; G.turn = 0; G.busy = false; G.horiz = true; G.power = "normal"; G.energy = [1, 1]; G.hover = null;
+  applyScenario(SCENARIOS.find(x => x.id === O.scn) || SCENARIOS[0]);
+  musicStart(G.scn.id);
+  $("action").classList.add("hidden"); clearMarkers(); clearUmbrellas(); resetFleet(0); resetFleet(1);
+  G.fleets[1] = FLEET.map((d, idx) => ({ ...d, idx, cells:[], hits:0, sunk:false }));          // a arena do adversário começa às escuras
+  for (let b = 0; b < 2; b++) {
+    GFX.setFrameColor(b, SIDES[G.side[b]].main);
+    if (G.captains[b]) G.captains[b].destroy();
+    const cp = GFX.makeCaptain(G.side[b], b === 0 ? CHARS[G.side[0]] : G.enemy, b === 0 ? 1 : -1);
+    cp.u.base = { x:CAPPOS[b].x, y:0, z:CAPPOS[b].z }; cp.at(cp.u.base.x, 0, cp.u.base.z); G.captains[b] = cp;
+  }
+  refreshAll(); clearPreview();
+  $("menu").classList.add("hidden"); $("endscreen").classList.add("hidden"); 
+  $("placePanel").classList.remove("hidden"); $("battlePanel").classList.add("hidden");
+  $("btnStart").textContent = "▶ Estou pronto"; $("btnStart").disabled = true;
+  $("log").innerHTML = "";
+  document.body.classList.add("online"); TURN_TIME = ONLINE_TURN_SECONDS; $("timerbar").style.display = "";
+  log(`🌐 <b>Duelo online</b> · ${G.scn.name} · você (${SIDES[O.mySide].short}) contra <b>${esc(O.opp.nick)}</b> (${SIDES[O.oppSide].short})`);
+  log("Posicione a sua torcida e clique em <b>Estou pronto</b>. Sem skills nem itens: as regras são iguais para os dois.");
+  ui();
+}
+async function onlineReady() {
+  const O = G.online; if (!O || O.readySent || G.phase !== "place") return;
+  O.readySent = true; $("btnStart").disabled = true; $("btnStart").textContent = "⏳ Aguardando o adversário…";
+  O.salt = hexRand(16); O.layout = G.fleets[0].map(sh => sh.cells);
+  O.commit = await sha256hex(O.salt + JSON.stringify(O.layout));
+  O.ch.send("ready", { commit:O.commit }); O.maybeStart();
+}
+function setupOnlineChannel(O) {
+  const ch = O.ch;
+  O.seq = 0; O.pending = {}; O.seen = {}; O.handled = {}; O.queue = []; O.processing = false; O.last = Date.now(); O.log = []; O.scans = [];
+  const on = (e, fn) => ch.on(e, p => { O.last = Date.now(); try { fn(p || {}); } catch (err) { console.error(err); } });
+  O.maybeStart = () => { if (O.readySent && O.oppReady && G.phase === "place") startBattle(); };
+  on("ready", m => { if (typeof m.commit !== "string") return; O.oppReady = true; O.oppCommit = m.commit; O.maybeStart(); });
+  on("hb", () => {});
+  on("shot", m => incomingAction(O, m, "shot"));
+  on("radar", m => incomingAction(O, m, "radar"));
+  on("shotres", m => { const f = O.pending["shotres" + m.seq]; if (f) { delete O.pending["shotres" + m.seq]; f(m); } });
+  on("radarres", m => { const f = O.pending["radarres" + m.seq]; if (f) { delete O.pending["radarres" + m.seq]; f(m); } });
+  on("resign", () => { if (!onlineGameOver()) finish(0, "resign"); });
+  on("reveal", m => {
+    O.oppReveal = m; if (O.revealWake) O.revealWake();
+    if (!onlineGameOver() && m.won === false) finish(0);              // o adversário diz que perdeu e a minha tela não viu: confere o tabuleiro dele e encerra
+  });
+  O.request = (evt, payload, replyEvt) => new Promise(resolve => {
+    let tries = 0; const key = replyEvt + payload.seq, send = () => ch.send(evt, payload);
+    const iv = setInterval(() => { if (++tries > 3) { clearInterval(iv); delete O.pending[key]; resolve(null); } else send(); }, 3500);
+    O.pending[key] = m => { clearInterval(iv); resolve(m); };
+    send();
+  });
+  O.pump = () => { while (O.queue.length && !O.processing && G.phase === "battle" && G.turn === 1 && !onlineGameOver()) { O.processing = true; O.queue.shift()(); } };
+  O.hbTimer = makeTicker(4000, () => ch.send("hb", {}));
+  O.wdTimer = makeTicker(2000, () => {                                   // adversário sumiu ou travou?
+    if (onlineGameOver() || (G.phase !== "place" && G.phase !== "battle")) return;
+    if (Date.now() - O.last > 90000) { toast("ADVERSÁRIO DESCONECTOU", "#ff9a5a"); finish(0, "disconnect"); }
+    else if (G.phase === "battle" && G.turn === 1 && Date.now() - O.turnStart > 150000) { toast("ADVERSÁRIO PARADO", "#ff9a5a"); finish(0, "idle"); }
+  });
+}
+function incomingAction(O, m, kind) {
+  if (!Number.isInteger(m.seq)) return;
+  if (O.seen[m.seq]) { const h = O.handled[m.seq]; if (h) O.ch.send(h.evt, h.p); return; }             // reenvio: repete a resposta
+  O.seen[m.seq] = true;
+  O.queue.push(() => kind === "shot" ? remoteShot(O, m) : remoteRadar(O, m));
+  O.pump();
+}
+function remoteViolation(why) { if (G.online) G.online.violation = why; toast("JOGADA INVÁLIDA DO ADVERSÁRIO", "#ff5a4a"); log(`⚠️ O adversário enviou uma jogada inválida (${why}). A partida foi encerrada.`); finish(0, "cheat"); }
+function remoteShot(O, m) {
+  const power = m.power, r = m.r, c = m.c;
+  if (!["normal", "cross", "ultra"].includes(power) || !Number.isInteger(r) || !Number.isInteger(c) || !inb(r, c)) return remoteViolation("alvo");
+  if (G.energy[1] < COST[power]) return remoteViolation("energia");
+  const cells = pattern(power, r, c).filter(([rr, cc]) => !G.boards[0][rr][cc].shot);
+  if (!cells.length) return remoteViolation("casa repetida");
+  const res = cells.map(([rr, cc]) => [rr, cc, G.boards[0][rr][cc].ship]);
+    const payload = { seq:m.seq, cells:res }; O.handled[m.seq] = { evt:"shotres", p:payload }; O.ch.send("shotres", payload);
+  G.energy[1] -= COST[power];
+  const me = SIDES[G.side[1]], eName = G.enemy.short;
+  let opts, label;
+  if (power === "normal") {
+    const th = pickThrow(); const [tr, tc] = cells[0]; label = th.def; opts = fxThrow(0, tr, tc, 1, th);
+    setAction(`${th.emoji} ${esc(eName)} arremessa ${th.indef.toUpperCase()}!`, me.cssAlt, "Contra a sua torcida");
+  } else {
+    sfx.power(); label = power === "cross" ? me.cross : me.ultra;
+    toast(`${eName.toUpperCase()}: ${label.toUpperCase()}!`, me.cssAlt);
+    setAction(`⚡ ${esc(eName.toUpperCase())}: ${label.toUpperCase()}!`, me.cssAlt, "Poder especial do adversário");
+    opts = playSpecial(power, 0, r, c, 1);
+  }
+  resolveShots(0, cells, 1, label, opts);
+}
+function remoteRadar(O, m) {
+  const r = m.r, c = m.c;
+  if (!Number.isInteger(r) || !Number.isInteger(c) || !inb(r, c)) return remoteViolation("alvo");
+  if (G.energy[1] < COST.radar) return remoteViolation("energia");
+  const res = pattern("radar", r, c).map(([rr, cc]) => { const k = G.boards[0][rr][cc]; return [rr, cc, k.ship >= 0 && !k.shot ? 1 : 0]; });
+  const payload = { seq:m.seq, cells:res }; O.handled[m.seq] = { evt:"radarres", p:payload }; O.ch.send("radarres", payload);
+  doRadar(0, r, c, 1, () => { O.processing = false; G.busy = true; ui(); O.pump(); });
+}
+/* revela na arena do adversário o que ele respondeu (cria a torcida atingida na hora) */
+function applyReveal(cells) {
+  for (const [r, c, idx] of cells) {
+    if (!Number.isInteger(idx) || idx < -1 || idx >= FLEET.length || !inb(r, c)) return false;
+    const cell = G.boards[1][r][c]; cell.ship = idx;
+    if (idx >= 0) {
+      const sh = G.fleets[1][idx];
+      if (!sh.cells.some(([a, b]) => a === r && b === c)) sh.cells.push([r, c]);
+      if (sh.cells.length > sh.len) return false;
+      if (!G.fans[1][r + "," + c]) addFan(1, r, c);
+    }
+  }
+  return true;
+}
+async function onlineFire(power, r, c) {
+  const O = G.online, side = SIDES[G.side[0]];
+  const cells = pattern(power, r, c).filter(([rr, cc]) => !G.boards[1][rr][cc].shot);
+  if (power !== "radar" && !cells.length) return;
+  G.busy = true; clearPreview(); ui();
+  const seq = ++O.seq;
+  if (power === "radar") {
+    const res = await O.request("radar", { seq, power, r, c }, "radarres");
+    if (!res) { if (!onlineGameOver()) { toast("SEM RESPOSTA DO ADVERSÁRIO", "#ff9a5a"); finish(0, "disconnect"); } return; }
+    for (const [rr, cc, has] of res.cells || []) { if (!inb(rr, cc)) continue; const k = G.boards[1][rr][cc]; if (!k.shot) { k.ship = has ? Math.max(0, k.ship) : -1; O.scans.push([rr, cc, has ? 1 : 0]); } }
+    G.power = "normal"; doRadar(1, r, c, 0);
+    return;
+  }
+  const res = await O.request("shot", { seq, power, r, c }, "shotres");
+  if (!res) { if (!onlineGameOver()) { toast("SEM RESPOSTA DO ADVERSÁRIO", "#ff9a5a"); finish(0, "disconnect"); } return; }
+  const got = new Map((res.cells || []).map(([rr, cc, idx]) => [rr + "," + cc, idx]));
+  if (!cells.every(([rr, cc]) => got.has(rr + "," + cc)) || !applyReveal(res.cells)) { O.dbg = { power, r, c, cells, res:res.cells, fleet:G.fleets[1].map(f => f.cells.length) }; toast("RESPOSTA INVÁLIDA DO ADVERSÁRIO", "#ff5a4a"); finish(0, "cheat"); return; }
+  cells.forEach(([rr, cc]) => O.log.push([rr, cc, G.boards[1][rr][cc].ship]));
+  G.energy[0] -= COST[power];
+  let label, opts;
+  if (power === "normal") {
+    const th = pickThrow(); label = th.def; opts = fxThrow(1, r, c, 0, th);
+    setAction(`${th.emoji} ${side.short} arremessa ${th.indef.toUpperCase()}!`, side.cssAlt, `Alvo: linha ${r + 1}, coluna ${c + 1}`);
+  } else {
+    sfx.power(); label = power === "cross" ? side.cross : side.ultra;
+    setAction(`⚡ ${side.short.toUpperCase()}: ${label.toUpperCase()}!`, side.cssAlt, "Poder especial em ação");
+    toast(label.toUpperCase() + "!", side.cssAlt); opts = playSpecial(power, 1, r, c, 0);
+  }
+  resolveShots(1, cells, 0, label, opts);
+}
+/* confere o tabuleiro revelado do adversário com tudo o que ele respondeu */
+function verifyReveal(O, rev) {
+  if (!rev || typeof rev.salt !== "string" || !Array.isArray(rev.layout) || rev.layout.length !== FLEET.length) return "invalid";
+  const grid = Array.from({ length:N }, () => Array(N).fill(-1));
+  for (let i = 0; i < FLEET.length; i++) {
+    const cells = rev.layout[i]; if (!Array.isArray(cells) || cells.length !== FLEET[i].len) return "invalid";
+    for (const cell of cells) { if (!Array.isArray(cell) || !inb(cell[0], cell[1]) || grid[cell[0]][cell[1]] >= 0) return "invalid"; grid[cell[0]][cell[1]] = i; }
+    const rs = cells.map(x => x[0]), cs = cells.map(x => x[1]), row = rs.every(x => x === rs[0]), col = cs.every(x => x === cs[0]);
+    if (!row && !col) return "invalid";
+    const line = (row ? cs : rs).slice().sort((a, b) => a - b); if (line.some((v, k) => k && v !== line[k - 1] + 1)) return "invalid";
+  }
+  return { grid, hashPromise:sha256hex(rev.salt + JSON.stringify(rev.layout)) };
+}
+async function checkOpponent(O) {
+  const v = verifyReveal(O, O.oppReveal); if (v === "invalid") return "cheat";
+  if ((await v.hashPromise) !== O.oppCommit) return "cheat";
+  for (const [r, c, idx] of O.log) if (v.grid[r][c] !== idx) return "cheat";                 // respondeu algo diferente do que escondeu
+  for (const [r, c, has] of O.scans) if ((v.grid[r][c] >= 0) !== !!has) return "cheat";
+  return "ok";
+}
+function finishOnline(winner, reason) {
+  reason = reason || "normal";
+  const O = G.online; if (G.finished) return; G.finished = true;
+  G.phase = "over"; G.busy = true; clearPreview(); ui();
+  Object.values(G.fans[1]).forEach(f => f.visible = true);
+  let youWin = winner === 0; const s = SIDES[G.side[winner === null ? 0 : winner]];
+  youWin ? sfx.win() : sfx.lose();
+  for (let i = 0; i < 8; i++) setTimeout(() => burst({ x:BX[winner || 0] + (Math.random() - .5)*8, y:0, z:(Math.random() - .5)*6 }, [s.main, s.alt, 0xffffff], 40, 6), i*250);
+  captainReact(winner || 0, "jump");
+  (async () => {
+    let verdict = "skipped";
+    if (reason === "normal") {
+      O.ch.send("reveal", { salt:O.salt, layout:O.layout, won:winner === 0 });
+      if (!O.oppReveal) await new Promise(res => { O.revealWake = res; setTimeout(res, 6000); });
+      verdict = O.oppReveal ? await checkOpponent(O) : "missing";
+      if (verdict === "cheat") youWin = true;
+    }
+    if (reason === "cheat") youWin = true;
+    if (youWin) STATS.owins++; else STATS.olosses++;
+    saveGame();
+    const rounds = `${G.round} rodada${G.round > 1 ? "s" : ""}`, opp = esc(O.opp.nick);
+    const why = { resign:`${opp} desistiu.`, disconnect:`${opp} saiu da partida.`, idle:`${opp} ficou parado por muito tempo.`, cheat:`${opp} enviou jogadas inválidas.` }[reason] || "";
+    const ver = verdict === "ok" ? "✅ Tabuleiros conferidos: partida limpa." : verdict === "cheat" ? "🚫 O tabuleiro do adversário não bate com as respostas dele: ele trapaceou, a vitória é sua." : verdict === "missing" ? "⚠️ O adversário não revelou o tabuleiro, então a partida não pôde ser conferida." : "";
+    setTimeout(() => {
+      $("endTitle").textContent = youWin ? "VITÓRIA ONLINE!" : "DERROTA ONLINE";
+      $("endText").innerHTML = `${youWin ? "Você venceu" : "Você perdeu para"} <b>${opp}</b> em ${rounds}. ${why}<br><small>${ver}${O.isBot ? "<br>🤖 Seu adversário era um jogador simulado (não havia ninguém online agora)." : ""}</small>`;
+      $("btnAgain").textContent = "🌐 Nova partida online"; $("coffeeNudge").classList.add("hidden");
+      $("endscreen").classList.remove("hidden");
+    }, 2200);
+  })();
+}
+
+/* ---------------------------------------------------------------- conexão e pareamento */
+async function joinMatch({ mid, role, peerHint, bot }) {
+  const myKey = PROFILE.id;
+  let ch, botHandle = null;
+  if (bot) { const [a, b] = SPBNet.loopbackPair(); ch = a; botHandle = startBot(b, bot); }
+  else ch = await SPBNet.channel("spb:m:" + mid, myKey);
+  const O = { ch, role, mid, isBot:!!bot, botHandle, opp:null, mySide:null, oppSide:null, scn:null, first:null, started:false };
+  setupOnlineChannel(O);
+  ON.ch = O;
+  const begin = (cfg, opp) => {
+    if (O.started) return; O.started = true; O.opp = opp;
+    O.mySide = role === "host" ? cfg.hostSide : cfg.guestSide; O.oppSide = role === "host" ? cfg.guestSide : cfg.hostSide;
+    O.scn = cfg.scn; O.first = (cfg.first === "host") === (role === "host");
+    stopSearch(true); closeOnline(); newOnlineGame(O);
+  };
+  let hello = null; const sendHello = () => ch.send("hello", myPublic(ON.side));
+  ch.on("hello", p => {
+    O.last = Date.now(); const peer = sanePeer(p); if (!peer) return; hello = peer;
+    if (role === "host") {
+      const cfg = O.cfg || (O.cfg = { mid, hostSide:ON.side, guestSide:ON.side === "flavio" ? "lula" : "flavio", scn:ONLINE_SCENES[rand(ONLINE_SCENES.length)], first:Math.random() < .5 ? "host" : "guest" });
+      ch.send("cfg", cfg); begin(cfg, peer);
+    } else sendHello();
+  });
+  ch.on("cfg", p => { O.last = Date.now(); if (role !== "guest" || !hello) return; if (!["flavio", "lula"].includes(p.hostSide) || !["flavio", "lula"].includes(p.guestSide) || p.hostSide === p.guestSide || !ONLINE_SCENES.includes(p.scn) || !["host", "guest"].includes(p.first)) return; begin(p, hello); });
+  if (!bot) { sendHello(); O.helloTimer = setInterval(() => { if (O.started) clearInterval(O.helloTimer); else sendHello(); }, 1000); }
+  setTimeout(() => { if (!O.started) { clearInterval(O.helloTimer); try { ch.close(); } catch (e) {} if (ON.ch === O) ON.ch = null; setOnlineMsg("Não foi possível iniciar a partida. Tente de novo.", true); showOnlineActions(); } }, 15000);
+}
+function stopSearch(silent) {
+  const S = ON.search; if (!S) return;
+  S.cancelled = true; clearTimeout(S.botTimer); clearInterval(S.tick); clearInterval(S.retry);
+  try { S.lobby.track(null); S.lobby.close(); } catch (e) {}
+  ON.search = null; if (!silent) showOnlineActions();
+}
+async function findRandom() {
+  if (ON.search || ON.busy) return; ON.busy = true; showSearching("Conectando…");
+  const mine = myPublic(ON.side), ts = Date.now();
+  const startedBot = () => { if (!ON.search || ON.search.cancelled) return; stopSearch(true); const side = ON.side === "flavio" ? "lula" : "flavio"; joinMatch({ mid:hexRand(6), role:"host", bot:{ id:hexRand(4), nick:BOT_NAMES[rand(BOT_NAMES.length)].slice(0, 14), av:randomAv(), side } }); };
+  const S = ON.search = { kind:"random", cancelled:false, lobby:null, t0:ts };
+  try {
+    if (!SPBNet.available) { S.botTimer = setTimeout(startedBot, 4000 + Math.random()*3000); ON.busy = false; startTick(); return; }
+    S.lobby = await SPBNet.channel("spb:lobby:v1", mine.id);
+  } catch (e) { ON.busy = false; if (ON.search === S) { showSearching("Sem conexão com o servidor: procurando…"); S.botTimer = setTimeout(startedBot, 3500); startTick(); } return; }
+  if (S.cancelled) { try { S.lobby.close(); } catch (e) {} ON.busy = false; return; }
+  ON.busy = false; startTick(); showSearching("Procurando adversário…");
+  const lobby = S.lobby; let paired = false;
+  const myState = { ...mine, ts, status:"seeking" };
+  lobby.track(myState);
+  const attempt = list => {
+    if (S.cancelled || paired) return;
+    const seekers = list.filter(p => p.status === "seeking" && /^[0-9a-f]{8}$/.test(p.id || "")).sort((a, b) => a.ts - b.ts || (a.id < b.id ? -1 : 1));
+    const i = seekers.findIndex(p => p.id === mine.id); if (i < 0) return;
+    if (i % 2 === 0 && seekers[i + 1]) { const other = seekers[i + 1]; lobby.send("pair", { to:other.id, from:myState, mid:hexRand(6), at:Date.now() }); }
+  };
+  lobby.onPresence(attempt);
+  lobby.on("pair", p => {                                                    // convite de pareamento recebido
+    if (S.cancelled || paired || p.to !== mine.id) return; const from = sanePeer(p.from); if (!from || typeof p.mid !== "string" || !/^[0-9a-f]{12}$/.test(p.mid)) return;
+    paired = true; lobby.send("paired", { to:from.id, mid:p.mid }); stopSearch(true); joinMatch({ mid:p.mid, role:"guest" });
+  });
+  lobby.on("paired", p => { if (S.cancelled || paired || p.to !== mine.id || typeof p.mid !== "string") return; paired = true; stopSearch(true); joinMatch({ mid:p.mid, role:"host" }); });
+  S.retry = setInterval(() => attempt(lobby.presence()), 2500);
+  S.botTimer = setTimeout(startedBot, 9000 + Math.random()*2000);               // ninguém por perto: entra um jogador simulado
+  function startTick() { S.tick = setInterval(() => { const s = Math.floor((Date.now() - S.t0)/1000); $("onSearchText").textContent = `Procurando adversário… ${s}s`; }, 500); }
+}
+async function listenInvites() {
+  if (!SPBNet.available || ON.userCh) return;
+  try {
+    const ch = await SPBNet.channel("spb:user:" + PROFILE.id, PROFILE.id); ON.userCh = ch;
+    ch.on("invite", p => {
+      const from = sanePeer(p.from); if (!from || typeof p.mid !== "string" || !/^[0-9a-f]{12}$/.test(p.mid)) return;
+      if (ON.search || ON.incoming || G.online || $("onlineModal").classList.contains("hidden")) { ch.send("reply", { mid:p.mid, ok:false, busy:true }); return; }
+      ON.incoming = { from, mid:p.mid, ch };
+      $("invAvatar").innerHTML = faceSVG(avToChar(from.av), 64); $("invText").innerHTML = `<b>${esc(from.nick)}</b> <small>(${fmtId(from.id)})</small><br>te desafiou para um duelo!`;
+      $("inviteModal").classList.remove("hidden"); try { Sfx.coin(true); } catch (e) {}
+      clearTimeout(ON.incomingT); ON.incomingT = setTimeout(() => declineInvite(), 25000);
+    });
+    ch.on("cancel", p => { if (ON.incoming && ON.incoming.mid === p.mid) { clearTimeout(ON.incomingT); ON.incoming = null; $("inviteModal").classList.add("hidden"); setOnlineMsg("O desafio foi cancelado.", true); } });
+  } catch (e) { setOnlineMsg("Não foi possível conectar ao servidor online.", true); }
+}
+function declineInvite() { const I = ON.incoming; if (!I) return; clearTimeout(ON.incomingT); I.ch.send("reply", { mid:I.mid, ok:false }); ON.incoming = null; $("inviteModal").classList.add("hidden"); }
+function acceptInvite() {
+  const I = ON.incoming; if (!I) return; clearTimeout(ON.incomingT);
+  I.ch.send("reply", { mid:I.mid, ok:true }); ON.incoming = null; $("inviteModal").classList.add("hidden");
+  stopSearch(true); joinMatch({ mid:I.mid, role:"guest" });
+}
+async function challengeFriend() {
+  const id = parseId($("onFriend").value);
+  if (!id) return setOnlineMsg("Digite o ID do amigo (8 letras e números, ex.: A1B2-C3D4).", true);
+  if (id === PROFILE.id) return setOnlineMsg("Esse é o seu próprio ID.", true);
+  if (!SPBNet.available) return setOnlineMsg("Desafiar por ID precisa do servidor online, que ainda não foi configurado.", true);
+  if (ON.search || ON.busy) return; ON.busy = true; showSearching("Chamando seu amigo…");
+  const mid = hexRand(6), S = ON.search = { kind:"friend", mid, cancelled:false, t0:Date.now(), lobby:null };
+  try {
+    const ch = await SPBNet.channel("spb:user:" + id, PROFILE.id + "c"); S.lobby = ch;
+    ON.busy = false; if (S.cancelled) { ch.close(); return; }
+    ch.on("reply", p => {
+      if (p.mid !== mid || S.cancelled) return;
+      if (p.ok) { stopSearch(true); joinMatch({ mid, role:"host" }); }
+      else { stopSearch(true); setOnlineMsg(p.busy ? "Seu amigo está ocupado agora." : "Seu amigo recusou o desafio.", true); showOnlineActions(); }
+    });
+    ch.send("invite", { mid, from:myPublic(ON.side) });
+    S.botTimer = setTimeout(() => { if (ON.search === S && !S.cancelled) { try { ch.send("cancel", { mid }); } catch (e) {} stopSearch(true); setOnlineMsg("Sem resposta: seu amigo precisa estar com a tela Online aberta.", true); showOnlineActions(); } }, 25000);
+    S.tick = setInterval(() => { $("onSearchText").textContent = `Aguardando ${Math.max(0, 25 - Math.floor((Date.now() - S.t0)/1000))}s a resposta do seu amigo…`; }, 500);
+  } catch (e) { ON.busy = false; stopSearch(true); setOnlineMsg("Não foi possível conectar ao servidor online.", true); showOnlineActions(); }
+}
+
+/* ---------------------------------------------------------------- telas do modo online */
+function setOnlineMsg(t, bad) { const m = $("onMsg"); m.textContent = t || ""; m.style.color = bad ? "#ff8a7a" : "#4cd964"; }
+function showSearching(text) { $("onActions").classList.add("hidden"); $("onSearch").classList.remove("hidden"); $("onSearchText").textContent = text; setOnlineMsg(""); }
+function showOnlineActions() { $("onSearch").classList.add("hidden"); $("onActions").classList.remove("hidden"); }
+function renderOnline() {
+  $("onMyId").textContent = PROFILE ? fmtId(PROFILE.id) : "—";
+  document.querySelectorAll("[data-oside]").forEach(b => b.classList.toggle("sel", b.dataset.oside === ON.side));
+  const st = $("onStatus");
+  st.innerHTML = SPBNet.mode === "supabase" ? `<span class="dot ok"></span> Servidor online conectado`
+    : SPBNet.mode === "local" ? `<span class="dot test"></span> Modo de teste (abas do mesmo navegador)`
+    : `<span class="dot off"></span> Servidor online ainda não configurado: partidas aleatórias serão contra jogadores simulados`;
+  $("onStats").textContent = `Seus duelos online: ${STATS.owins} vitória${STATS.owins === 1 ? "" : "s"} · ${STATS.olosses} derrota${STATS.olosses === 1 ? "" : "s"}`;
+}
+function openOnline() {
+  if (!PROFILE) { openProfile(true); return; }
+  actx && actx.state === "suspended" && actx.resume();
+  setOnlineMsg(""); showOnlineActions(); renderOnline(); $("onlineModal").classList.remove("hidden"); listenInvites();
+}
+function closeOnline() {
+  if (ON.search) stopSearch(true);
+  if (ON.incoming) declineInvite();
+  $("onlineModal").classList.add("hidden");
+  if (ON.userCh) { try { ON.userCh.close(); } catch (e) {} ON.userCh = null; }
+}
+$("onlineBtn").onclick = openOnline;
+$("onlineClose").onclick = closeOnline;
+$("onRandom").onclick = findRandom;
+$("onChallenge").onclick = challengeFriend;
+$("onFriend").addEventListener("keydown", e => { if (e.key === "Enter") challengeFriend(); });
+$("onCancel").onclick = () => { const S = ON.search; if (S && S.kind === "friend" && S.lobby) { try { S.lobby.send("cancel", { mid:S.mid }); } catch (e) {} } stopSearch(); setOnlineMsg(""); };
+$("onCopyId").onclick = () => { copyText(PROFILE.id.toUpperCase(), ""); setOnlineMsg("ID copiado! Passe para o seu amigo."); };
+$("invAccept").onclick = acceptInvite; $("invDecline").onclick = declineInvite;
+document.querySelectorAll("[data-oside]").forEach(b => b.onclick = () => { ON.side = b.dataset.oside; renderOnline(); });
+
 const hadSave = loadGame();
 if (DEV_MODE) { MONEY = Math.max(MONEY, 99999); SKILL_POINTS = Math.max(SKILL_POINTS, 99); }
 $("mute").textContent = muted ? "🔇" : "🔊"; $("musicBtn").classList.toggle("off", !Music.on);
@@ -3252,6 +3765,7 @@ buildMenu();
 if (loadProfile()) renderProfileChip(); else { renderProfileChip(); openProfile(true); }       // primeira vez: cria o perfil antes de jogar
 
 function newGame(playerKey, levelIdx = 0) {
+  leaveOnline();
   const other = playerKey==="flavio" ? "lula" : "flavio";
   const L = LEVELS[levelIdx];
   G.side = [playerKey, other];
@@ -3310,9 +3824,10 @@ onFrame = function(time, delta) {
 
   // tempo de jogo da trilha (não finaliza a partida: só registra quanto tempo você levou)
   if ((G.phase==="battle" || G.phase==="place") && !G.paused) {
-    const sd = G.side[0]; PLAYTIME[sd][G.levelIdx] = (PLAYTIME[sd][G.levelIdx] || 0) + Math.min(delta/1000, .5);
+    if (G.online) G.online.elapsed = (G.online.elapsed || 0) + Math.min(delta/1000, .5);            // duelo online: relógio da partida (não conta no tempo da campanha)
+    else { const sd = G.side[0]; PLAYTIME[sd][G.levelIdx] = (PLAYTIME[sd][G.levelIdx] || 0) + Math.min(delta/1000, .5); }
   }
-  if (G.side[0]) setClock(trailTime(G.side[0]));
+  if (G.online) setClock(G.online.elapsed || 0); else if (G.side[0]) setClock(trailTime(G.side[0]));
 
   // cronômetro do turno (desligado quando TURN_TIME = Infinity)
   if (TURN_TIME!==Infinity && G.phase==="battle" && G.turn===0 && !G.busy) {

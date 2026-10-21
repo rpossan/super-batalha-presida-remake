@@ -79,6 +79,7 @@ quando fazer uma pesquisa para descobrir onde o adversário se esconde e qual po
 | 🎬 **Final cinematográfico** | Ao vencer o chefão: câmera passeando pela festa com fogos e confete, a cena da posse, a **linha do tempo da sua campanha** (fase a fase, com o tempo de cada uma) e créditos. [Veja a seção](#-o-final). |
 | 🏆 **Nível, votos e recorde** | Votos são experiência (nunca zeram), com tela de resultados e *LEVEL UP!*; combo e recorde pessoal. |
 | ⏱️ **Cronômetro de jogo** | O relógio do topo conta o tempo jogado na trilha (pausa e menu não contam, e ele não encerra a partida). Ao zerar, o final mostra o tempo por fase e o melhor tempo. |
+| 🌐 **Modo online** | Duelo 1×1 contra outros jogadores: **partida aleatória** ou **desafio pelo ID**, com tabuleiros escondidos e conferidos no fim. [Veja a seção](#-modo-online). |
 | 🙋 **Perfil do jogador** | Crie o seu **nick** e monte o **avatar** (pele, cabelo, boné, camisa, fundo, óculos, barba). Aparece no menu, na batalha, nos resultados e no final, com estatísticas e **backup**. [Veja a seção](#-seu-perfil). |
 | 🎵 **Trilha sonora própria** | Uma música diferente por cenário (samba, baião, milonga, tambores, marcha…), gerada por código. |
 | 📱 **Funciona no celular** | A câmera acompanha o turno: na sua vez, só a arena do adversário, para dar precisão no toque. |
@@ -238,6 +239,26 @@ Como a progressão agora é mais lenta e o jogo começa sem itens, os números d
 
 ---
 
+## 🌐 Modo online
+
+O botão **JOGAR ONLINE** fica logo na tela inicial. É um **duelo 1×1** com as mesmas regras para os dois (sem skills nem itens), que não rende votos nem grana.
+
+<p align="center"><img src="docs/img/online_busca.png" alt="Procurando adversário" height="360">&nbsp;<img src="docs/img/online_batalha.png" alt="Duelo online" height="360"></p>
+
+- **Partida aleatória:** o jogo procura outro jogador que também esteja procurando. Se ninguém aparecer em cerca de 10 segundos, entra um **jogador simulado**, e no fim da partida o jogo avisa que o adversário era simulado.
+- **Desafio pelo ID:** cada perfil tem um ID (ex.: `A1B2-C3D4`). Digite o ID do amigo para desafiar; ele recebe o convite se estiver com a tela **Online** aberta.
+- **Como funciona:** cada jogador guarda o próprio tabuleiro e responde aos tiros do outro, então o do adversário fica escondido. Ao posicionar, cada um envia um *compromisso* (hash) do tabuleiro; no fim os tabuleiros são revelados e conferidos, e quem respondeu algo diferente é flagrado e perde.
+- **Rede:** usa o **Supabase Realtime**. Sem configuração (arquivo `js/online-config.js` vazio) o jogo ainda oferece partidas contra jogadores simulados.
+- **Tempo:** 45 s por jogada (se estourar, o jogo atira por você). Desistir fica no botão ⏸. Se o adversário sumir por mais de 90 s, você vence.
+
+### Configurar o servidor online
+1. Crie um projeto no [Supabase](https://supabase.com) (o Realtime já vem ligado; para o modo online não é preciso criar tabelas).
+2. Em *Project Settings → API*, copie a **Project URL** e a chave pública **anon**.
+3. Cole as duas em [`js/online-config.js`](js/online-config.js). Nunca use a chave `service_role`.
+4. Para testar com duas abas sem servidor: abra o jogo com `?net=local` nas duas.
+
+---
+
 ## 🙋 Seu perfil
 
 Na primeira vez que abre o jogo você cria o **nome (nick)** e monta o **avatar**. Clique no seu avatar no canto do menu para editar quando quiser.
@@ -329,7 +350,8 @@ com a chave Pix e o QR code:
   citados participou, patrocinou, aprovou ou tem qualquer relação com este projeto. Siglas, nomes e marcas
   pertencem aos seus respectivos titulares e são citados apenas de forma descritiva.
 - **Sem violência real.** Quem é "atingido" apenas senta, cansado de tanto gritar.
-- **Sem coleta de dados.** O jogo roda no seu navegador; o progresso e o recorde ficam apenas nele.
+- **Dados mínimos.** O jogo roda no seu navegador; o progresso, o perfil e o recorde ficam apenas nele. No **modo online**, o seu nick, avatar e ID são enviados ao serviço de tempo real (Supabase Realtime) só para o adversário ver durante a partida, e o jogo não os grava.
+- **Jogadores simulados.** Quando não há ninguém online, a partida aleatória é contra um jogador simulado (controlado pelo próprio jogo), e a tela final avisa isso.
 - **Pedidos de ajuste ou remoção** podem ser feitos abrindo uma *issue* neste repositório ou contatando
   o autor, e serão analisados com atenção.
 
