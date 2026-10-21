@@ -826,7 +826,7 @@ const SKILLS = [], SKILL_REQ = {}, LVT = {}, SKILL_TEXT = {};
 const SKILL_COST = [1, 2, 3];
 const STATS = { wins:0, losses:0, owins:0, olosses:0 };
 const RECORDS = { votes:0, best:{} };            // recordes do jogador (recorde de votos e melhores tempos "campanha/lado"): vão dentro do save
-const GAME_VERSION = "2.2.0", PRIVACY_VERSION = "2026-10";   // versão do jogo e da Política de Privacidade (mudar a política exige novo aceite)
+const GAME_VERSION = "2.2.1", PRIVACY_VERSION = "2026-10";   // versão do jogo e da Política de Privacidade (mudar a política exige novo aceite)
 const PERSIST_CLOUD = SPBNet.mode === "supabase";   // com servidor configurado, o progresso fica na nuvem (e não no navegador)             // vitórias e derrotas em batalhas concluídas
 let SAVE_LOCK = false;                         // true durante a importação de backup (evita o autosave sobrescrever)
 let PROFILE = null;                            // perfil do jogador: { id, nick, av } (guardado à parte do progresso)
