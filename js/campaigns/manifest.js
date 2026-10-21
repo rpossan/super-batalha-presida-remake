@@ -4,7 +4,7 @@
 "use strict";
 const SPB_CAMPAIGN_FILES = ["br2026", "soon"];
 SPB_CAMPAIGN_FILES.forEach(id => document.write(`<script src="js/campaigns/${id}.js"><\/script>`));
-try {                                                                   // ?pack=js/campaigns/... carrega um pacote extra (teste local)
+if (["localhost", "127.0.0.1", ""].includes(location.hostname)) try {                // ?pack=js/campaigns/... carrega um pacote extra (só na máquina do desenvolvedor)
   const extra = new URLSearchParams(location.search).get("pack");
   if (extra && /^js\/campaigns\/[\w./-]+\.js$/.test(extra) && !extra.includes("..")) document.write(`<script src="${extra}"><\/script>`);
 } catch (e) {}

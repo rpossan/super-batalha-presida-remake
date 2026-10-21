@@ -1,7 +1,8 @@
 -- Super Presida Batalha REMAKE · esquema do Supabase (ranking + save na nuvem)
 -- Cole no SQL Editor do Supabase e execute. É seguro rodar mais de uma vez.
 --
--- Contém: perfis e ranking da CAMPANHA (votos), save na nuvem e ranking do MODO ONLINE (rating tipo ELO).
+-- Contém: perfis, save na nuvem (o jogo guarda o progresso aqui, não no navegador), ranking da CAMPANHA (votos)
+-- e ranking do MODO ONLINE (rating tipo ELO).
 --
 -- Modelo de segurança (o jogo roda no navegador, então a chave "anon" é pública):
 --   * cada jogador entra com login ANÔNIMO do Supabase (auth.uid() identifica o navegador);
@@ -88,6 +89,9 @@ create policy "save do dono" on public.saves for select to authenticated using (
 
 -- nenhuma escrita direta: tudo passa pelas funções abaixo
 revoke insert, update, delete, truncate on public.players, public.saves, public.online_ratings from anon, authenticated;
+-- leitura pública de players: só as colunas do ranking (friend_id e banned não são expostos)
+revoke select on public.players from anon, authenticated;
+grant select (id, code, nick, avatar, votes, level, wins, losses, best_times, created_at, updated_at) on public.players to anon, authenticated;
 revoke all on public.online_matches from anon, authenticated;
 revoke all on public.saves from anon;
 revoke all on public.blocked_words from anon, authenticated;
@@ -121,8 +125,9 @@ end $$;
 -- envia o progresso: valida, nunca deixa os números diminuírem e limita o ganho por envio
 -- p_best: melhores tempos por campanha e lado, ex.: {"br2026/flavio": 4277.5, "br2026/lula": 5120}
 drop function if exists public.submit_progress(bigint, int, int, numeric, numeric, jsonb);
+drop function if exists public.submit_progress(bigint, int, int, jsonb, jsonb);
 create or replace function public.submit_progress(
-  p_votes bigint, p_wins int, p_losses int, p_best jsonb, p_save jsonb)
+  p_votes bigint, p_wins int, p_losses int, p_best jsonb)
 returns void language plpgsql security definer set search_path = public as $$
 declare
   uid uuid := auth.uid();
@@ -160,12 +165,29 @@ begin
     best_times = merged, updated_at = now()
   where id = uid;
 
-  if p_save is not null then
-    if jsonb_typeof(p_save) is distinct from 'object' or pg_column_size(p_save) > 30000 then raise exception 'save inválido'; end if;
-    insert into public.saves (player_id, data) values (uid, p_save)
-    on conflict (player_id) do update set data = excluded.data, updated_at = now();
-  end if;
 end $$;
+
+-- salva o progresso do jogador (o save inteiro do jogo, em JSON). Só guarda: o ranking só muda via submit_progress
+create or replace function public.save_game(p_save jsonb)
+returns timestamptz language plpgsql security definer set search_path = public as $$
+declare uid uuid := auth.uid(); last timestamptz; t timestamptz := now();
+begin
+  if uid is null then raise exception 'não autenticado'; end if;
+  if not exists (select 1 from public.players where id = uid and not banned) then raise exception 'perfil inexistente'; end if;
+  if jsonb_typeof(p_save) is distinct from 'object' or pg_column_size(p_save) > 40000 then raise exception 'save inválido'; end if;
+  select updated_at into last from public.saves where player_id = uid;
+  if last is not null and t - last < interval '1 second' then raise exception 'salvando rápido demais'; end if;
+  insert into public.saves (player_id, data, updated_at) values (uid, p_save, t)
+  on conflict (player_id) do update set data = excluded.data, updated_at = t;
+  return t;
+end $$;
+
+-- devolve o perfil do próprio jogador (inclui o friend_id, que não é público) ou null se ainda não existe
+create or replace function public.get_my_profile() returns jsonb
+language sql stable security definer set search_path = public as $$
+  select jsonb_build_object('nick', nick, 'avatar', avatar, 'friend_id', friend_id, 'code', code)
+  from public.players where id = auth.uid() and not banned;
+$$;
 
 -- ELO: aplica o resultado de uma partida já validada (uso interno)
 create or replace function public._apply_rating(p_match text, p_winner uuid, p_loser uuid)
@@ -255,11 +277,11 @@ language sql security definer set search_path = public as $$
 $$;
 
 revoke all on function public.nick_ok(text), public.upsert_profile(text, jsonb, text, text),
-  public.submit_progress(bigint, int, int, jsonb, jsonb), public.delete_my_data(),
+  public.submit_progress(bigint, int, int, jsonb), public.save_game(jsonb), public.get_my_profile(), public.delete_my_data(),
   public._apply_rating(text, uuid, uuid), public._settle_stale(),
   public.report_online_match(text, text, boolean, text, int, text) from public, anon, authenticated;
 grant execute on function public.upsert_profile(text, jsonb, text, text),
-  public.submit_progress(bigint, int, int, jsonb, jsonb), public.delete_my_data(),
+  public.submit_progress(bigint, int, int, jsonb), public.save_game(jsonb), public.get_my_profile(), public.delete_my_data(),
   public.report_online_match(text, text, boolean, text, int, text) to authenticated;
 
 -- ---------------------------------------------------------------- ranking (leitura pública)
@@ -267,8 +289,7 @@ drop view if exists public.ranking;
 create view public.ranking with (security_invoker = true) as
 select id, code, nick, avatar, votes, level, wins, losses, best_times,
        row_number() over (order by votes desc, updated_at asc) as rank                -- 1º, 2º e 3º: ouro, prata e bronze
-from public.players
-where not banned;
+from public.players;                                                                  -- a policy "ranking publico" já esconde os bloqueados
 grant select on public.ranking to anon, authenticated;
 
 -- ranking do modo online: só aparece quem já jogou pelo menos uma partida valendo rating
@@ -277,5 +298,5 @@ select p.id, p.code, p.nick, p.avatar, r.rating, r.wins, r.losses, r.games,
        row_number() over (order by r.rating desc, r.wins desc, r.updated_at asc) as rank
 from public.online_ratings r
 join public.players p on p.id = r.player_id
-where not p.banned and r.games >= 1;
+where r.games >= 1;                                                                   -- (jogadores bloqueados somem pela policy de players)
 grant select on public.ranking_online to anon, authenticated;

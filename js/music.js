@@ -390,7 +390,58 @@ const MusicEngine = (() => {
     for (let t = .05; t < seconds - .5; t += sd, i++) { const st = i%16, bar = ((i/16)|0)%8, L = Math.floor(i/128); song.step({ t:t + (st%2 ? sd*(song.swing || 0) : 0), st, bar, L, sd, E }); }
     return ctx.startRendering();
   }
-  return { SONGS, make, createPlayer, renderOffline, mf, chord };
+  /* ----------------------------------------------------------------
+     VITÓRIA: arquibancada em festa (rugido, palmas, gritos, apitos, buzina e coro) + fanfarra de metais.
+     É uma função do motor (e = make(...), t = início) para poder ser renderizada fora do ar nos testes.
+     ---------------------------------------------------------------- */
+  function victory(e, t) {
+    const rr = (a, b) => a + Math.random()*(b - a), N = n => mf(n), K = .6;                  // K: volume geral da vitória (mais baixo que o motor para não estourar)
+    /* 1) a torcida: base de ruído em camadas que sobe e se sustenta */
+    e.noise({ t, dur:7.4, a:1.5, vol:K*.2, type:"bandpass", f:620, f2:880, q:.45, rev:.25 });
+    e.noise({ t:t + .1, dur:7.2, a:1.2, vol:K*.17, type:"bandpass", f:1400, f2:1850, q:.6, rev:.3 });
+    e.noise({ t:t + .2, dur:6.8, a:1.3, vol:K*.09, type:"bandpass", f:3300, f2:4200, q:.7, pan:-.35 });
+    e.noise({ t:t + .25, dur:6.8, a:1.3, vol:K*.09, type:"bandpass", f:3000, f2:3900, q:.7, pan:.35 });
+    /* 2) palmas: centenas de batidas aleatórias, cada vez mais densas */
+    for (let i = 0; i < 170; i++) {
+      const k = i/170, at = t + .45 + Math.pow(k, .85)*5.6 + rr(0, .05);
+      e.noise({ t:at, dur:.035, vol:K*rr(.04, .1)*(.55 + k*.6), type:"bandpass", f:rr(1300, 2700), q:rr(.9, 1.7), pan:rr(-.85, .85) });
+    }
+    /* 3) gritos de alegria subindo de tom ("uuuuh-é!") */
+    for (let i = 0; i < 11; i++) {
+      const at = t + rr(.05, 3), f = rr(165, 340), d = rr(.45, 1.1);
+      e.voice({ t:at, f, dur:d, vol:K*rr(.035, .065), a:.07, r:.25, glide:{ from:rr(.72, .88), time:d*.55 }, oscs:[{ type:"sawtooth", det:-7 }, { type:"sawtooth", det:7 }],
+        lp:[f*2.6, f*7.5, d*.7], q:2.4, vib:{ rate:5.6, depth:14, delay:.15 }, pan:rr(-.8, .8), rev:.25 });
+    }
+    /* 4) apitos e buzina de arquibancada */
+    [.05, .55, .9, 1.4].forEach((d, i) => e.voice({ t:t + d, f:2100 + i*140, dur:.16, vol:K*.035, a:.01, r:.05, glide:{ from:.92, time:.1 }, oscs:[{ type:"sine" }, { type:"sine", mul:2, gain:.25 }], pan:rr(-.6, .6), rev:.3 }));
+    e.voice({ t:t + .15, f:233, dur:1.9, vol:K*.05, a:.08, r:.3, oscs:[{ type:"sawtooth" }, { type:"square", gain:.4 }], lp:[900, 1500, 1], q:1.4, vib:{ rate:6, depth:6, delay:.3 }, pan:.5, rev:.3 });
+    /* 5) a fanfarra de metais (melodia em oitavas + baixo + tímpanos) */
+    const f0 = t + .95, br = (at, n, len, v = 1) => { v *= K; e.brass(at, N(n), len, v); e.brass(at, N(n - 12), len, v*.7); if (n < 80) e.brass(at, N(n - 5), len, v*.45); };
+    const tuba = (at, n, len) => e.voice({ t:at, f:N(n), dur:len, vol:K*.22, a:.03, r:.15, oscs:[{ type:"sawtooth" }, { type:"triangle", mul:.5, gain:.6 }], lp:[500, 1100, .2], q:1, rev:.2 });
+    [0, .14, .28].forEach(d => br(f0 + d, 72, .13)); br(f0 + .42, 76, .55, 1.1);           // dó dó dó MI
+    tuba(f0, 36, .9); e.timpani(f0 + .42, mf(48), .9, .7*K);
+    const g0 = f0 + 1.1;
+    [0, .14, .28].forEach(d => br(g0 + d, 74, .13)); br(g0 + .42, 79, .65, 1.15);          // ré ré ré SOL
+    tuba(g0, 31, .95); e.timpani(g0 + .42, mf(43), 1, .75*K);
+    const h0 = g0 + 1.35;
+    [[76, 0], [74, .17], [72, .34], [74, .51], [76, .68]].forEach(([n, d]) => br(h0 + d, n, .16));
+    br(h0 + .85, 79, .24, 1.1);                                                           // frase ascendente
+    e.roll(h0 + .1, mf(48), .85, K);
+    const fin = h0 + 1.15;
+    [72, 76, 79, 84].forEach(n => e.brass(fin, N(n), 1.9, 1.15*K)); e.brass(fin, N(60), 1.9, .9*K); tuba(fin, 36, 2.1); tuba(fin, 48, 2.1);   // acorde final em dó maior
+    e.strings(fin, [60, 64, 67, 72, 76], 2.3, 1.2*K, { a:.05, r:1.2 });
+    e.crash(fin, 1.4*K, 2.6); e.taiko(fin, K); e.timpani(fin, mf(48), K, 1.4);
+    [84, 88, 91, 96].forEach((n, i) => e.bell(fin + .05 + i*.07, N(n), 1.4, .9*K));          // brilho de sinos
+    /* 6) coro da torcida depois da fanfarra: "ô-lê, ô-lê, ô-lê, ô-lê-ô-lê" */
+    const c0 = fin + .55;
+    [[55, .0], [60, .22], [55, .62], [60, .84], [55, 1.24], [60, 1.46], [55, 1.86], [60, 2.08], [57, 2.48], [60, 2.7]].forEach(([n, d], i) => {
+      const hi = i % 2 === 1;                                                                // sílaba aberta ("lê") um pouco mais alta e brilhante
+      for (let v = 0; v < 4; v++) e.voice({ t:c0 + d + rr(0, .03), f:N(n)*rr(.985, 1.015), dur:hi ? .3 : .2, vol:K*.045, a:.03, r:.12, oscs:[{ type:"sawtooth", det:rr(-10, 10) }, { type:"sawtooth", det:rr(-10, 10) }],
+        lp:hi ? [1100, 1700, .2] : [700, 520, .2], q:2.2, pan:rr(-.7, .7), rev:.3 });
+    });
+    for (let i = 0; i < 6; i++) e.voice({ t:fin + rr(.2, 1.4), f:rr(190, 320), dur:rr(.5, .9), vol:K*rr(.03, .05), a:.06, r:.25, glide:{ from:.8, time:.3 }, oscs:[{ type:"sawtooth", det:-6 }, { type:"sawtooth", det:6 }], lp:[500, 1900, .4], q:2.2, pan:rr(-.8, .8), rev:.3 });
+  }
+  return { SONGS, make, createPlayer, renderOffline, mf, chord, victory };
 })();
 
 /* ================================================================
@@ -427,6 +478,7 @@ const Sfx = (() => {
     },
     hit() { const e = get(), t = now(); e.voice({ t, f:62, dur:.2, vol:.9, a:.002, r:.08, glide:{ from:3.2, time:.07 } }); e.noise({ t, dur:.1, vol:.3, type:"bandpass", f:900, f2:300, q:.9, rev:.15 }); e.noise({ t:t + .01, dur:.05, vol:.12, type:"highpass", f:3500 }); },
     miss() { const e = get(), t = now(); e.noise({ t, dur:.28, a:.08, vol:.2, type:"bandpass", f:1500, f2:380, q:.8, rev:.2 }); e.voice({ t:t + .12, f:90, dur:.12, vol:.4, a:.003, r:.05, glide:{ from:1.6, time:.06 } }); },
+    victory() { MusicEngine.victory(get(), now() + .03); },
     sunk() { const e = get(), t = now(); [67, 72, 76, 79].forEach((n, i) => e.brass(t + i*.09, mf(n), .3, .9)); e.crash(t + .27, .45, 1.2); e.taiko(t, .6); },
     power() { const e = get(), t = now(); e.riser(t, .7, .8); e.voice({ t, f:880, dur:.7, vol:.14, a:.05, r:.1, glide:{ from:.25, time:.65 }, oscs:[{ type:"sawtooth", det:-7 }, { type:"sawtooth", det:7 }], lp:[400, 5000, .65], rev:.3 }); },
     radar() { const e = get(), t = now(); [0, .34].forEach((d, i) => e.voice({ t:t + d, f:i ? 1100 : 1480, dur:.5, vol:i ? .1 : .16, a:.004, d:.4, s:.02, r:.3, oscs:[{ type:"sine" }, { type:"sine", mul:2.01, gain:.2 }], rev:.55 })); },

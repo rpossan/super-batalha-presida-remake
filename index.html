@@ -271,6 +271,9 @@
   #onSearch { padding:18px 0 6px; } #onSearch .spin { width:44px; height:44px; margin:0 auto 12px; border:5px solid #fff3; border-top-color:#7fd0ff; border-radius:50%; animation:onspin .9s linear infinite; } @keyframes onspin { to { transform:rotate(360deg); } }
   #onSearchText { margin-bottom:12px; font-weight:700; } #onMsg { min-height:18px; margin-top:8px; font-size:13px; font-weight:700; } #onStats { font-size:12px; opacity:.75; margin-top:8px; } #onlineModal .note { font-size:11.5px; opacity:.65; margin-top:8px; line-height:1.4; }
   #inviteModal .box { text-align:center; } #invAvatar svg { width:76px; height:76px; } #invText { margin:8px 0 14px; font-size:16px; line-height:1.4; } #inviteModal .row { display:flex; gap:10px; justify-content:center; }
+  #boot { position:fixed; inset:0; z-index:60; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 50% 35%,#14213f,#04070d 75%); color:#fff; text-align:center; padding:20px; }
+  #boot.gone { display:none; } #boot .spin { width:46px; height:46px; margin:0 auto 14px; border:5px solid #fff3; border-top-color:#7fd0ff; border-radius:50%; animation:onspin .9s linear infinite; }
+  #bootText { font-weight:800; font-size:17px; max-width:340px; line-height:1.4; margin-bottom:12px; } #bootBtns { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
   #rankModal { position:fixed; inset:0; z-index:34; display:flex; align-items:center; justify-content:center; padding:12px; background:rgba(3,6,10,.88); backdrop-filter:blur(4px); }
   #rankModal .box { background:linear-gradient(#1c2638,#111823); border:2px solid #ffd23a; border-radius:18px; padding:16px; width:min(520px,100%); max-height:100%; display:flex; flex-direction:column; box-shadow:0 12px 40px #000a; position:relative; }
   #rankModal h2 { margin:0 0 8px; font-size:22px; text-align:center; } #rankModal .close { position:absolute; top:8px; right:10px; background:none; border:0; color:#fff; font-size:22px; cursor:pointer; opacity:.8; }
@@ -588,7 +591,6 @@
   <div class="shoprow"><button class="btn" id="menuShop">🛒 Loja</button><button class="btn" id="menuSkills">⭐ Skills</button><button class="btn" id="menuRank">🏆 Ranking</button></div>
   <button class="coffee-btn" id="menuCoffee">☕ Me pague um café</button>
   <button class="btn" id="resetSaveBtn" style="margin-top:6px;font-size:12px;opacity:.8">🗑 Apagar progresso salvo</button>
-  <button class="btn" id="devBtn" style="margin-top:6px;font-size:12px;opacity:.85"></button>
   <p id="musicHint" class="rules" style="margin:6px 0 0">🎵 Toque ou clique em qualquer lugar para ouvir o tema</p>
   <div class="rules">
     Jogo apartidário e imparcial: os dois lados têm as mesmas regras. Obra de paródia e ficção: personagens estilizados inspirados em figuras públicas, sem vínculo com partidos, campanhas ou pessoas citadas. Ninguém se machuca: quem é "atingido" só senta, cansado de tanto gritar. 🎺<br>
@@ -693,6 +695,11 @@
   </div>
 </div>
 
+<div id="boot" role="status" aria-live="polite">
+  <div class="box"><div class="spin"></div><div id="bootText">Conectando ao servidor…</div>
+    <div id="bootBtns" class="hidden"><button class="btn primary" id="bootRetry">Tentar de novo</button><button class="btn" id="bootOffline">Jogar sem salvar</button></div></div>
+</div>
+
 <div id="rankModal" class="hidden" role="dialog" aria-modal="true" aria-label="Ranking">
   <div class="box">
     <button class="close" id="rankClose" aria-label="Fechar">✕</button>
@@ -743,6 +750,7 @@
       <textarea id="bkText" placeholder="Para restaurar, cole aqui o código de backup" spellcheck="false"></textarea>
       <div class="bkrow"><button class="btn" id="bkImport">⬆️ Importar código</button><label class="btn" style="cursor:pointer">📂 Importar arquivo<input type="file" id="bkFileIn" accept=".json,.txt,text/plain,application/json" hidden></label></div>
       <div id="bkMsg"></div>
+      <div class="bkrow"><button class="btn" id="pDelete" style="border-color:#ff5a4a;color:#ff9a8a">🗑 Excluir a minha conta e os meus dados</button></div>
     </details>
     <div class="actions"><button class="btn" id="pRandom">🎲 Aleatório</button><button class="btn primary" id="pSave">Salvar</button></div>
   </div>
@@ -764,6 +772,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/phaser@4.2.1/dist/phaser.min.js"></script>
+<script src="js/epoch.js"></script>
 <script src="js/online-config.js"></script>
 <script src="js/net.js"></script>
 <script src="js/music.js"></script>
@@ -787,8 +796,6 @@ let CAMP = null, CAMP_ID = null;
 /* progresso:
 ];
 /* progresso: salvo no navegador (localStorage), veja saveGame()/loadGame() */
-/* modo desenvolvedor: todas as fases desbloqueadas (desligado por padrão; abra com ?dev=1 para ligar) */
-let DEV_MODE = (() => { try { const v = new URLSearchParams(location.search).get("dev"); return v === "1"; } catch (e) { return false; } })();
 const PROG = {};                                 // fases liberadas por trilha (lado) da campanha ativa
 const CLEARED = {};                              // fases já vencidas
 const CAMP_STORE = {};                           // progresso de cada campanha: { id: { prog, cleared, playtime, bossLosses } }
@@ -814,14 +821,16 @@ const SKILLS = [], SKILL_REQ = {}, LVT = {}, SKILL_TEXT = {};
 /* nível do jogador exigido];
 /* custo em pontos de skill de cada nível */
 const SKILL_COST = [1, 2, 3];
-const STATS = { wins:0, losses:0, owins:0, olosses:0 };             // vitórias e derrotas em batalhas concluídas
+const STATS = { wins:0, losses:0, owins:0, olosses:0 };
+const RECORDS = { votes:0, best:{} };            // recordes do jogador (recorde de votos e melhores tempos "campanha/lado"): vão dentro do save
+const PERSIST_CLOUD = SPBNet.mode === "supabase";   // com servidor configurado, o progresso fica na nuvem (e não no navegador)             // vitórias e derrotas em batalhas concluídas
 let SAVE_LOCK = false;                         // true durante a importação de backup (evita o autosave sobrescrever)
 let PROFILE = null;                            // perfil do jogador: { id, nick, av } (guardado à parte do progresso)
 const playerNick = () => PROFILE ? PROFILE.nick : "Você";
-let MONEY = DEV_MODE ? 99999 : 0;             // grana (R$)
-let SKILL_POINTS = DEV_MODE ? 99 : 0;         // pontos de skill disponíveis
+let MONEY = 0;             // grana (R$)
+let SKILL_POINTS = 0;         // pontos de skill disponíveis
 let SP_LEVEL = 0;                             // nível até o qual os pontos já foram creditados
-const playerLevel = () => DEV_MODE ? MAX_LEVEL : levelOf(G.votes);
+const playerLevel = () => levelOf(G.votes);
 const OWNED = new Set();                       // skills aprendidas
 const SKLV = {};                                 // nível de cada skill (1 a 3)
 const skillOn = id => !G.online && OWNED.has(id);          // no duelo online não há skills (regras iguais para os dois)
@@ -953,7 +962,7 @@ const sfx = {
   sunk: () => { if (!muted) try { Sfx.sunk(); } catch(e) {} },
   power:() => { if (!muted) try { Sfx.power(); } catch(e) {} },
   radar:() => { if (!muted) try { Sfx.radar(); } catch(e) {} },
-  win:  () => sfxGoal(),
+  win:  () => { if (muted) return; try { duckMusic(); Sfx.victory(); } catch (e) { sfxGoal(); } },     // torcida em festa + fanfarra (veja MusicEngine.victory)
   lose: () => sfxFail(),
   place:() => { if (!muted) try { Sfx.place(); } catch(e) {} },
 };
@@ -2180,7 +2189,7 @@ function registerHit() {                       // chamado a cada torcedor advers
 function resetCombo() { if (G.combo > 0) { G.combo = 0; renderCombo(); } }
 /* nível, barra de experiência e grana no topo */
 function renderStats(xp = G.votes) {
-  const lv = DEV_MODE ? MAX_LEVEL : levelOf(xp), lo = xpForLevel(lv), hi = lv >= MAX_LEVEL ? lo : xpForLevel(lv+1);
+  const lv = levelOf(xp), lo = xpForLevel(lv), hi = lv >= MAX_LEVEL ? lo : xpForLevel(lv+1);
   $("lvNum").textContent = lv; $("xpFill").style.width = (lv >= MAX_LEVEL ? 100 : Math.max(0, Math.min(100, (xp - lo)/(hi - lo)*100))) + "%";
   $("moneyNum").textContent = fmtVotes(MONEY);
 }
@@ -2586,8 +2595,10 @@ function endingArt(side) {
 
 let endTimers = [], endActive = false;
 const GAME_TITLE = "SUPER PRESIDA BATALHA";
-const getRecord = () => { try { return parseInt(localStorage.getItem("spb_record")) || 0; } catch (e) { return window.__rec || 0; } };
-const setRecord = v => { try { localStorage.setItem("spb_record", String(v)); } catch (e) { window.__rec = v; } };
+const getRecord = () => RECORDS.votes;
+const setRecord = v => { RECORDS.votes = v; };
+const bestTime = (camp, side) => RECORDS.best[camp + "/" + side] || 0;
+const setBestTime = (camp, side, v) => { RECORDS.best[camp + "/" + side] = v; };
 const endAt = (ms, fn) => endTimers.push(setTimeout(fn, ms));
 /* ---- final cinematográfico: câmera, fogos, confete, linha do tempo da campanha e créditos ---- */
 const endFx = { cv:null, ctx:null, cv2:null, ctx2:null, parts:[], raf:0, last:0, rockets:0, confetti:0, pal:[], on:false, w:0, h:0, d:1 };
@@ -2710,9 +2721,10 @@ function startEnding(side) {
   endActive = true; endCleanup();
   const ch = CHARS[side], total = G.votes, prev = getRecord(), isRec = total > prev;
   if (isRec) setRecord(total);
-  const bossIdx = LEVELS.findIndex(l => l.boss), runTime = trailTime(side, bossIdx + 1), bKey = bestKey(CAMP_ID, side), prevBest = parseFloat(storage.get(bKey)) || 0;
-  const isTimeRec = !DEV_MODE && runTime > 0 && (!prevBest || runTime < prevBest);
-  if (isTimeRec) storage.set(bKey, String(Math.round(runTime*10)/10));
+  const bossIdx = LEVELS.findIndex(l => l.boss), runTime = trailTime(side, bossIdx + 1), prevBest = bestTime(CAMP_ID, side);
+  const isTimeRec = runTime > 0 && (!prevBest || runTime < prevBest);
+  if (isTimeRec) setBestTime(CAMP_ID, side, Math.round(runTime*10)/10);
+  if (isRec || isTimeRec) saveGame();
   $("endRecord").textContent = `Recorde: ${fmtVotes(Math.max(prev, total))} votos`;
   $("endNewRec").classList.toggle("hidden", !isRec);
   $("endTimeRec").textContent = `Melhor tempo: ${fmtTime(isTimeRec || !prevBest ? runTime : prevBest)}`;
@@ -2909,16 +2921,10 @@ $("pauseBtn").onclick = pauseGame;
 $("pResume").onclick = resumeGame;
 $("pReset").onclick = () => { const i = G.levelIdx; resumeGame(); restoreLevelStart(); startLevel(i); };
 $("pExit").onclick = () => { resumeGame(); restoreLevelStart(); showMenu(); };
-function refreshDevBtn() {
-  $("devBtn").classList.toggle("hidden", new URLSearchParams(location.search).get("dev") === null);   // botão só aparece com ?dev= na URL
-  $("devBtn").textContent = DEV_MODE ? "🛠 Modo desenvolvedor: ATIVO (todas as fases liberadas)" : "🛠 Modo desenvolvedor: desligado";
-}
 $("resetSaveBtn").onclick = () => {
-  if (!confirm("Apagar todo o progresso salvo (fases, nível, votos, skills, itens e grana)? O recorde de votos é mantido.")) return;
-  resetSave(); buildMenu(); refreshShopButtons(); $("mute").textContent = muted ? "🔇" : "🔊"; alert("Progresso apagado.");
+  if (!confirm("Apagar o progresso (fases, nível, votos, skills, itens e grana)? O seu perfil é mantido.")) return;
+  resetSave(); saveGame(); buildMenu(); refreshShopButtons(); $("mute").textContent = muted ? "🔇" : "🔊"; alert("Progresso apagado.");
 };
-$("devBtn").onclick = () => { DEV_MODE = !DEV_MODE; if (DEV_MODE) { MONEY = Math.max(MONEY, 99999); SKILL_POINTS = Math.max(SKILL_POINTS, 99); } refreshDevBtn(); buildMenu(); refreshShopButtons(); };
-refreshDevBtn();
 
 /* ================================================================
    Salvamento local (localStorage): progresso, loja e preferências
@@ -2940,17 +2946,24 @@ function snapshotForSave() {
     skills: [...OWNED], sklv: Object.fromEntries([...OWNED].map(id => [id, skillLv(id)])), stats: { wins: STATS.wins, losses: STATS.losses, owins: STATS.owins, olosses: STATS.olosses },
     items: inLevel && G.itemsSnap ? { ...G.itemsSnap } : { ...ITEMS },
     campaigns: exportCampaigns(), activeCampaign: CAMP_ID,
+    records: { votes: RECORDS.votes, best: { ...RECORDS.best } }, rev: Date.now(),
     prefs: { muted, music: Music.on },
   };
 }
 function saveGame() {
-  if (DEV_MODE || SAVE_LOCK) return;                    // testes não contaminam o jogo real
+  if (SAVE_LOCK) return;
+  if (PERSIST_CLOUD) { if (Cloud.ready) cloudSaveSoon(); return; }          // com servidor: o progresso vai para a nuvem (nada no navegador)
   storage.set(SAVE_KEY, JSON.stringify(snapshotForSave()));
 }
+/* lê o save salvo no navegador (modo sem servidor) */
 function loadGame() {
   const raw = storage.get(SAVE_KEY); if (!raw) return false;
+  try { return applySave(JSON.parse(raw)); } catch (e) { return false; }
+}
+/* aplica um save (objeto) ao estado do jogo: vem do navegador, da nuvem ou de um backup */
+function applySave(d) {
   try {
-    const d = JSON.parse(raw); if (!d || ![1, 2, 3].includes(d.v)) return false;
+    if (!d || ![1, 2, 3].includes(d.v)) return false;
     const num = (x, max) => Math.max(0, Math.min(max, Math.floor(Number(x) || 0)));
     const readStore = (st, c) => {                          // lê o progresso de uma campanha (sanitizado pelo tamanho das fases dela)
       const keys = Object.keys(c.sides), nL = c.levels.length, out = { prog:{}, cleared:{}, playtime:{}, bossLosses:num(st && st.bossLosses, 99) };
@@ -2970,6 +2983,8 @@ function loadGame() {
     MONEY = num(d.money, 1e9); G.votes = num(d.votes, 1e9); SKILL_POINTS = num(d.sp, 999); SP_LEVEL = num(d.spLevel, MAX_LEVEL);
     OWNED.clear(); Object.keys(SKLV).forEach(k => delete SKLV[k]);
     (d.skills || []).forEach(id => { if (SPBCampaigns.catalog.SKILL_KINDS[id]) { OWNED.add(id); SKLV[id] = Math.max(1, Math.min(3, Math.floor(Number(d.sklv && d.sklv[id]) || 1))); } });
+    RECORDS.votes = num(d.records && d.records.votes, 1e9); Object.keys(RECORDS.best).forEach(k => delete RECORDS.best[k]);
+    Object.entries((d.records && d.records.best) || {}).forEach(([k, v]) => { const x = Number(v); if (/^[\w-]{2,32}\/[\w-]{2,32}$/.test(k) && x > 0 && x < 1e7) RECORDS.best[k] = x; });
     STATS.wins = num(d.stats && d.stats.wins, 1e6); STATS.losses = num(d.stats && d.stats.losses, 1e6); STATS.owins = num(d.stats && d.stats.owins, 1e6); STATS.olosses = num(d.stats && d.stats.olosses, 1e6);
     Object.keys(ITEM_MAX).forEach(id => { ITEMS[id] = num(d.items && d.items[id], ITEM_MAX[id]); });
     if (levelOf(G.votes) > SP_LEVEL) { for (let n = SP_LEVEL + 1; n <= levelOf(G.votes); n++) SKILL_POINTS += spForLevel(n); SP_LEVEL = levelOf(G.votes); }
@@ -2984,7 +2999,7 @@ function resetSave() {
   resetItems(); MONEY = 0; G.votes = 0; SKILL_POINTS = 0; SP_LEVEL = 0; OWNED.clear(); Object.keys(SKLV).forEach(k => delete SKLV[k]);
   Object.keys(CAMP_STORE).forEach(k => delete CAMP_STORE[k]); loadProgress(CAMP_ID); lastClock = -1; STATS.wins = STATS.losses = STATS.owins = STATS.olosses = 0;
 }
-["pagehide","visibilitychange"].forEach(ev => addEventListener(ev, () => { if (ev !== "visibilitychange" || document.hidden) saveGame(); }));
+["pagehide","visibilitychange"].forEach(ev => addEventListener(ev, () => { if (ev !== "visibilitychange" || document.hidden) PERSIST_CLOUD ? cloudFlush() : saveGame(); }));
 
 const hexCss = n => "#" + n.toString(16).padStart(6,"0");
 /* rosto estilizado do personagem para os cartões de fase */
@@ -3018,7 +3033,7 @@ function buildMenu() {
   LEVELS.forEach((L, i) => {
     const sc = SCENARIOS.find(x => x.id === L.scn), en = CHARS[TRACKS[menuSide][i]];
     const total = L.defs ? L.defs.reduce((a,d) => a + d.len, 0) : L.def.reduce((a,idx) => a + FLEET[idx].len, 0);
-    const locked = !DEV_MODE && i >= PROG[menuSide], cleared = CLEARED[menuSide][i], fresh = i === justUnlocked;
+    const locked = i >= PROG[menuSide], cleared = CLEARED[menuSide][i], fresh = i === justUnlocked;
     const d = document.createElement("div");
     d.className = "lvl" + (locked ? " locked" : "") + (cleared ? " done" : "") + (fresh ? " fresh" : "") + (L.boss ? " boss" : "") + (L.ng ? " ng" : "");
     d.style.backgroundImage = sc.thumb;
@@ -3046,7 +3061,7 @@ function showMenu() {
   buildMenu(); justUnlocked = -1;
 }
 function startLevel(i) {
-  if (!menuSide || (!DEV_MODE && i >= PROG[menuSide])) return;
+  if (!menuSide || i >= PROG[menuSide]) return;
   actx && actx.state==="suspended" && actx.resume();
   newGame(menuSide, i);
 }
@@ -3105,7 +3120,7 @@ function loadProfile() {
     PROFILE = { id:/^[0-9a-f]{8}$/.test(d.id) ? d.id : genId(), nick:checkNick(d.nick).nick, av:cleanAv(d.av) }; return true;
   } catch (e) { return false; }
 }
-const saveProfile = () => storage.set(PROFILE_KEY, JSON.stringify({ v:1, id:PROFILE.id, nick:PROFILE.nick, av:PROFILE.av }));
+const saveProfile = () => { if (!PERSIST_CLOUD) storage.set(PROFILE_KEY, JSON.stringify({ v:1, id:PROFILE.id, nick:PROFILE.nick, av:PROFILE.av })); };   // com servidor o perfil fica na nuvem
 function renderProfileChip() {
   const c = $("profileChip"); if (!PROFILE) { c.classList.add("hidden"); return; }
   c.classList.remove("hidden");
@@ -3117,21 +3132,21 @@ function renderProfileStats() {
   $("pStats").classList.toggle("hidden", !PROFILE);
   if (!PROFILE) return;
   const done = sd => CLEARED[sd].filter(Boolean).length, sk = [...OWNED].reduce((a, id) => a + skillLv(id), 0);
-  const sk2 = Object.keys(SIDES), total = sk2.reduce((a, k) => a + trailTime(k), 0), bestOf = k => parseFloat(storage.get(bestKey(CAMP_ID, k))) || 0;
+  const sk2 = Object.keys(SIDES), total = sk2.reduce((a, k) => a + trailTime(k), 0), bestOf = k => bestTime(CAMP_ID, k);
   const t = (v, l) => `<div class="st"><b>${v}</b><small>${l}</small></div>`;
   $("pStatsBody").innerHTML = t(playerLevel(), "Nível") + t(fmtVotes(G.votes), "Votos") + t("R$ " + fmtVotes(MONEY), "Grana")
     + sk2.map(k => t(`${done(k)}/${LEVELS.length}`, "Fases · " + SIDES[k].short)).join("") + t(`${sk}/15`, "Skills (níveis)")
     + t(STATS.wins, "Vitórias") + t(STATS.losses, "Derrotas") + t(fmtTime(total), "Tempo de jogo") + t(STATS.owins, "Vitórias online") + t(STATS.olosses, "Derrotas online")
     + sk2.map(k => t(bestOf(k) ? fmtTime(bestOf(k)) : "—", "Melhor · " + SIDES[k].short)).join("") + t(fmtVotes(getRecord()), "Recorde de votos");
 }
-function allBestTimes() {                                   // "campanha/lado" -> segundos
-  const out = {}; SPBCampaigns.list().filter(c => c.status === "ready").forEach(c => Object.keys(c.sides).forEach(k => { const v = parseFloat(storage.get(bestKey(c.id, k))); if (v > 0) out[c.id + "/" + k] = v; })); return out;
+function allBestTimes() {                                   // "campanha/lado" -> segundos (só campanhas existentes)
+  const out = {}; SPBCampaigns.list().filter(c => c.status === "ready").forEach(c => Object.keys(c.sides).forEach(k => { const v = bestTime(c.id, k); if (v > 0) out[c.id + "/" + k] = v; })); return out;
 }
 function buildBackup() {
   saveGame();
   return { app:"super-presida-batalha-remake", v:1, at:new Date().toISOString(),
     profile: PROFILE ? { id:PROFILE.id, nick:PROFILE.nick, av:PROFILE.av } : null,
-    save: (() => { try { return JSON.parse(storage.get(SAVE_KEY) || "null"); } catch (e) { return null; } })(),
+    save: JSON.parse(JSON.stringify(snapshotForSave())),
     record: getRecord(), best: allBestTimes() };
 }
 const encodeBackup = o => "SPB1:" + btoa(unescape(encodeURIComponent(JSON.stringify(o))));
@@ -3144,6 +3159,17 @@ function decodeBackup(text) {
   return o;
 }
 function applyBackup(o) {
+  if (PERSIST_CLOUD && !Cloud.offlineMode) {                                    // com servidor: o backup é aplicado na conta atual (sem recarregar)
+    try {
+      if (o.save) applySave(o.save);
+      if (Number(o.record) > 0) RECORDS.votes = Math.max(RECORDS.votes, Math.floor(Number(o.record)));            // backups antigos
+      Object.entries(o.best || {}).forEach(([k, v]) => { const key = k.includes("/") ? k : "br2026/" + k, x = parseFloat(v); if (/^[\w-]{2,32}\/[\w-]{2,32}$/.test(key) && x > 0) RECORDS.best[key] = x; });
+      if (o.profile) PROFILE = { id:o.profile.id, nick:checkNick(o.profile.nick).nick, av:cleanAv(o.profile.av) };
+    } catch (e) { $("bkMsg").style.color = "#ff8a7a"; $("bkMsg").textContent = "O backup não pôde ser aplicado."; return; }
+    cloudProfile(true).then(() => { Cloud.ready = true; saveGame(); Cloud.last = 0; cloudSubmit(); buildMenu(); refreshShopButtons(); renderProfileChip(); renderProfileStats(); bkOk("Backup restaurado e enviado para a sua conta."); })
+      .catch(() => { $("bkMsg").style.color = "#ff8a7a"; $("bkMsg").textContent = "Sem conexão com o servidor. Tente de novo."; });
+    return;
+  }
   SAVE_LOCK = true;                                                 // o autosave (ao recarregar) não pode sobrescrever o que foi importado
   if (o.profile) storage.set(PROFILE_KEY, JSON.stringify({ v:1, id:o.profile.id, nick:checkNick(o.profile.nick).nick, av:cleanAv(o.profile.av) }));
   if (o.save) storage.set(SAVE_KEY, JSON.stringify(o.save));
@@ -3167,6 +3193,19 @@ $("bkFile").onclick = () => {
   document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); bkOk("Arquivo de backup baixado.");
 };
 $("bkImport").onclick = () => importBackup($("bkText").value);
+/* exclui o perfil, o save e o ranking do servidor e volta ao início (direito de exclusão) */
+$("pDelete").onclick = async () => {
+  if (!confirm("Excluir a sua conta? O perfil, o progresso e o ranking serão apagados do servidor e do navegador. Isso não pode ser desfeito.")) return;
+  const msg = $("bkMsg"); msg.style.color = "#ff8a7a";
+  try {
+    if (PERSIST_CLOUD && !Cloud.offlineMode) {
+      const sb = await cloudClient(); const r = await sb.rpc("delete_my_data"); if (r.error) throw r.error;
+      await sb.auth.signOut(); Cloud.uid = null; Cloud.ready = false; Cloud.synced = ""; Cloud.dirty = false; clearTimeout(Cloud.saveT); storage.del(PENDING_KEY);
+    }
+  } catch (e) { msg.textContent = "Não foi possível excluir agora (sem conexão?). Tente de novo."; return; }
+  resetSave(); storage.del(PROFILE_KEY); PROFILE = null;
+  renderProfileChip(); buildMenu(); refreshShopButtons(); openProfile(true);
+};
 $("bkFileIn").onchange = e => { const f = e.target.files[0]; e.target.value = ""; if (!f) return; if (f.size > 2e6) { $("bkMsg").textContent = "Arquivo grande demais."; return; } const r = new FileReader(); r.onload = () => importBackup(String(r.result)); r.readAsText(f); };
 
 let profDraft = null, profMandatory = false;
@@ -3197,13 +3236,19 @@ function openProfile(mandatory) {
   if (!isMobile()) setTimeout(() => $("pNick").focus(), 60);
 }
 function closeProfile() { if (profMandatory) return; $("profileModal").classList.add("hidden"); }
-function submitProfile() {
+async function submitProfile() {
   const r = checkNick($("pNick").value);
   if (!r.nick) { $("pErr").textContent = r.err; return; }
+  const prev = PROFILE;
   PROFILE = { id:PROFILE ? PROFILE.id : (profDraft.id || genId()), nick:r.nick, av:cleanAv(profDraft.av) };
-  saveProfile(); profMandatory = false; $("profileModal").classList.add("hidden");
+  if (PERSIST_CLOUD && !Cloud.offlineMode) {                         // o perfil mora no servidor: só fecha se salvar
+    $("pSave").disabled = true; $("pErr").textContent = "Salvando…";
+    try { await cloudProfile(true); }
+    catch (e) { PROFILE = prev; $("pSave").disabled = false; $("pErr").textContent = /nick/i.test(e.message || "") ? "Esse nome não é permitido. Escolha outro." : "Sem conexão com o servidor. Tente de novo."; return; }
+    $("pSave").disabled = false; Cloud.ready = true; saveGame();
+  } else saveProfile();
+  profMandatory = false; $("profileModal").classList.add("hidden");
   renderProfileChip(); ui(); try { Sfx.coin(true); } catch (e) {}
-  cloudProfile(true).catch(() => {});
 }
 $("pOpts").addEventListener("click", e => {
   const b = e.target.closest("button"); if (!b) return;
@@ -3211,7 +3256,7 @@ $("pOpts").addEventListener("click", e => {
   renderProfile();
 });
 $("pRandom").onclick = () => { profDraft.av = randomAv(); renderProfile(); };
-$("pSave").onclick = submitProfile;
+$("pSave").onclick = () => submitProfile();
 $("pNick").addEventListener("keydown", e => { if (e.key === "Enter") submitProfile(); else if (e.key === "Escape") closeProfile(); });
 $("pNick").addEventListener("input", () => { $("pErr").textContent = ""; });
 $("profileClose").onclick = closeProfile;
@@ -3688,14 +3733,17 @@ $("onSides").addEventListener("click", e => { const b = e.target.closest("[data-
    Nuvem (Supabase): perfil, progresso, resultados do online e ranking
    (tudo opcional: sem servidor configurado, o jogo funciona normalmente)
    ================================================================ */
-const Cloud = { uid:null, synced:"", last:0 };
+const Cloud = { uid:null, synced:"", last:0, ready:false, offlineMode:false, dirty:false, saving:false, saveT:0, token:null, authSub:false };
+const PENDING_KEY = "spb_pending";               // único dado de jogo que pode ficar no navegador: alterações ainda não enviadas (apagado depois de sincronizar)
 async function cloudClient() {
   if (SPBNet.mode !== "supabase") return null;
   const sb = await SPBNet.client(); if (!sb) return null;
   if (!Cloud.uid) {
     const { data } = await sb.auth.getSession(); let u = data && data.session && data.session.user;
-    if (!u) { const r = await sb.auth.signInAnonymously(); if (r.error) throw r.error; u = r.data.user; }
+    if (!u) { const r = await sb.auth.signInAnonymously(); if (r.error) throw r.error; u = r.data.user; Cloud.token = r.data.session && r.data.session.access_token; }
+    else Cloud.token = data.session.access_token;
     Cloud.uid = u.id;
+    if (!Cloud.authSub) { Cloud.authSub = true; sb.auth.onAuthStateChange((_e, session) => { Cloud.token = session ? session.access_token : null; }); }
   }
   return sb;
 }
@@ -3711,9 +3759,43 @@ async function cloudProfile(force) {
 async function cloudSubmit() {
   try {
     const sb = await cloudProfile(); if (!sb || Date.now() - Cloud.last < 20000) return; Cloud.last = Date.now();
-    const { error } = await sb.rpc("submit_progress", { p_votes:Math.floor(G.votes), p_wins:STATS.wins, p_losses:STATS.losses, p_best:allBestTimes(), p_save:JSON.parse(JSON.stringify(snapshotForSave())) });
+    const { error } = await sb.rpc("submit_progress", { p_votes:Math.floor(G.votes), p_wins:STATS.wins, p_losses:STATS.losses, p_best:allBestTimes() });
     if (error) console.warn("submit_progress:", error.message);
   } catch (e) { console.warn("nuvem:", e.message || e); }
+}
+/* ---- progresso na nuvem: o save inteiro (JSON) vai para o servidor; o navegador não guarda nada do jogo ---- */
+function cloudSaveSoon(delay = 1500) { Cloud.dirty = true; clearTimeout(Cloud.saveT); Cloud.saveT = setTimeout(cloudSaveNow, delay); }
+async function cloudSaveNow() {
+  if (!Cloud.dirty || !Cloud.ready || SAVE_LOCK) return;
+  if (Cloud.saving) { Cloud.saveT = setTimeout(cloudSaveNow, 1200); return; }
+  Cloud.saving = true; Cloud.dirty = false; const snap = JSON.parse(JSON.stringify(snapshotForSave()));
+  try {
+    const sb = await cloudClient(); const { error } = await sb.rpc("save_game", { p_save:snap });
+    if (error) throw error;
+    storage.del(PENDING_KEY);
+  } catch (e) {                                              // sem conexão (ou limite de taxa): guarda uma cópia provisória e tenta de novo
+    storage.set(PENDING_KEY, JSON.stringify({ save:snap })); Cloud.dirty = true; Cloud.saveT = setTimeout(cloudSaveNow, /rápido/.test(e.message || "") ? 2000 : 15000);
+  } finally { Cloud.saving = false; }
+}
+function cloudFlush() {                                      // ao fechar a aba: envia o que ainda não foi (fetch com keepalive)
+  if (!Cloud.dirty || !Cloud.ready || SAVE_LOCK) return;
+  const snap = JSON.parse(JSON.stringify(snapshotForSave())); Cloud.dirty = false; clearTimeout(Cloud.saveT);
+  storage.set(PENDING_KEY, JSON.stringify({ save:snap }));    // rede de segurança: removida no próximo acesso, depois de conferir com a nuvem
+  try { const c = window.SPB_ONLINE || {}; fetch(c.supabaseUrl + "/rest/v1/rpc/save_game", { method:"POST", keepalive:true, headers:{ apikey:c.supabaseKey, Authorization:"Bearer " + Cloud.token, "Content-Type":"application/json" }, body:JSON.stringify({ p_save:snap }) }); } catch (e) {}
+}
+/* entrada no jogo com servidor: login anônimo, perfil e save vêm da nuvem */
+async function cloudBoot() {
+  const sb = await cloudClient();
+  const [prof, sv] = await Promise.all([sb.rpc("get_my_profile"), sb.from("saves").select("data").eq("player_id", Cloud.uid).maybeSingle()]);
+  if (prof.error) throw prof.error; if (sv.error) throw sv.error;
+  const p = prof.data;
+  if (p && /^[0-9a-f]{8}$/.test(p.friend_id || "")) { PROFILE = { id:p.friend_id, nick:checkNick(String(p.nick || "")).nick || "Jogador", av:cleanAv(p.avatar) }; Cloud.synced = PROFILE.id + "|" + PROFILE.nick + "|" + JSON.stringify(PROFILE.av); }
+  let data = sv.data && sv.data.data, pend = null;
+  try { pend = JSON.parse(storage.get(PENDING_KEY) || "null"); } catch (e) {}
+  if (pend && pend.save && PROFILE && (!data || (pend.save.rev || 0) > (data.rev || 0))) { data = pend.save; Cloud.dirty = true; }   // havia alterações que não chegaram ao servidor
+  if (data) applySave(data);
+  if (PROFILE) Cloud.ready = true;                           // sem perfil ainda (primeira vez): só libera os saves depois que o perfil for criado
+  if (Cloud.dirty) cloudSaveSoon(500); else storage.del(PENDING_KEY);
 }
 async function cloudReport(O, youWin, reason, verdict) {
   if (O.isBot || !O.opp) return;
@@ -3770,7 +3852,6 @@ const fillArr = (dst, src) => { dst.length = 0; src.forEach(x => dst.push(x)); }
 const GENERIC = { hit:["Acertou!", "Na mosca!", "Boa jogada!"], multi:["Que jogada!", "Varreu a área!"], miss:["Errou!", "Por pouco!"], sunk:["TORCIDA DISPERSADA!"] };
 const DEFAULT_THROWS = [{ id:"bola", indef:"uma bola", def:"a bola", emoji:"⚽", dur:.9, H:3 }];
 const sceneSong = scn => SPBCampaigns.catalog.MUSIC[scn.music] || scn.music || scn.id;
-const bestKey = (camp, side) => camp === "br2026" ? "spb_best_time_" + side : `spb_best_${camp}_${side}`;
 function exportCampaigns() {
   const out = {};
   Object.entries(CAMP_STORE).forEach(([id, st]) => { out[id] = { prog:{ ...st.prog }, cleared:Object.fromEntries(Object.entries(st.cleared).map(([k, v]) => [k, v.map(Boolean)])), playtime:Object.fromEntries(Object.entries(st.playtime).map(([k, v]) => [k, v.map(t => Math.round((t || 0)*10)/10)])), bossLosses:st.bossLosses }; });
@@ -3837,7 +3918,6 @@ function campaignCleared(id) {
 }
 /* regra de liberação: { start:true } (aberta) ou { campaigns:["id"], level:N } (zerar outras campanhas e/ou nível do jogador) */
 function campaignState(c) {
-  if (DEV_MODE && c.status === "ready") return { open:true };
   if (c.status !== "ready") return { open:false, reason:"Em breve" };
   const u = c.unlock || { start:true }; if (u.start) return { open:true };
   const miss = []; (u.campaigns || []).forEach(id => { if (!campaignCleared(id)) { const o = SPBCampaigns.get(id); miss.push("zere " + (o ? o.shortName || o.name : id)); } });
@@ -3878,12 +3958,23 @@ function renderSideCards() {
 const LANG = (() => { try { return localStorage.getItem("spb_lang") || (navigator.language || "pt").slice(0, 2); } catch (e) { return "pt"; } })();
 SPBCampaigns.setLocale(LANG);
 activateCampaign("br2026");
-const hadSave = loadGame();
-if (DEV_MODE) { MONEY = Math.max(MONEY, 99999); SKILL_POINTS = Math.max(SKILL_POINTS, 99); }
-$("mute").textContent = muted ? "🔇" : "🔊"; $("musicBtn").classList.toggle("off", !Music.on);
-refreshShopButtons();
-buildMenu();
-if (loadProfile()) renderProfileChip(); else { renderProfileChip(); openProfile(true); }       // primeira vez: cria o perfil antes de jogar
+
+/* ---- entrada: com servidor, perfil e progresso vêm da nuvem; sem servidor (testes locais), do navegador ---- */
+function startUI() {
+  $("mute").textContent = muted ? "🔇" : "🔊"; $("musicBtn").classList.toggle("off", !Music.on);
+  refreshShopButtons(); buildMenu(); renderProfileChip();
+  if (!PROFILE) openProfile(true);                          // primeira vez: cria o perfil antes de jogar
+}
+function bootMsg(text, buttons) { $("bootText").textContent = text; $("bootBtns").classList.toggle("hidden", !buttons); }
+async function bootApp() {
+  if (!PERSIST_CLOUD) { loadGame(); loadProfile(); $("boot").classList.add("gone"); startUI(); return; }
+  bootMsg("Conectando ao servidor…", false); $("boot").classList.remove("gone");
+  try { await Promise.race([cloudBoot(), new Promise((_, rej) => setTimeout(() => rej(new Error("tempo esgotado")), 15000))]); $("boot").classList.add("gone"); startUI(); }
+  catch (e) { console.warn("boot:", e && (e.message || e)); bootMsg("Não foi possível conectar ao servidor. Sem conexão o jogo não consegue salvar o seu progresso.", true); }
+}
+$("bootRetry").onclick = () => { Cloud.uid = null; bootApp(); };
+$("bootOffline").onclick = () => { Cloud.offlineMode = true; Cloud.ready = false; $("boot").classList.add("gone"); startUI(); };      // continua só em memória: nada é salvo
+bootApp();
 
 function newGame(playerKey, levelIdx = 0) {
   leaveOnline();
@@ -3974,7 +4065,6 @@ onFrame = function(time, delta) {
   GFX.setFocus(isMobile() && (G.phase==="battle" || G.phase==="place") ? (G.phase==="place" ? 0 : (G.turn===0 ? 1 : 0)) : -1);
   GFX.frame(dt, t);
 };
-if (DEV_MODE) window.__dbg = { ui, finish, rollLoot, playerFire, startLevel, hazardDrop, arrowRain, bombRain, fireBurn };   // ganchos para teste (só com ?dev=1)
 READY = true;
 applyScenario(SCENARIOS[0]);
 } // fim de startGame

@@ -314,34 +314,40 @@ Energia: **+1 por turno** e **+1 por torcedor atingido**. No celular, a câmera 
 
 <p align="center"><img src="docs/img/mobile.png" alt="O jogo no celular" width="760"></p>
 
-### ⏸ Pausa e modo desenvolvedor
+### ⏸ Pausa
 
 - **Pausa:** botão ⏸ no topo (ou `Esc`) congela o jogo e abre o menu com **Continuar**, **Reiniciar a fase** e
   **Sair para o menu principal**. Reiniciar ou sair desfaz os votos, a grana e os itens ganhos ou gastos na fase em andamento.
-- **Modo desenvolvedor:** vem **desligado**. Abra o jogo com `?dev=1` na URL para liberar todas as fases (e um saldo de testes na loja).
-  Com `?dev=` na URL aparece o botão "🛠 Modo desenvolvedor" no menu para ligar e desligar.
+- Não existe modo desenvolvedor no jogo publicado. Para testar localmente (`localhost`): `?net=local` (duelo entre duas abas sem servidor) e `?pack=js/campaigns/…` (carrega um pacote de campanha), que **só funcionam na máquina do desenvolvedor**.
 
 ## 🛠️ Tecnologia
 
 - [`index.html`](index.html) (lógica e interface) + [`js/`](js) (`gfx.js` renderer, `art.js` sprites, `scenery.js` cenários, `campaigns/` pacotes de campanha), renderizados com [Phaser 4](https://phaser.io/) via CDN. Sem build e sem backend: é só servir arquivos estáticos (por exemplo, no GitHub Pages).
 - Personagens, cenários, músicas, efeitos sonoros e ilustrações são **gerados por código** (canvas 2D, SVG e Web Audio).
-- Progresso salvo no navegador (`localStorage`), sem servidor: veja [Salvamento](#-salvamento-local).
+- Progresso salvo na **nuvem** (Supabase): veja [Salvamento](#-salvamento).
 
 Para rodar localmente, abra o `index.html` no navegador. Para criar um cenário novo, adicione um objeto em
 `SCENARIOS` e uma fase em `LEVELS` (há um comentário `ADICIONE NOVOS CENÁRIOS AQUI`).
 
 ---
 
-## 💾 Salvamento local
+## 💾 Salvamento
 
-O jogo **salva sozinho no seu navegador** (`localStorage`), mesmo hospedado no GitHub Pages. Nada vai para servidor nenhum.
+Com o servidor configurado (Supabase), o **perfil e o progresso ficam na nuvem**, ligados a uma conta **anônima** (sem e-mail nem senha). O navegador guarda só o mínimo:
 
-- **O que é salvo:** perfil (nick e avatar), vitórias e derrotas, fases desbloqueadas e vencidas (nas duas trilhas), nível e votos, grana, pontos de skill, skills aprendidas, itens, **tempo de jogo de cada fase**, recorde (votos e melhor tempo) e as preferências de som e música.
-- **Quando salva:** entre as fases (ao terminar uma fase, comprar na loja ou voltar ao menu) e ao fechar a aba. Não salva no meio de uma partida: se você fechar durante uma fase, volta ao estado do início dela.
-- **Onde fica:** só naquele navegador e aparelho; não sincroniza entre computador e celular. Limpar os dados do site, usar aba anônima ou trocar de navegador perde o progresso.
-- **Apagar:** botão **"🗑 Apagar progresso salvo"** no menu principal.
-- **Modo desenvolvedor:** nunca grava nem usa o saldo de teste.
-- Se o navegador bloquear o armazenamento, o jogo funciona normalmente, só não salva.
+| No navegador | Para quê |
+|---|---|
+| `sb-…-auth-token` | a sessão anônima do Supabase (é ela que identifica a sua conta) |
+| `spb_epoch` | marca a versão dos dados; se mudar, tudo o que versões antigas guardaram é apagado e o jogador começa do zero |
+| `spb_lang` | idioma escolhido (quando existir seletor) |
+| `spb_pending` | **temporário**: alterações que ainda não chegaram ao servidor (por queda de rede); apagado assim que sincroniza |
+
+- **O que vai para a nuvem:** perfil (nick e avatar), nível e votos, grana, pontos de skill, skills, itens, fases desbloqueadas e vencidas de cada campanha, tempo de jogo, recordes, estatísticas e preferências de som. Também o ranking (votos e rating online).
+- **Quando salva:** poucos segundos depois de cada mudança (fase vencida, compra, perfil) e ao fechar a aba. Não salva no meio de uma partida: se você fechar durante uma fase, volta ao estado do início dela.
+- **Sem conexão ao entrar:** o jogo mostra *Tentar de novo* ou *Jogar sem salvar* (continua só em memória).
+- **Trocar de aparelho ou limpar os dados do site:** a sessão anônima é perdida e você entra como um jogador novo. Para levar o progresso, use o **backup** (código ou arquivo) no seu perfil: ele é aplicado à conta nova. A conta antiga continua no ranking até ser removida.
+- **Apagar:** **"🗑 Apagar progresso salvo"** no menu zera o progresso e mantém o perfil. **"🗑 Excluir a minha conta e os meus dados"** (no perfil, em *Backup e transferência*) apaga do servidor o perfil, o save e o ranking, e volta ao início.
+- **Sem servidor configurado** (`js/online-config.js` vazio, só para testes locais): o jogo salva no `localStorage`, como antes.
 
 ---
 
@@ -372,7 +378,7 @@ com a chave Pix e o QR code:
   citados participou, patrocinou, aprovou ou tem qualquer relação com este projeto. Siglas, nomes e marcas
   pertencem aos seus respectivos titulares e são citados apenas de forma descritiva.
 - **Sem violência real.** Quem é "atingido" apenas senta, cansado de tanto gritar.
-- **Dados mínimos.** O jogo roda no seu navegador; o progresso, o perfil e o recorde ficam apenas nele. No **modo online**, o seu nick, avatar e ID são enviados ao serviço de tempo real (Supabase Realtime) só para o adversário ver durante a partida, e o jogo não os grava.
+- **Dados mínimos.** O jogo guarda na nuvem (Supabase) apenas o que você cria jogando: nick, avatar, progresso, estatísticas e resultados de duelos, ligados a uma conta anônima. Nick, avatar, votos, nível e rating aparecem no **ranking público**; o seu progresso completo (save) só você lê. No **modo online**, nick, avatar e ID também passam pelo serviço de tempo real (Supabase Realtime) para o adversário ver durante a partida. Você pode excluir tudo a qualquer momento pelo perfil.
 - **Jogadores simulados.** Quando não há ninguém online, a partida aleatória é contra um jogador simulado (controlado pelo próprio jogo), e a tela final avisa isso.
 - **Pedidos de ajuste ou remoção** podem ser feitos abrindo uma *issue* neste repositório ou contatando
   o autor, e serão analisados com atenção.

@@ -13,7 +13,8 @@
      ch.close()             sai do canal                                                       */
 const SPBNet = (() => {
   const cfg = window.SPB_ONLINE || {};
-  const forced = (() => { try { return new URLSearchParams(location.search).get("net"); } catch (e) { return null; } })();
+  const LOCAL_HOST = ["localhost", "127.0.0.1", ""].includes(location.hostname);        // atalhos de teste só funcionam na máquina do desenvolvedor
+  const forced = (() => { try { return LOCAL_HOST ? new URLSearchParams(location.search).get("net") : null; } catch (e) { return null; } })();
   const mode = forced === "local" ? "local" : (cfg.supabaseUrl && cfg.supabaseKey ? "supabase" : "off");
 
   /* ---------------------------------------------------- Supabase */
