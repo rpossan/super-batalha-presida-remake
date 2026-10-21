@@ -560,6 +560,16 @@ const Art = (() => {
       } else if (id === "furia") {                                 // lata de energético
         x.fillStyle = lin(x, -11, 0, 11, 0, [[0, "#6fbfff"], [.5, "#2a7fe0"], [1, "#16407a"]]); rr(x, -11, -14, 22, 30, 4); x.fill(); x.lineWidth = 1.8; x.strokeStyle = INK; x.stroke();
         x.fillStyle = "#d9dde6"; rr(x, -11, -14, 22, 5, 2); x.fill(); x.fillStyle = "#ffe14a"; x.beginPath(); x.moveTo(2, -6); x.lineTo(-6, 5); x.lineTo(-1, 5); x.lineTo(-3, 13); x.lineTo(6, 1); x.lineTo(1, 1); x.closePath(); x.fill(); x.stroke();
+      } else if (id === "breja") {                                  // caneca de chope
+        x.fillStyle = lin(x, 0, -8, 0, 16, [[0, "#ffc83a"], [1, "#d98a0a"]]); rr(x, -12, -6, 20, 24, 4); x.fill(); x.lineWidth = 1.8; x.strokeStyle = INK; x.stroke();
+        x.beginPath(); x.moveTo(8, -1); x.lineTo(12, -1); x.quadraticCurveTo(16, -1, 16, 4); x.lineTo(16, 9); x.quadraticCurveTo(16, 14, 12, 14); x.lineTo(8, 14); x.stroke();
+        x.fillStyle = "#fff"; x.beginPath(); x.arc(-8, -8, 6, 0, 6.3); x.arc(-1, -11, 6.5, 0, 6.3); x.arc(6, -8, 5.5, 0, 6.3); x.fill(); x.stroke();
+      } else if (id === "plano") {                                  // prancheta com estrela
+        x.fillStyle = "#f6f1de"; rr(x, -12, -15, 24, 31, 3); x.fill(); x.lineWidth = 1.8; x.strokeStyle = INK; x.stroke();
+        x.fillStyle = "#8a8f9c"; rr(x, -6, -18, 12, 6, 2); x.fill(); x.stroke();
+        x.strokeStyle = "#8b8573"; x.lineWidth = 1.6; x.beginPath(); x.moveTo(-7, -4); x.lineTo(7, -4); x.moveTo(-7, 1); x.lineTo(7, 1); x.stroke();
+        x.fillStyle = "#ffd23a"; x.lineWidth = 1.6; x.strokeStyle = INK; x.beginPath();
+        for (let i = 0; i < 10; i++) { const r = i % 2 ? 3.6 : 8, a = -1.571 + i*.628; x[i ? "lineTo" : "moveTo"](4 + Math.cos(a)*r, 8 + Math.sin(a)*r); } x.closePath(); x.fill(); x.stroke();
       } else {                                                      // megafone
         x.fillStyle = "#ffd23a"; x.beginPath(); x.moveTo(-14, -4); x.lineTo(-4, -4); x.lineTo(14, -14); x.lineTo(14, 14); x.lineTo(-4, 4); x.lineTo(-14, 4); x.closePath(); x.fill(); x.lineWidth = 1.8; x.strokeStyle = INK; x.stroke();
         x.fillStyle = "#555"; rr(x, -12, 3, 7, 12, 2); x.fill(); x.stroke();

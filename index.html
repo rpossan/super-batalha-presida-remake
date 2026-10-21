@@ -31,7 +31,7 @@
   .hp.low .fill { animation:lowhp .45s infinite alternate; }
   @keyframes lowhp { to { filter:brightness(1.9) saturate(1.4); } }
   #center { display:flex; flex-direction:column; align-items:center; min-width:150px; }
-  #matchClock { font:900 42px/1 Impact,"Arial Black",sans-serif; min-width:86px; text-align:center; padding:4px 10px 2px; border-radius:10px;
+  #matchClock { font:900 34px/1.1 Impact,"Arial Black",sans-serif; min-width:86px; white-space:nowrap; font-variant-numeric:tabular-nums; text-align:center; padding:4px 10px 2px; border-radius:10px;
                 background:linear-gradient(#1b2433,#0b0f17); border:3px solid #fff; box-shadow:0 3px 12px #000a; text-shadow:0 2px 0 #000; margin-top:-2px; }
   #scoreRow { display:flex; align-items:center; justify-content:center; gap:8px; margin-top:5px; position:relative; min-height:34px; }
   #votes { display:flex; align-items:baseline; gap:6px; padding:2px 12px; background:rgba(0,0,0,.72); border:2px solid var(--amarelo); border-radius:10px;
@@ -50,8 +50,6 @@
           text-shadow:0 2px 0 #000, 0 0 10px #000; pointer-events:none; animation:vpop .95s ease-out forwards; white-space:nowrap; z-index:6; }
   .vpop.big { color:#ffe600; font-size:30px; }
   @keyframes vpop { from { opacity:1; transform:translate(-50%,0) scale(.8); } 20% { transform:translate(-50%,-8px) scale(1.25); } to { opacity:0; transform:translate(-50%,-46px) scale(1); } }
-  #matchClock.low { color:#ff5a4a; border-color:#ff5a4a; animation:clockpulse .5s infinite alternate; }
-  @keyframes clockpulse { to { transform:scale(1.12); } }
   #topBtns { display:flex; gap:6px; }
   #top .side { font-weight:800; font-size:15px; letter-spacing:.3px; padding:4px 10px; border-radius:8px; }
   /* tela de resultados da batalha: janelas azuis de RPG clássico */
@@ -231,7 +229,15 @@
   #coffeeModal .row { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; }
   #coffeeModal .close { position:absolute; top:8px; right:10px; background:none; border:0; color:#fff; font-size:22px; cursor:pointer; opacity:.8; }
   #coffeeModal .ok { color:#4cd964; font-size:13px; min-height:18px; margin-top:8px; font-weight:700; }
-  #ending { position:fixed; inset:0; z-index:25; background:#000; color:#fff; overflow:hidden; opacity:0; transition:opacity 1.4s ease; }
+  #ending { position:fixed; inset:0; z-index:25; background:#000; color:#fff; overflow:hidden; opacity:0; transition:opacity 1.4s ease, background-color 1.6s ease; }
+  #ending.cine { background:transparent; }
+  body.cinema #top, body.cinema #bottom, body.cinema #log, body.cinema #viewCtl, body.cinema #action, body.cinema #toast, body.cinema #focusTag, body.cinema #pauseBtn { opacity:0 !important; pointer-events:none !important; transition:opacity .8s; }
+  #endFx, #endFxC { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:2; }
+  #endBars i { position:absolute; left:0; right:0; height:12vh; background:#000; z-index:2; transition:transform 1.8s cubic-bezier(.2,.7,.2,1); }
+  #endBars i:first-child { top:0; transform:translateY(-100%); } #endBars i:last-child { bottom:0; transform:translateY(100%); }
+  #ending.cine #endBars i { transform:none; }
+  #endChap { position:absolute; left:0; right:0; bottom:16vh; z-index:3; text-align:center; padding:0 24px; font:900 clamp(22px,4.6vw,50px)/1.15 Impact,"Arial Black",sans-serif; letter-spacing:1px; text-shadow:0 3px 0 #000, 0 0 28px #000c; opacity:0; transform:translateY(14px); transition:opacity 1s ease, transform 1s ease; pointer-events:none; }
+  #endChap.show { opacity:1; transform:none; }
   #ending.on { opacity:1; }
   #ending .stage { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px;
                    opacity:0; transition:opacity 1.2s ease; pointer-events:none; text-align:center; }
@@ -243,11 +249,31 @@
   #endScore .big { font:900 clamp(46px,10vw,100px)/1 Impact,"Arial Black",sans-serif; color:var(--amarelo); text-shadow:0 4px 0 #000, 0 0 30px #ffb30088; }
   #endScore .lbl { font-size:clamp(14px,2.4vw,20px); letter-spacing:4px; text-transform:uppercase; opacity:.85; margin-top:14px; }
   #endScore .rec { font-size:clamp(18px,3vw,26px); font-weight:800; margin-top:6px; }
+  #endScore .big.tm { font-size:clamp(34px,7vw,64px); }
+  #endScore { background:radial-gradient(circle at 50% 40%,#1a2850aa,#0000 70%); }
+  #endJourney { background:radial-gradient(circle at 50% 30%,#14213f,#04070d 75%); gap:0; }
+  #endJourney h2 { margin:0 0 clamp(6px,1.6vh,14px); font:900 clamp(26px,5.6vh,48px)/1 Impact,"Arial Black",sans-serif; color:var(--amarelo); letter-spacing:3px; text-shadow:0 3px 0 #000, 0 0 24px #ffb30088; }
+  #jRows { width:min(760px,94vw); display:flex; flex-direction:column; gap:clamp(3px,.9vh,7px); }
+  .jrow { display:flex; align-items:center; gap:clamp(6px,1.6vw,12px); height:clamp(30px,6.4vh,50px); padding:0 clamp(6px,1.6vw,12px); border-radius:12px; border:2px solid #fff4; background-size:cover; background-position:center; position:relative; overflow:hidden; text-align:left;
+          opacity:0; transform:translateX(-46px); transition:opacity .6s ease, transform .6s cubic-bezier(.2,.8,.2,1); }
+  .jrow::before { content:""; position:absolute; inset:0; background:linear-gradient(90deg,#000b,#000a 55%,#000c); }
+  .jrow > * { position:relative; }
+  .jrow.in { opacity:1; transform:none; }
+  .jrow .jn { font:900 clamp(14px,3vh,22px) Impact,"Arial Black",sans-serif; color:var(--amarelo); width:1.1em; text-align:center; }
+  .jrow .jface svg { width:clamp(24px,5.2vh,42px); height:clamp(24px,5.2vh,42px); display:block; }
+  .jrow .jinfo { flex:1; min-width:0; display:flex; flex-direction:column; line-height:1.15; }
+  .jrow .jinfo b { font-size:clamp(12px,2.5vh,18px); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .jrow .jinfo small { font-size:clamp(9px,1.7vh,12.5px); opacity:.8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .jrow .jstamp { font:900 clamp(9px,1.9vh,14px) Impact,"Arial Black",sans-serif; color:#ff5a4a; border:2px solid #ff5a4a; border-radius:6px; padding:1px 7px; transform:rotate(-6deg) scale(2.2); opacity:0; letter-spacing:1px; transition:transform .35s cubic-bezier(.3,1.6,.5,1) .5s, opacity .2s ease .5s; }
+  .jrow.in .jstamp { transform:rotate(-6deg); opacity:1; }
+  .jrow .jt { font:900 clamp(14px,3vh,22px) Impact,"Arial Black",sans-serif; color:#fff; font-variant-numeric:tabular-nums; min-width:3.6em; text-align:right; }
+  #jTotal { margin-top:clamp(8px,2vh,18px); display:flex; align-items:baseline; gap:14px; opacity:0; transition:opacity .8s ease; }
+  #jTotal.in { opacity:1; } #jTotal .lbl { font-size:clamp(12px,2.2vh,18px); letter-spacing:4px; text-transform:uppercase; opacity:.85; }
+  #jTotal b { font:900 clamp(30px,7vh,60px)/1 Impact,"Arial Black",sans-serif; color:var(--amarelo); text-shadow:0 3px 0 #000, 0 0 26px #ffb30088; font-variant-numeric:tabular-nums; }
   #endScore .newrec { margin-top:14px; font:900 clamp(22px,4vw,34px)/1.1 Impact,"Arial Black",sans-serif; color:#ff5a4a; animation:comboPulse .45s ease-in-out infinite alternate; }
   #creditsWrap { position:absolute; inset:0; overflow:hidden; opacity:0; transition:opacity 1s; pointer-events:none; }
   #creditsWrap.show { opacity:1; }
   #credits { position:absolute; left:0; right:0; top:100%; text-align:center; padding:0 20px; line-height:1.7; font-size:clamp(16px,2.6vw,24px); }
-  #creditsWrap.show #credits { animation:roll 40s linear forwards; }
+  #creditsWrap.show #credits { animation:roll 62s linear forwards; }
   @keyframes roll { from { transform:translateY(0); } to { transform:translateY(calc(-100% - 100vh)); } }
   #credits h3 { font:900 clamp(26px,5vw,48px)/1.1 Impact,"Arial Black",sans-serif; color:var(--amarelo); margin:28px 0 6px; letter-spacing:1px; }
   #credits .role { opacity:.75; font-size:.78em; letter-spacing:2px; text-transform:uppercase; margin-top:20px; }
@@ -335,7 +361,7 @@
     #top { padding:6px 6px 12px; gap:6px; grid-template-columns:1fr auto 1fr; }
     #topBtns { grid-column:1 / -1; justify-content:flex-end; margin-top:-4px; }
     #center { min-width:100px; }
-    #matchClock { font-size:30px; min-width:62px; }
+    #matchClock { font-size:24px; min-width:62px; }
     #votes { padding:1px 8px; } #votes b { font-size:17px; } #votes small { font-size:9px; }
     #furia { font-size:14px; padding:2px 8px; }
     #combo { font-size:15px; padding:2px 8px; position:absolute; top:100%; left:0; right:0; margin:2px auto 0; width:max-content; z-index:4; }
@@ -353,7 +379,7 @@
   /* celular na horizontal: faixa de poderes compacta, sem cobrir o tabuleiro */
   @media (max-height:520px) {
     #top { padding:4px 8px 6px; }
-    #matchClock { font-size:24px; min-width:52px; padding:2px 8px 0; }
+    #matchClock { font-size:20px; min-width:52px; padding:2px 8px 0; }
     #scoreRow { min-height:26px; margin-top:2px; }
     #votes b { font-size:15px; }
     #combo { position:absolute; top:100%; left:0; right:0; margin:2px auto 0; width:max-content; z-index:4; font-size:13px; padding:1px 8px; }
@@ -397,7 +423,7 @@
     <div class="fleetlist hidden" id="fleetA"></div>
   </div>
   <div id="center">
-    <div id="matchClock">∞</div>
+    <div id="matchClock" title="Tempo de jogo desta trilha (só conta enquanto você joga)">0:00</div>
     <div id="scoreRow">
       <span id="votes"><small>Votos</small> <b id="votesNum">0</b></span>
       <span id="combo" class="hidden"></span>
@@ -492,7 +518,7 @@
   <p id="musicHint" class="rules" style="margin:6px 0 0">🎵 Toque ou clique em qualquer lugar para ouvir o tema</p>
   <div class="rules">
     Jogo apartidário e imparcial: os dois lados têm as mesmas regras. Obra de paródia e ficção: personagens estilizados inspirados em figuras públicas, sem vínculo com partidos, campanhas ou pessoas citadas. Ninguém se machuca: quem é "atingido" só senta, cansado de tanto gritar. 🎺<br>
-    Atire com o mouse/toque · R gira a torcida · 1–4 poderes · 5–7 itens · Esc cancela · O progresso é salvo automaticamente neste navegador
+    Atire com o mouse/toque · R gira a torcida · 1–4 poderes · 5–9 itens · Esc cancela · O progresso é salvo automaticamente neste navegador
   </div>
 </div>
 
@@ -538,12 +564,20 @@
 </div>
 
 <div id="ending" class="hidden">
+  <canvas id="endFxC"></canvas><canvas id="endFx"></canvas>
+  <div id="endBars"><i></i><i></i></div>
+  <div id="endChap"></div>
   <div id="endArtStage" class="stage"><div id="endArt"></div><div id="endCaption"></div></div>
+  <div id="endJourney" class="stage"><h2>A SUA JORNADA</h2><div id="jRows"></div><div id="jTotal"><span class="lbl">Tempo total</span><b id="jTotalT">0:00</b></div></div>
   <div id="endScore" class="stage">
     <div class="lbl">Seus votos</div>
     <div class="big" id="endVotes">0</div>
     <div class="rec" id="endRecord"></div>
     <div class="newrec hidden" id="endNewRec">🏆 NOVO RECORDE!</div>
+    <div class="lbl">Tempo de jogo</div>
+    <div class="big tm" id="endTime">0:00</div>
+    <div class="rec" id="endTimeRec"></div>
+    <div class="newrec hidden" id="endNewTime">⏱️ NOVO RECORDE DE TEMPO!</div>
   </div>
   <div id="creditsWrap"><div id="credits"></div></div>
   <div id="endFinal" class="stage">
@@ -681,12 +715,12 @@ let menuSide = null, justUnlocked = -1;
    - cada nível dá pontos de skill; as skills só liberam conforme o nível do jogador
    - GRANA (R$) vem do saque dos adversários derrubados e compra itens (máx. 9 de cada na mochila)
    ================================================================ */
-const ITEM_START = { revive:0, furia:0, reforco:0 };      // a campanha começa sem itens
+const ITEM_START = { revive:0, furia:0, reforco:0, breja:0, plano:0 };      // a campanha começa sem itens
 const FURIA_EXTRA = 2;                       // turnos seguidos além do atual
 const ITEMS = { ...ITEM_START };
 const resetItems = () => Object.assign(ITEMS, ITEM_START);
-const ITEM_PRICE = { revive:400, furia:1000, reforco:650 };   // em R$
-const ITEM_MAX   = { revive:9, furia:9, reforco:9 };          // limite da mochila (o uso em batalha não tem limite)
+const ITEM_PRICE = { revive:400, furia:1000, reforco:650, breja:500, plano:2500 };   // em R$
+const ITEM_MAX   = { revive:9, furia:9, reforco:9, breja:9, plano:9 };          // limite da mochila (o uso em batalha não tem limite)
 const MAX_LEVEL = 15;
 const xpForLevel = n => 500*n*(n+1);                          // votos acumulados para o nível n: 1.000, 3.000, 6.000, 10.000…
 const levelOf = xp => { let n = 0; while (n < MAX_LEVEL && xp >= xpForLevel(n+1)) n++; return n; };
@@ -739,7 +773,6 @@ const NG_SIDE = { key:"regime", name:"Regime", short:"Tirano", party:"Regime", m
 const COST = { normal:0, radar:2, cross:3, ultra:6 };
 const MAX_ENERGY = 9;
 const TURN_TIME = Infinity;    // segundos por jogada (Infinity = sem limite)
-const MATCH_TIME = Infinity;   // tempo da partida em segundos (Infinity = sem limite)
 const FLEET_TOTAL = FLEET.reduce((a,f) => a+f.len, 0);
 
 /* ================================================================
@@ -1429,8 +1462,8 @@ function doRadar(targetB, r, c, who, cb) {
    ================================================================ */
 function startBattle() {
   G.phase = "battle"; G.turn = 0; G.round = 1; G.power = "normal"; G.firstTurn = true;
-  G.finished = false; G.matchEnd = Date.now() + MATCH_TIME*1000;
-  G.furia = 0; G.repeatKind = "furia"; G.itemUse = { revive:0, furia:0, reforco:0 }; G.itemsSnap = { ...ITEMS }; G.loot = newLoot();
+  G.finished = false;
+  G.furia = 0; G.repeatKind = "furia"; G.itemUse = { revive:0, furia:0, reforco:0, breja:0, plano:0 }; G.itemsSnap = { ...ITEMS }; G.loot = newLoot();
   G.combo = 0; G.levelStartVotes = G.votes; shownVotes = G.votes;
   $("votesNum").textContent = fmtVotes(G.votes); renderCombo(); renderStats();
   G.energy = [1, LEVELS[G.levelIdx].cpuBonus ? (LEVELS[G.levelIdx].ng ? 4 : 3) : 1]; lastEnergy = 1; $("log").innerHTML = ""; setupSkills();
@@ -1461,8 +1494,8 @@ function startTurn(repeat) {
         toast("🎉 EMPOLGAÇÃO! DE NOVO!", "#ffdf00");
         setAction("🎉 EMPOLGAÇÃO: JOGA DE NOVO!", "#ffdf00", `Turno extra por acertar · restam ${G.empoLeft} nesta fase`);
       } else if (repeat) {
-        toast("FÚRIA! DE NOVO!", "#32a8ff");
-        setAction("🥫 FÚRIA: SUA VEZ DE NOVO!", "#32a8ff", `Turnos contínuos · restam ${G.furia} extra${G.furia===1?"":"s"}`);
+        toast("ENERGÉTICO! DE NOVO!", "#32a8ff");
+        setAction("🥫 ENERGÉTICO: SUA VEZ DE NOVO!", "#32a8ff", `Turnos contínuos · restam ${G.furia} extra${G.furia===1?"":"s"}`);
       } else {
         toast("SUA VEZ!", SIDES[G.side[0]].cssAlt);
         setAction("🎯 SUA VEZ", SIDES[G.side[0]].cssAlt, "Clique numa casa do tabuleiro adversário · +1 ⚡ por turno");
@@ -1480,7 +1513,7 @@ function startTurn(repeat) {
     }
     ui();
   };
-  const hz = repeat ? null : LEVELS[G.levelIdx].hazard;       // o perigo do cenário não repete nos turnos da Fúria
+  const hz = repeat ? null : LEVELS[G.levelIdx].hazard;       // o perigo do cenário não repete nos turnos do Energético
   if (hz === "bala") {                                  // Rio: bala perdida cai na arena de quem vai jogar
     G.busy = true; ui();
     hazardDrop(G.turn === 0 ? 1 : 0, begin);          // na sua vez cai no adversário; na vez dele, em você
@@ -1714,9 +1747,9 @@ function nextTurn() {
     log(`🎉 Empolgação! Você joga de novo (${G.empoLeft} restante${G.empoLeft===1?"":"s"} nesta fase).`);
     startTurn(true); return;
   }
-  if (G.turn === 0 && G.furia > 0) {                                  // Fúria: você joga de novo, o adversário não age
+  if (G.turn === 0 && G.furia > 0) {                                  // Energético: você joga de novo, o adversário não age
     G.furia--;
-    log(`🥫 Fúria! Você joga de novo (${G.furia} turno${G.furia===1?"":"s"} extra${G.furia===1?"":"s"} restante${G.furia===1?"":"s"}).`);
+    log(`🥫 Energético! Você joga de novo (${G.furia} turno${G.furia===1?"":"s"} extra${G.furia===1?"":"s"} restante${G.furia===1?"":"s"}).`);
     G.repeatKind = "furia"; startTurn(true); return;
   }
   G.turn = 1-G.turn; if (G.turn===0) G.round++; startTurn();
@@ -1816,24 +1849,6 @@ function cpuPlay() {
   } else doShot();
 }
 
-const dmgDealt = who => G.fleets[1-who].reduce((n,sh) => n + sh.hits, 0);
-
-/* acabou o tempo: vence quem derrubou mais torcedores (desempate: mais grupos dispersados) */
-function timeUp() {
-  if (G.phase!=="battle") return;
-  G.phase = "over"; G.busy = true; clearPreview(); ui();
-  toast("TEMPO ESGOTADO!", "#ff5a4a");
-  setAction("⏱️ Tempo esgotado!", "#ff5a4a", "Vence quem derrubou mais torcedores");
-  setTimeout(() => {                                    // deixa o último tiro cair
-    const a = dmgDealt(0), b = dmgDealt(1);
-    let w = a>b ? 0 : b>a ? 1 : null;
-    if (w===null) {
-      const sa = G.fleets[1].filter(x => x.sunk).length, sb = G.fleets[0].filter(x => x.sunk).length;
-      w = sa>sb ? 0 : sb>sa ? 1 : null;
-    }
-    finish(w, "time");
-  }, 1600);
-}
 
 function finish(winner, reason) {
   if (G.finished) return; G.finished = true;
@@ -2070,7 +2085,7 @@ function ui() {
     $("qbPower").disabled = !myTurn;
     const fu = $("furia");
     fu.classList.toggle("hidden", !(G.furia > 0));
-    if (G.furia > 0) fu.textContent = `🥫 FÚRIA +${G.furia}`;
+    if (G.furia > 0) fu.textContent = `🥫 ENERGÉTICO +${G.furia}`;
     $("fleetA").classList.remove("hidden"); $("fleetB").classList.remove("hidden");
     const row = (b) => G.fleets[b].map(sh =>
       `<div class="${sh.sunk?"sunk":""}">${"●".repeat(sh.len-sh.hits)}${"○".repeat(sh.hits)} ${sh.name}</div>`).join("");
@@ -2123,8 +2138,8 @@ function renderStats(xp = G.votes) {
 }
 function bumpChip(id) { const e = $(id); e.classList.remove("bump"); void e.offsetWidth; e.classList.add("bump"); }
 /* SAQUE: quem você derruba pode deixar grana ou item (combos e grupos inteiros dispersados aumentam as chances) */
-const ITEM_WEIGHTS = [["revive", .5], ["reforco", .34], ["furia", .16]];
-function newLoot() { return { money:0, items:{ revive:0, furia:0, reforco:0 }, lost:false }; }
+const ITEM_WEIGHTS = [["revive", .4], ["reforco", .28], ["furia", .14], ["breja", .14], ["plano", .04]];
+function newLoot() { return { money:0, items:{ revive:0, furia:0, reforco:0, breja:0, plano:0 }, lost:false }; }
 function giveMoney(n) { MONEY += n; G.loot.money += n; bumpChip("moneyChip"); renderStats(); }
 function giveItem(id) {
   if (ITEMS[id] >= ITEM_MAX[id]) { const v = Math.round(ITEM_PRICE[id]*.4/5)*5; giveMoney(v); return { money:v }; }   // mochila cheia: vira grana
@@ -2144,10 +2159,14 @@ function rollLoot(r, c, sunk) {
     log(got.item ? `🎁 Saque: <b>${d.name}</b>!` : `🎁 Mochila cheia: o ${d.name} virou R$ ${got.money}.`);
   }
 }
+/* TEMPO DE JOGO: segundos jogados em cada fase de cada trilha (conta posicionando e batalhando; pausa e menu não contam) */
+const PLAYTIME = { flavio:[], lula:[] };
+const trailTime = (side, upTo = LEVELS.length) => (PLAYTIME[side] || []).slice(0, upTo).reduce((a, t) => a + (t || 0), 0);
+const fmtTime = v => { v = Math.floor(v); const h = Math.floor(v/3600), m = Math.floor(v%3600/60), x = v%60, two = n => String(n).padStart(2, "0"); return h ? `${h}:${two(m)}:${two(x)}` : `${m}:${two(x)}`; };
 let lastClock = -1;
 function setClock(v) {
-  if (v===lastClock) return; lastClock = v;
-  const el = $("matchClock"); el.textContent = v===Infinity ? "∞" : v; el.classList.toggle("low", v<=10 && G.phase==="battle");
+  v = Math.floor(v); if (v === lastClock) return; lastClock = v;
+  $("matchClock").textContent = fmtTime(v);
 }
 /* ---- skills em batalha ---- */
 function clearUmbrellas() { Object.values(G.umbrellas || {}).forEach(n => n.destroy()); G.umbrellas = {}; }
@@ -2189,14 +2208,18 @@ function addSupportFan() {
 }
 const superActive = () => skillOn("supertiro") && G.superLeft > 0;
 
-/* ---- itens: Remédio (reviver), Fúria (turnos contínuos) e Reforço (alto-falante) ---- */
+/* ---- itens: Remédio (reviver), Energético (turnos contínuos) e Reforço (alto-falante) ---- */
 const ITEM_DEFS = [
   { id:"revive",  name:"Remédio",  desc:"revive 1 torcedor caído", key:"5",
     svg:`<svg viewBox="0 0 40 40"><rect x="11" y="4" width="18" height="7" rx="2" fill="#d9dde6" stroke="#1a1a1a" stroke-width="2"/><rect x="7" y="10" width="26" height="27" rx="5" fill="#fff" stroke="#1a1a1a" stroke-width="2.4"/><path d="M17 17h6v5h5v6h-5v5h-6v-5h-5v-6h5z" fill="#e0242a"/></svg>` },
-  { id:"furia",   name:"Fúria",    desc:`+${FURIA_EXTRA} turnos seguidos`, key:"6",
+  { id:"furia",   name:"Energético", desc:`+${FURIA_EXTRA} turnos seguidos`, key:"6",
     svg:`<svg viewBox="0 0 40 40"><rect x="9" y="5" width="22" height="31" rx="5" fill="url(#gCan)" stroke="#1a1a1a" stroke-width="2.4"/><rect x="9" y="5" width="22" height="5" rx="2" fill="#c9ced8"/><path d="M22 12l-8 12h6l-2 9 9-13h-6z" fill="#ffe14a" stroke="#1a1a1a" stroke-width="1.4" stroke-linejoin="round"/><defs><linearGradient id="gCan" x1="0" x2="1"><stop offset="0" stop-color="#2f7bff"/><stop offset="1" stop-color="#143c9c"/></linearGradient></defs></svg>` },
   { id:"reforco", name:"Reforço",  desc:"invoca 1 torcedor", key:"7",
     svg:`<svg viewBox="0 0 40 40"><path d="M6 15h8l14-8v26l-14-8H6z" fill="#ffd23a" stroke="#1a1a1a" stroke-width="2.4" stroke-linejoin="round"/><rect x="9" y="26" width="6" height="9" rx="2" fill="#555" stroke="#1a1a1a" stroke-width="2"/><path d="M32 14q5 6 0 12M35 10q9 10 0 20" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round"/></svg>` },
+  { id:"breja",   name:"Breja",    desc:"+1 uso de Super tiro e Empolgação", key:"8",
+    svg:`<svg viewBox="0 0 40 40"><path d="M9 14h17v21a3 3 0 0 1-3 3H12a3 3 0 0 1-3-3z" fill="url(#gBr)" stroke="#1a1a1a" stroke-width="2.4" stroke-linejoin="round"/><path d="M26 18h5a4 4 0 0 1 4 4v6a4 4 0 0 1-4 4h-5" fill="none" stroke="#1a1a1a" stroke-width="2.4"/><path d="M8 14q-2-7 5-8 2-4 7-2 4-1 6 3 4 1 2 7z" fill="#fff" stroke="#1a1a1a" stroke-width="2.2" stroke-linejoin="round"/><path d="M14 20v13M19 20v13" stroke="#fff6" stroke-width="2" stroke-linecap="round"/><defs><linearGradient id="gBr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffc83a"/><stop offset="1" stop-color="#d98a0a"/></linearGradient></defs></svg>` },
+  { id:"plano",   name:"Plano de Governo", desc:"ganha 1 ponto de skill", key:"9",
+    svg:`<svg viewBox="0 0 40 40"><rect x="7" y="4" width="26" height="33" rx="3" fill="#f6f1de" stroke="#1a1a1a" stroke-width="2.4"/><rect x="14" y="2" width="12" height="6" rx="2" fill="#8a8f9c" stroke="#1a1a1a" stroke-width="2"/><path d="M12 15h16M12 20h16M12 25h10" stroke="#8b8573" stroke-width="2" stroke-linecap="round"/><path d="M28 24l2.2 4.4 4.8.7-3.5 3.4.9 4.8-4.4-2.3-4.3 2.3.8-4.8-3.4-3.4 4.8-.7z" fill="#ffd23a" stroke="#1a1a1a" stroke-width="1.6" stroke-linejoin="round"/></svg>` },
 ];
 function canUseItem(id) {
   return G.phase==="battle" && G.turn===0 && !G.busy && ITEMS[id] > 0 && !(id==="furia" && G.furia>0);
@@ -2223,9 +2246,9 @@ function useItem(id) {
   } else if (id === "furia") {
     G.furia = FURIA_EXTRA;
     tone(180,.5,"sawtooth",.1,500); tone(900,.18,"square",.07,0,.3);
-    toast("🥫 FÚRIA ATIVADA!", "#32a8ff");
-    log(`🥫 Fúria: você joga ${FURIA_EXTRA+1} turnos seguidos, sem o adversário agir.`);
-    setAction("🥫 FÚRIA ATIVADA!", "#32a8ff", `${FURIA_EXTRA+1} turnos contínuos, contando este`);
+    toast("🥫 ENERGÉTICO ATIVADO!", "#32a8ff");
+    log(`🥫 Energético: você joga ${FURIA_EXTRA+1} turnos seguidos, sem o adversário agir.`);
+    setAction("🥫 ENERGÉTICO ATIVADO!", "#32a8ff", `${FURIA_EXTRA+1} turnos contínuos, contando este`);
   } else if (id === "reforco") {
     const free = [];
     for (let r=0;r<N;r++) for (let c=0;c<N;c++) { const k = G.boards[0][r][c]; if (k.ship < 0 && !k.shot) free.push([r,c]); }
@@ -2243,6 +2266,22 @@ function useItem(id) {
     toast("📢 REFORÇO CHEGOU!", SIDES[G.side[0]].cssAlt);
     log("📢 Reforço: o alto-falante chamou um novo torcedor para a sua torcida!");
     setAction("📢 Reforço no alto-falante!", SIDES[G.side[0]].cssAlt, "Um novo torcedor entrou na sua arena");
+  } else if (id === "breja") {
+    const sup = skillOn("supertiro"), emp = skillOn("empolgacao");
+    if (!sup && !emp) { toast("SEM SKILL DE USO LIMITADO", "#cfd8e3"); log("🍺 A Breja só ajuda quem aprendeu Super tiro ou Empolgação."); return; }
+    if (sup) G.superLeft++; if (emp) G.empoLeft++;
+    burst(tilePos(0,N>>1,N>>1), [0xffc83a, 0xffffff, 0xd98a0a], 30, 4.5);
+    [392,523,659].forEach((fq,k) => tone(fq,.14,"triangle",.09,0,k*.07));
+    toast("🍺 SAÚDE! +1 USO", "#ffc83a");
+    log(`🍺 Breja: +1 uso de ${[sup ? "Super tiro" : "", emp ? "Empolgação" : ""].filter(Boolean).join(" e ")} nesta fase.`);
+    setAction("🍺 Saúde!", "#ffc83a", "As habilidades de uso limitado ganharam +1 uso");
+  } else if (id === "plano") {
+    SKILL_POINTS++; try { Sfx.sp(); } catch (e) {}
+    burst(tilePos(0,N>>1,N>>1), [0xffd23a, 0xffffff, 0x4cd964], 30, 4.5);
+    toast("📜 +1 PONTO DE SKILL!", "#4cd964");
+    log("📜 Plano de Governo aprovado: +1 ponto de skill (gaste em ⭐ Skills).");
+    setAction("📜 Plano de Governo aprovado!", "#4cd964", "+1 ponto de skill");
+    refreshShopButtons();
   }
   ITEMS[id]--; G.itemUse[id]++;
   ui();
@@ -2359,7 +2398,7 @@ addEventListener("keydown", e => {
   if (G.phase==="battle") {
     const map = {"1":"normal","2":"radar","3":"cross","4":"ultra"};
     if (map[k]) selectPower(map[k]);
-    const itm = {"5":"revive","6":"furia","7":"reforco"};
+    const itm = {"5":"revive","6":"furia","7":"reforco","8":"breja","9":"plano"};
     if (itm[k]) useItem(itm[k]);
   }
 });
@@ -2490,29 +2529,29 @@ function endingArt(side) {
   let body = artBackground() + artPetals();
   if (side === "lula") {
     body += artFlag(58, 420, "lula", 1.05) + artFlag(730, 450, "lula", .95);
-    const lula = artPerson({ x:318, y:386, s:1.12, step:true, walk:true, walkCount:9, hair:"#f4f4fa", hairHi:"#fff", hairSh:"#c8ccd8", brow:"#d0d4e0", beard:"#f4f4fa", skin:"#f4cfae", skinShade:"#e0aa84", sash:true, arm:"wave", happyEyes:false });
+    const lula = artPerson({ x:318, y:386, s:1.12, step:true, walk:true, walkCount:14, hair:"#f4f4fa", hairHi:"#fff", hairSh:"#c8ccd8", brow:"#d0d4e0", beard:"#f4f4fa", skin:"#f4cfae", skinShade:"#e0aa84", sash:true, arm:"wave", happyEyes:false });
     // sobe a rampa andando (de baixo-esquerda até o ponto final), com balanço do passo
-    body += `<g><animateTransform attributeName="transform" type="translate" from="-340 78" to="0 0" dur="6.3s" fill="freeze" calcMode="spline" keyTimes="0;1" keySplines=".25 .55 .3 1"/>`
-          + `<g><animateTransform attributeName="transform" type="translate" values="0 0;0 -7;0 0" dur=".7s" repeatCount="9"/>${lula}</g></g>`;
+    body += `<g><animateTransform attributeName="transform" type="translate" from="-340 78" to="0 0" dur="9.8s" fill="freeze" calcMode="spline" keyTimes="0;1" keySplines=".25 .55 .3 1"/>`
+          + `<g><animateTransform attributeName="transform" type="translate" values="0 0;0 -7;0 0" dur=".7s" repeatCount="14"/>${lula}</g></g>`;
     body += artSparkles([[430,150,1.1],[560,110,.8],[250,120,.7],[640,200,1],[190,300,.8],[520,60,.7]]);
   } else {
     body += artFlag(58, 420, "flavio", 1.05) + artFlag(730, 450, "flavio", .95);
-    const slide = (from, p) => `<g><animateTransform attributeName="transform" type="translate" from="${from} 0" to="0 0" dur="2.6s" fill="freeze" calcMode="spline" keyTimes="0;1" keySplines=".25 .6 .3 1"/>${p}</g>`;
+    const slide = (from, p) => `<g><animateTransform attributeName="transform" type="translate" from="${from} 0" to="0 0" dur="5s" fill="freeze" calcMode="spline" keyTimes="0;1" keySplines=".25 .6 .3 1"/>${p}</g>`;
     const jair = artPerson({ x:462, y:342, s:1.02, tilt:5, suitGrad:"url(#gSuit2)", tie:"#ffd400", hair:"#9a9aa6", hairHi:"#e2e2ea", hairSh:"#6b6b78", hairStyle:"side", skin:"#f6d2b4", skinShade:"#e4ad8a", arm:"none", happyEyes:true });
     const flavio = artPerson({ x:548, y:342, s:1.06, tilt:-5, tie:"#0a9d3f", hair:"#3a2a22", hairHi:"#8a6a58", hairSh:"#22170f", skin:"#f8d6b8", skinShade:"#e8b390", sash:true, arm:"none", happyEyes:true });
     const hug = (d, c) => `<path d="${d}" stroke="#101830" stroke-width="29" stroke-linecap="round" fill="none"/><path d="${d}" stroke="${c}" stroke-width="22" stroke-linecap="round" fill="none"/><path d="${d}" stroke="#ffffff" stroke-width="4" stroke-linecap="round" fill="none" opacity=".25" transform="translate(0 -4)"/>`;
-    const arms = `<g opacity="0"><animate attributeName="opacity" from="0" to="1" begin="2.1s" dur=".5s" fill="freeze"/>`
+    const arms = `<g opacity="0"><animate attributeName="opacity" from="0" to="1" begin="4.6s" dur=".8s" fill="freeze"/>`
       + hug("M498 210 Q542 190 580 236", "#2a3552") + `<circle cx="582" cy="240" r="12" fill="#f8d6b8" ${ART_STROKE}/>`
       + hug("M516 210 Q472 190 436 236", "#26335f") + `<circle cx="434" cy="240" r="12" fill="#f6d2b4" ${ART_STROKE}/></g>`;
     // chegam um de cada lado, se abraçam e balançam de leve
-    body += `<g><animateTransform attributeName="transform" type="rotate" values="-1.4 505 342;1.4 505 342;-1.4 505 342" dur="3.2s" begin="2.8s" repeatCount="indefinite"/>`
+    body += `<g><animateTransform attributeName="transform" type="rotate" values="-1.4 505 342;1.4 505 342;-1.4 505 342" dur="3.2s" begin="5.6s" repeatCount="indefinite"/>`
           + slide(-210, jair) + slide(210, flavio) + arms + `</g>`;
-    const heart = (x, y, s, c, i) => `<g opacity="0"><animateTransform attributeName="transform" type="translate" values="0 40;0 -34" dur="3s" begin="${2.4+i*.9}s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" dur="3s" begin="${2.4+i*.9}s" repeatCount="indefinite"/>${artHeart(x, y, s, c)}</g>`;
+    const heart = (x, y, s, c, i) => `<g opacity="0"><animateTransform attributeName="transform" type="translate" values="0 40;0 -34" dur="3s" begin="${5+i*.9}s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" dur="3s" begin="${5+i*.9}s" repeatCount="indefinite"/>${artHeart(x, y, s, c)}</g>`;
     body += heart(500, 92, 1.9, "#ff4d73", 0) + heart(566, 70, 1.3, "#ff7a9a", 1) + heart(446, 62, 1.1, "#ff5a7e", 2) + heart(520, 120, 1, "#ff93ad", 3);
     body += artSparkles([[420,130,1],[600,120,.9],[360,200,.7],[660,210,1],[250,150,.8],[300,90,.7]]);
   }
   // câmera: aproxima devagar (efeito Ken Burns)
-  const svgBody = `<g transform="translate(400 250)"><g><animateTransform attributeName="transform" type="scale" from="1" to="1.07" dur="14s" fill="freeze"/><g transform="translate(-400 -250)">${body}</g></g></g>`;
+  const svgBody = `<g transform="translate(400 250)"><g><animateTransform attributeName="transform" type="scale" from="1" to="1.13" dur="27s" fill="freeze"/><g transform="translate(-400 -250)">${body}</g></g></g>`;
   return `<svg viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Final da trilha (animado)">${svgBody}<rect width="800" height="500" fill="url(#gVig)"/></svg>`;
 }
 
@@ -2520,27 +2559,150 @@ let endTimers = [], endActive = false;
 const getRecord = () => { try { return parseInt(localStorage.getItem("spb_record")) || 0; } catch (e) { return window.__rec || 0; } };
 const setRecord = v => { try { localStorage.setItem("spb_record", String(v)); } catch (e) { window.__rec = v; } };
 const endAt = (ms, fn) => endTimers.push(setTimeout(fn, ms));
+/* ---- final cinematográfico: câmera, fogos, confete, linha do tempo da campanha e créditos ---- */
+const endFx = { cv:null, ctx:null, cv2:null, ctx2:null, parts:[], raf:0, last:0, rockets:0, confetti:0, pal:[], on:false, w:0, h:0, d:1 };
+const FX_PAL = {
+  lula:   [["#ff3b30","#ffb3a8"], ["#ffd23a","#fff3b0"], ["#ffffff","#cfe3ff"], ["#ff5ea8","#ffd0e6"]],
+  flavio: [["#18c24a","#b4f7c6"], ["#ffd23a","#fff3b0"], ["#3a86ff","#c4dcff"], ["#ffffff","#e6ffe9"]],
+};
+function fxResize() { const d = Math.min(window.devicePixelRatio || 1, 2); endFx.d = d; endFx.w = innerWidth; endFx.h = innerHeight; [endFx.cv, endFx.cv2].forEach(c => { c.width = endFx.w*d; c.height = endFx.h*d; }); }
+function fxBoom(big) {
+  tone(70 + Math.random()*40, .55, "sawtooth", big ? .06 : .045, -40);
+  for (let i = 0; i < 3; i++) tone(1400 + Math.random()*1800, .05, "square", .014, 0, .08 + i*.07 + Math.random()*.05);
+}
+function fxBurst(x, y, pal, kind) {
+  const [c1, c2] = pal, n = kind === "big" ? 130 : kind === "heart" ? 56 : 80, sp = kind === "big" ? 360 : 250;
+  for (let i = 0; i < n; i++) {
+    const t = Math.PI*2*i/n; let vx, vy;
+    if (kind === "heart") { vx = 16*Math.pow(Math.sin(t), 3)*sp/17; vy = -(13*Math.cos(t) - 5*Math.cos(2*t) - 2*Math.cos(3*t) - Math.cos(4*t))*sp/17; }
+    else { const v = sp*(kind === "ring" ? 1 : .3 + Math.random()*.7); vx = Math.cos(t + Math.random()*.1)*v; vy = Math.sin(t + Math.random()*.1)*v; }
+    const max = 1.3 + Math.random()*.9;
+    endFx.parts.push({ k:"s", x, y, vx, vy, life:max, max, c:Math.random() < .7 ? c1 : c2, g:kind === "heart" ? 60 : 150 });
+  }
+  endFx.parts.push({ k:"f", x, y, life:.35, max:.35, c:c2 });                            // clarão no centro
+  fxBoom(kind === "big");
+}
+function fxLaunch(pal) {
+  const x = endFx.w*(.12 + Math.random()*.76), y = endFx.h + 10, ty = endFx.h*(.12 + Math.random()*.34), r = Math.random();
+  endFx.parts.push({ k:"r", x, y, vx:(Math.random() - .5)*50, vy:-(endFx.h*.9 + Math.random()*180), ty, pal, kind:r < .12 ? "heart" : r < .3 ? "ring" : r < .45 ? "big" : "peony" });
+  tone(380, .55, "sine", .02, 1100);
+}
+function fxConfetti(n) {
+  const cols = endFx.pal.flat().concat(["#ffffff"]);
+  for (let i = 0; i < n; i++) endFx.parts.push({ k:"c", x:Math.random()*endFx.w, y:-12, vx:(Math.random() - .5)*60, vy:60 + Math.random()*90, rot:Math.random()*6.3, vr:(Math.random() - .5)*9, w:6 + Math.random()*6, h:3 + Math.random()*4, c:cols[rand(cols.length)], ph:Math.random()*6.3 });
+}
+function fxFrame(now) {
+  if (!endFx.on) return;
+  endFx.raf = requestAnimationFrame(fxFrame);
+  const dt = Math.min(.05, (now - endFx.last)/1000 || .016); endFx.last = now;
+  const ctx = endFx.ctx, ctx2 = endFx.ctx2, d = endFx.d, W = endFx.w, H = endFx.h;
+  if (Math.random() < endFx.rockets*dt) fxLaunch(endFx.pal[rand(endFx.pal.length)]);
+  if (Math.random() < endFx.confetti*dt/4) fxConfetti(4);
+  ctx.setTransform(d, 0, 0, d, 0, 0); ctx2.setTransform(d, 0, 0, d, 0, 0); ctx2.clearRect(0, 0, W, H); ctx2.globalAlpha = .92;
+  ctx.globalCompositeOperation = "destination-out"; ctx.fillStyle = "rgba(0,0,0,.2)"; ctx.fillRect(0, 0, W, H);       // rastro que se apaga
+  ctx.globalCompositeOperation = "lighter";
+  const ps = endFx.parts;
+  for (let i = ps.length - 1; i >= 0; i--) {
+    const p = ps[i];
+    if (p.k === "r") {                                                     // foguete subindo
+      p.x += p.vx*dt; p.y += p.vy*dt; p.vy *= Math.exp(-dt*.9);
+      ctx.fillStyle = "#ffe9b0"; ctx.fillRect(p.x - 1.5, p.y, 3, 9);
+      if (p.y <= p.ty || p.vy > -90) { fxBurst(p.x, p.y, p.pal, p.kind); ps.splice(i, 1); }
+    } else if (p.k === "s") {                                              // faísca
+      p.life -= dt; if (p.life <= 0) { ps.splice(i, 1); continue; }
+      const ox = p.x, oy = p.y;
+      p.vx *= Math.exp(-dt*1.25); p.vy = p.vy*Math.exp(-dt*1.25) + p.g*dt; p.x += p.vx*dt; p.y += p.vy*dt;
+      ctx.globalAlpha = Math.min(1, p.life/p.max*1.6); ctx.strokeStyle = p.c; ctx.lineWidth = 2.4; ctx.lineCap = "round";
+      ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(p.x, p.y); ctx.stroke();
+    } else if (p.k === "f") {                                              // clarão
+      p.life -= dt; if (p.life <= 0) { ps.splice(i, 1); continue; }
+      const k = p.life/p.max, r = 90*(1.2 - k);
+      const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r); g.addColorStop(0, p.c); g.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.globalAlpha = .55*k; ctx.fillStyle = g; ctx.fillRect(p.x - r, p.y - r, r*2, r*2);
+    } else {                                                               // confete
+      p.ph += dt*3; p.x += (p.vx + Math.sin(p.ph)*40)*dt; p.y += p.vy*dt; p.rot += p.vr*dt;
+      if (p.y > H + 14) { ps.splice(i, 1); continue; }
+      ctx2.save(); ctx2.translate(p.x, p.y); ctx2.rotate(p.rot); ctx2.scale(1, Math.cos(p.ph*2.2)); ctx2.fillStyle = p.c; ctx2.fillRect(-p.w/2, -p.h/2, p.w, p.h); ctx2.restore();
+    }
+  }
+  ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over";
+}
+function fxStart(side) {
+  if (!endFx.cv) { endFx.cv = $("endFx"); endFx.ctx = endFx.cv.getContext("2d"); endFx.cv2 = $("endFxC"); endFx.ctx2 = endFx.cv2.getContext("2d"); window.addEventListener("resize", () => endFx.on && fxResize()); }
+  endFx.pal = FX_PAL[side] || FX_PAL.lula; endFx.parts = []; endFx.rockets = 0; endFx.confetti = 0; endFx.on = true; endFx.last = performance.now(); fxResize();
+  endFx.ctx.clearRect(0, 0, endFx.w, endFx.h); endFx.ctx2.clearRect(0, 0, endFx.w, endFx.h); cancelAnimationFrame(endFx.raf); endFx.raf = requestAnimationFrame(fxFrame);
+}
+function fxStop() { endFx.on = false; cancelAnimationFrame(endFx.raf); if (endFx.ctx) { endFx.ctx.clearRect(0, 0, endFx.w, endFx.h); endFx.ctx2.clearRect(0, 0, endFx.w, endFx.h); } endFx.parts = []; }
+
+/* ato 1: a câmera do jogo passeia pela festa (aproxima da torcida, cruza a praça e se afasta) */
+let endCamTimer = 0, endCheerTimer = 0;
+const ease = k => k*k*(3 - 2*k), lerp = (a, b, k) => a + (b - a)*ease(Math.max(0, Math.min(1, k)));
+function endCamStart() {
+  const t0 = performance.now(), v = GFX.view, c0 = tilePos(0, 4, 4), c1 = tilePos(1, 4, 4);
+  const p0 = GFX.P(c0.x, 0, c0.z), p1 = GFX.P(c1.x, 0, c1.z), mid = [(p0[0] + p1[0])/2, (p0[1] + p1[1])/2];
+  const A = [p0[0] - mid[0], p0[1] - mid[1] - 30], B = [p1[0] - mid[0], p1[1] - mid[1] - 20];
+  endCamTimer = setInterval(() => {
+    const t = (performance.now() - t0)/1000;
+    if (t < 3) { v.uz = 1; v.panX = 0; v.panY = 0; }
+    else if (t < 11) { const k = (t - 3)/8; v.uz = lerp(1, 2.3, k); v.panX = lerp(0, A[0], k); v.panY = lerp(0, A[1], k); }
+    else if (t < 14) { v.uz = 2.3; v.panX = A[0]; v.panY = A[1]; }
+    else if (t < 20) { const k = (t - 14)/6; v.uz = lerp(2.3, 1.9, k); v.panX = lerp(A[0], B[0], k); v.panY = lerp(A[1], B[1], k); }
+    else { const k = (t - 20)/6; v.uz = lerp(1.9, .85, k); v.panX = lerp(B[0], 0, k); v.panY = lerp(B[1], 0, k); }
+  }, 33);
+  let n = 0;
+  endCheerTimer = setInterval(() => {                                       // a torcida vibra e solta confete na arena
+    captainReact(0, "jump"); GFX.chantBoost(.5);
+    const r = rand(N), c = rand(N), p = tilePos(0, r, c);
+    GFX.burst({ x:p.x, y:1.4, z:p.z }, [0xffd23a, 0xffffff, SIDES[G.side[0]] ? SIDES[G.side[0]].main : 0x18c24a, 0xff5ea8], 46, 7); n++;
+  }, 1100);
+}
+function endCamStop() { clearInterval(endCamTimer); clearInterval(endCheerTimer); endCamTimer = endCheerTimer = 0; try { GFX.resetView(); } catch (e) {} }
+
+let endChapT = 0;
+function endChapter(text, ms = 4600) {
+  const el = $("endChap"); clearTimeout(endChapT); el.textContent = text; el.classList.add("show");
+  endChapT = setTimeout(() => el.classList.remove("show"), ms);
+}
+function countUp(el, to, ms, fmt = fmtVotes) {
+  const t0 = performance.now(); el.textContent = fmt(0);
+  const id = setInterval(() => { const k = Math.min(1, (performance.now() - t0)/ms), e = 1 - Math.pow(1 - k, 3); el.textContent = fmt(to*e); if (k >= 1) clearInterval(id); }, 40);
+  endTimers.push(id);
+}
+function endCleanup() {
+  endTimers.forEach(t => { clearTimeout(t); clearInterval(t); }); endTimers = []; clearTimeout(endChapT);
+  endCamStop(); fxStop(); $("endChap").classList.remove("show");
+  $("ending").classList.remove("cine"); document.body.classList.remove("cinema");
+}
 function endingStep(name) {
-  ["endArtStage","endScore","endFinal"].forEach(id => $(id).classList.toggle("show", id === name));
+  ["endArtStage","endJourney","endScore","endFinal"].forEach(id => $(id).classList.toggle("show", id === name));
   $("creditsWrap").classList.toggle("show", name === "credits");
   $("endSkip").classList.toggle("hidden", name === "endFinal");
 }
 function startEnding(side) {
-  endActive = true; endTimers.forEach(clearTimeout); endTimers = [];
+  endActive = true; endCleanup();
   const ch = CHARS[side], total = G.votes, prev = getRecord(), isRec = total > prev;
   if (isRec) setRecord(total);
-  $("endArt").innerHTML = endingArt(side);
-  $("endCaption").innerHTML = side === "lula"
-    ? `${ch.name} sobe a rampa do Palácio do Planalto com a faixa presidencial.<small>${ch.name} foi eleito presidente do Brasil!</small>`
-    : `${ch.short} abraça o pai, Jair Bolsonaro, na rampa do Palácio do Planalto.<small>${ch.name} foi eleito presidente do Brasil!</small>`;
-  $("endVotes").textContent = fmtVotes(total);
+  const bossIdx = LEVELS.findIndex(l => l.boss), runTime = trailTime(side, bossIdx + 1), bestKey = "spb_best_time_" + side, prevBest = parseFloat(storage.get(bestKey)) || 0;
+  const isTimeRec = !DEV_MODE && runTime > 0 && (!prevBest || runTime < prevBest);
+  if (isTimeRec) storage.set(bestKey, String(Math.round(runTime*10)/10));
   $("endRecord").textContent = `Recorde: ${fmtVotes(Math.max(prev, total))} votos`;
   $("endNewRec").classList.toggle("hidden", !isRec);
+  $("endTimeRec").textContent = `Melhor tempo: ${fmtTime(isTimeRec || !prevBest ? runTime : prevBest)}`;
+  $("endNewTime").classList.toggle("hidden", !isTimeRec);
+  $("endVotes").textContent = "0"; $("endTime").textContent = "0:00";
+  // linha do tempo da campanha: uma linha por fase vencida
+  const rows = LEVELS.slice(0, bossIdx + 1).map((L, i) => {
+    const sc = SCENARIOS.find(x => x.id === L.scn), en = CHARS[TRACKS[side][i]];
+    return `<div class="jrow" style="background-image:${sc.thumb}"><span class="jn">${i + 1}</span><span class="jface">${faceSVG(en, 44, L.boss)}</span>
+      <span class="jinfo"><b>${en.name}</b><small>${sc.emoji} ${sc.name}</small></span><span class="jstamp">${L.boss ? "VENCIDO!" : "DERROTADO"}</span><span class="jt">${fmtTime((PLAYTIME[side] || [])[i] || 0)}</span></div>`;
+  });
+  $("jRows").innerHTML = rows.join(""); $("jTotal").classList.remove("in"); $("jTotalT").textContent = "0:00";
   $("endPix").innerHTML = document.querySelector("#coffeeModal .qr").innerHTML;
   $("endKey").textContent = PIX_KEY;
   $("credits").innerHTML = `
     <h3>SUPER PRESIDA BATALHA</h3>
     <div class="dim">${side === "lula" ? "A trilha do " + CHARS.lula.short : "A trilha do " + CHARS.flavio.short} · fim</div>
+    <div class="dim" style="margin-top:34px;opacity:1;font-size:1.05em">Parabéns! Você levou ${ch.short} até o Planalto em <b>${fmtTime(runTime)}</b>.</div>
     <div class="role">Um jogo criado por</div><div class="name">rpossan</div>
     <div class="role">Direção e roteiro</div><div class="name">rpossan</div>
     <div class="role">Programação</div><div class="name">rpossan</div>
@@ -2557,21 +2719,56 @@ function startEnding(side) {
     <div class="dim">Jogo apartidário e imparcial. Paródia bem-humorada: os personagens são inspirados em figuras públicas, sem nenhuma intenção de ofender ninguém.</div>
     <div class="dim" style="margin-top:34px;color:#ff9a5a;opacity:1">☢️ Mas a paz não durou... um ditador surge das cinzas. O modo <b>NG+: Apocalipse</b> foi desbloqueado no menu.</div>
     <h3>OBRIGADO POR JOGAR!</h3>
-    <div class="name">rpossan</div>
-    <div class="dim">github.com/rpossan/super-presida-batalha</div>
+    <div class="dim" style="opacity:1">Obrigado, de coração, por ter chegado até aqui.<br>Se curtiu, conta pra um amigo. ☕</div>
+    <div class="name" style="margin-top:20px">rpossan</div>
+    <div class="dim">github.com/rpossan/super-batalha-presida-remake</div>
     <div style="height:30px"></div>`;
+
+  /* linha do tempo do final (ms): 1) festa na praça · 2) a cena da posse · 3) a jornada · 4) placar · 5) créditos */
+  const T1 = 0, T2 = 26500, T3 = T2 + 27000, T4 = T3 + 2200 + rows.length*2300 + 7500, T5 = T4 + 11000, T6 = T5 + 63000;
   const el = $("ending");
-  el.classList.remove("hidden"); void el.offsetWidth; el.classList.add("on");   // a tela escurece
+  el.classList.remove("hidden"); el.classList.add("cine"); document.body.classList.add("cinema"); void el.offsetWidth; el.classList.add("on");
   endingStep(null); $("endSkip").classList.remove("hidden");
   musicStart("menu");
-  endAt(1600, () => endingStep("endArtStage"));
-  endAt(1600 + 12500, () => endingStep("endScore"));
-  endAt(1600 + 12500 + 6000, () => { endingStep("credits"); });
-  endAt(1600 + 12500 + 6000 + 41500, () => endingStep("endFinal"));
+  fxStart(side);
+  endCamStart();
+  // ATO 1: câmera passeando pela festa
+  endAt(800,   () => { endFx.confetti = 5; endChapter("Brasília · Praça dos Três Poderes"); });
+  endAt(6200,  () => { endFx.rockets = .5; endChapter("O último adversário caiu."); });
+  endAt(11800, () => { endFx.rockets = 1.1; endChapter("A torcida inteira vai à loucura…"); });
+  endAt(17200, () => { endFx.rockets = 2.2; endFx.confetti = 9; endChapter("E o céu do Planalto se acende."); });
+  endAt(22200, () => { endFx.rockets = 1.4; endChapter(side === "lula" ? "Hoje, o Brasil escolheu o seu presidente." : "Hoje, o Brasil escolheu o seu presidente."); });
+  // ATO 2: a cena da posse (a animação só começa a rodar quando a arte é inserida)
+  endAt(T2, () => {
+    endCamStop(); el.classList.remove("cine"); document.body.classList.remove("cinema");
+    $("endArt").innerHTML = endingArt(side); $("endCaption").innerHTML = "";
+    endFx.rockets = 1; endFx.confetti = 6; endingStep("endArtStage");
+  });
+  const cap = (ms, big, small) => endAt(T2 + ms, () => { $("endCaption").innerHTML = big + (small ? `<small>${small}</small>` : ""); });
+  cap(900,   "Brasília, 1º de janeiro de 2027.", "Dia de posse no Palácio do Planalto");
+  if (side === "lula") {
+    cap(7500,  `${ch.name} sobe a rampa…`, "a multidão toma a Esplanada");
+    cap(14500, "…de faixa presidencial no peito.", "o povo canta, chora e aplaude");
+  } else {
+    cap(7500,  `${ch.short} chega ao Planalto…`, "a multidão toma a Esplanada");
+    cap(14500, "…e abraça o pai, Jair Bolsonaro, na rampa.", "o povo canta, chora e aplaude");
+  }
+  cap(21000, `${ch.name} foi eleito presidente do Brasil!`, "");
+  endAt(T2 + 24800, () => { endFx.rockets = 3.2; });
+  // ATO 3: a jornada (cada fase vencida entra, com carimbo e tempo)
+  endAt(T3, () => { endFx.rockets = .35; endFx.confetti = 2; endingStep("endJourney"); });
+  const rEls = [...document.querySelectorAll("#jRows .jrow")];
+  rEls.forEach((r, i) => endAt(T3 + 1600 + i*2300, () => { r.classList.add("in"); try { Sfx.coin(i === rEls.length - 1); } catch (e) {} }));
+  endAt(T3 + 1600 + rEls.length*2300 + 600, () => { $("jTotal").classList.add("in"); countUp($("jTotalT"), runTime, 2600, fmtTime); try { Sfx.coin(true); } catch (e) {} });
+  // ATO 4: placar
+  endAt(T4, () => { endFx.rockets = 1.6; endFx.confetti = 5; endingStep("endScore"); countUp($("endVotes"), total, 2600); endAt(900, () => countUp($("endTime"), runTime, 2200, fmtTime)); });
+  // ATO 5: créditos
+  endAt(T5, () => { endFx.rockets = .7; endFx.confetti = 3; endingStep("credits"); });
+  endAt(T6, () => { fxStop(); endingStep("endFinal"); });
 }
-function endingSkip() { endTimers.forEach(clearTimeout); endTimers = []; endingStep("endFinal"); }
+function endingSkip() { endCleanup(); endingStep("endFinal"); }
 function endingClose() {
-  endTimers.forEach(clearTimeout); endTimers = []; endActive = false;
+  endCleanup(); endActive = false;
   $("ending").classList.remove("on"); $("ending").classList.add("hidden");
 }
 $("endSkip").onclick = endingSkip;
@@ -2713,10 +2910,11 @@ function snapshotForSave() {
   const inLevel = G.phase === "battle";                 // no meio da fase vale o estado do início dela
   return {
     v: SAVE_VERSION,
-    money: inLevel && G.walletSnap !== undefined ? G.walletSnap : MONEY, votes: inLevel && G.levelStartVotes !== undefined ? G.levelStartVotes : G.votes, sp: SKILL_POINTS, spLevel: SP_LEVEL,
+    money: inLevel && G.walletSnap !== undefined ? G.walletSnap : MONEY, votes: inLevel && G.levelStartVotes !== undefined ? G.levelStartVotes : G.votes, sp: SKILL_POINTS - (inLevel && G.itemUse ? G.itemUse.plano : 0), spLevel: SP_LEVEL,
     skills: [...OWNED], sklv: Object.fromEntries([...OWNED].map(id => [id, skillLv(id)])), bossLosses: BOSS_LOSSES,
     items: inLevel && G.itemsSnap ? { ...G.itemsSnap } : { ...ITEMS },
     prog: { flavio: PROG.flavio, lula: PROG.lula },
+    playtime: { flavio: PLAYTIME.flavio.map(t => Math.round((t || 0)*10)/10), lula: PLAYTIME.lula.map(t => Math.round((t || 0)*10)/10) },
     cleared: { flavio: CLEARED.flavio.map(Boolean), lula: CLEARED.lula.map(Boolean) },
     prefs: { muted, music: Music.on },
   };
@@ -2744,6 +2942,7 @@ function loadGame() {
       PROG[sd] = Math.max(1, num(d.prog && d.prog[sd], LEVELS.length));
       CLEARED[sd] = LEVELS.map((_, i) => !!(d.cleared && d.cleared[sd] && d.cleared[sd][i]));
     });
+    ["flavio","lula"].forEach(sd => { PLAYTIME[sd] = LEVELS.map((_, i) => num(d.playtime && d.playtime[sd] && d.playtime[sd][i], 1e7)); });
     muted = !!(d.prefs && d.prefs.muted); Music.on = !(d.prefs && d.prefs.music === false);
     return true;
   } catch (e) { return false; }
@@ -2751,7 +2950,7 @@ function loadGame() {
 function resetSave() {
   storage.del(SAVE_KEY);
   resetItems(); MONEY = 0; G.votes = 0; SKILL_POINTS = 0; SP_LEVEL = 0; OWNED.clear(); Object.keys(SKLV).forEach(k => delete SKLV[k]); BOSS_LOSSES = 0;
-  PROG.flavio = PROG.lula = 1; CLEARED.flavio = []; CLEARED.lula = [];
+  PROG.flavio = PROG.lula = 1; CLEARED.flavio = []; CLEARED.lula = []; PLAYTIME.flavio = []; PLAYTIME.lula = []; lastClock = -1;
 }
 ["pagehide","visibilitychange"].forEach(ev => addEventListener(ev, () => { if (ev !== "visibilitychange" || document.hidden) saveGame(); }));
 
@@ -2805,7 +3004,7 @@ function showMenu() {
   saveGame();
   musicStart("menu"); G.phase = "menu"; $("pauseBtn").classList.add("hidden");
   ["endscreen","placePanel","battlePanel","focusTag","action","ending"].forEach(id => $(id).classList.add("hidden"));
-  $("ending").classList.remove("on"); endTimers.forEach(clearTimeout); endTimers = []; endActive = false;
+  $("ending").classList.remove("on"); endCleanup(); endActive = false;
   $("menu").classList.remove("hidden");
   buildMenu(); justUnlocked = -1;
 }
@@ -2897,11 +3096,11 @@ onFrame = function(time, delta) {
     renderStats(shownVotes);
   }
 
-  // cronômetro da partida (120 s)
-  if (G.phase==="battle") {
-    const left = Math.max(0, Math.ceil((G.matchEnd - Date.now())/1000));
-    setClock(left); if (left<=0) timeUp();
-  } else if (G.phase==="place" || G.phase==="menu") setClock(MATCH_TIME);
+  // tempo de jogo da trilha (não finaliza a partida: só registra quanto tempo você levou)
+  if ((G.phase==="battle" || G.phase==="place") && !G.paused) {
+    const sd = G.side[0]; PLAYTIME[sd][G.levelIdx] = (PLAYTIME[sd][G.levelIdx] || 0) + Math.min(delta/1000, .5);
+  }
+  if (G.side[0]) setClock(trailTime(G.side[0]));
 
   // cronômetro do turno (desligado quando TURN_TIME = Infinity)
   if (TURN_TIME!==Infinity && G.phase==="battle" && G.turn===0 && !G.busy) {
