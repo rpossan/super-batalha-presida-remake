@@ -1129,9 +1129,9 @@ function captainReact(b, kind) {
 function applyShot(b, r, c, noCone) {
   const cell = G.boards[b][r][c];
   if (b === 0 && cell.umbrella && !cell.shot) { cell.umbrella = false; breakUmbrella(r, c); return "block"; }
-  if (G.ng && b === 1 && cell.minion) { removeMinion(r, c, true); sfx.hit(); return "hit"; }   // acertou um zumbi
+  if (G.ng && b === 1 && cell.minion) { removeMinion(r, c, true); sfx.hit(); voiceHit({ zombie:true }); return "hit"; }   // acertou um zumbi
   if (G.boss && b === 1) {                                           // arena do chefão: sem torcida
-    if (cell.minion) { removeMinion(r, c, true); sfx.hit(); return "hit"; }
+    if (cell.minion) { removeMinion(r, c, true); sfx.hit(); voiceHit(); return "hit"; }
     if (cell.boss) {
       cell.boss = false; cell.shot = true; cell.bossHit = true; refreshTile(b, r, c);
       G.boss.hp = Math.max(0, G.boss.hp - 1); G.boss.hitFlag = true;
@@ -1148,7 +1148,7 @@ function applyShot(b, r, c, noCone) {
     if (fan) { fan.visible = true; fan.u.fall = 0; }
     const s = SIDES[G.side[b]];
     burst(p, [s.main, s.alt, 0xffffff], 30);
-    sfx.hit();
+    sfx.hit(); setTimeout(() => voiceHit({ zombie:G.ng && b===1 }), 120);
     if (ship.hits >= ship.len) { ship.sunk = true; return "sunk"; }
     return "hit";
   }

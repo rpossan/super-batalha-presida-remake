@@ -51,7 +51,7 @@ const MusicEngine = (() => {
     for (let i = 0; i < 1024; i++) { const x = i/512 - 1; curve[i] = Math.tanh(x*3.2); }
 
     const NY = ctx.sampleRate*.45, fq = x => Math.max(30, Math.min(NY, x));
-    const E = { ctx, out, dlyTime(sec) { dly.delayTime.value = sec; } };
+    const E = { ctx, out, dlyTime(sec) { dly.delayTime.value = sec; }, revSend(node) { node.connect(revIn); } };
 
     /* ----- voz genérica ----- */
     function voice(o) {
@@ -414,8 +414,10 @@ const Sfx = (() => {
   let E = null;
   const get = () => { if (!E) { const c = audioCtx(); E = MusicEngine.make(c, c.destination, { vol:.9, rev:1.4, revWet:.3 }); } return E; };
   const now = () => get().ctx.currentTime + .005;
+  const engine = get;
   const mf = MusicEngine.mf;
   return {
+    engine,
     /* substitui os bipes antigos: onda suavizada por filtro, com reverb leve */
     tone(freq, dur = .15, type = "square", vol = .07, slide = 0, delay = 0) {
       const e = get(), t = now() + delay, end = Math.max(30, freq + slide);
@@ -431,3 +433,49 @@ const Sfx = (() => {
     place() { const e = get(), t = now(); e.voice({ t, f:420, dur:.07, vol:.4, a:.001, r:.04, glide:{ from:2, time:.03 } }); e.noise({ t, dur:.03, vol:.12, type:"bandpass", f:2200, q:1.2 }); },
   };
 })();
+
+/* ================================================================
+   Vozes de quem é acertado: falas curtas (voz do navegador, pt-BR) e gritos sintetizados
+   ================================================================ */
+const Voices = (() => {
+  const WORDS = ["Ai!", "Ui!", "Ah, não!", "Socorro!", "Minha bandeira!", "Aaaah!", "Uuuf!", "Tomei!", "Ai, meu pé!", "Que isso!", "Eita!", "Ai, ai, ai!", "Me acertaram!", "Ô, calma!", "Ai, minha costela!", "Não vale!"];
+  const ZOMBIE = ["Uuurgh…", "Grrrr…", "Aaargh…"];
+  let last = 0, ptVoices = [];
+  const loadVoices = () => { try { ptVoices = (speechSynthesis.getVoices() || []).filter(v => /pt[-_]BR/i.test(v.lang)); } catch (e) { ptVoices = []; } };
+  try { loadVoices(); speechSynthesis.addEventListener && speechSynthesis.addEventListener("voiceschanged", loadVoices); } catch (e) {}
+  const rnd = (a, b) => a + Math.random()*(b - a);
+  const pick = a => a[Math.floor(Math.random()*a.length)];
+
+  /* grito/gemido sintetizado com formantes (vogal "a" caindo de tom) */
+  function scream(pitch, dur, vol = 1) {
+    const e = Sfx.engine(), c = e.ctx, t = c.currentTime + .01;
+    const o = c.createOscillator(), o2 = c.createOscillator(), g = c.createGain(), lf = c.createOscillator(), lg = c.createGain();
+    o.type = "sawtooth"; o2.type = "square"; o.frequency.setValueAtTime(pitch*1.25, t); o.frequency.exponentialRampToValueAtTime(pitch*.72, t + dur); o2.frequency.setValueAtTime(pitch*1.25, t); o2.frequency.exponentialRampToValueAtTime(pitch*.72, t + dur);
+    lf.frequency.value = 6.5; lg.gain.value = pitch*.03; lf.connect(lg); lg.connect(o.frequency); lg.connect(o2.frequency);
+    const mix = c.createGain(); mix.gain.value = .5; o.connect(mix); o2.connect(mix);
+    [[800, 1.0, 12], [1250, .7, 12], [2600, .25, 10]].forEach(([f, k, q]) => { const bp = c.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.setValueAtTime(f, t); bp.frequency.exponentialRampToValueAtTime(f*.78, t + dur); bp.Q.value = q; const bg = c.createGain(); bg.gain.value = k; mix.connect(bp); bp.connect(bg); bg.connect(g); });
+    g.gain.setValueAtTime(.0001, t); g.gain.linearRampToValueAtTime(.55*vol, t + .04); g.gain.setValueAtTime(.5*vol, t + dur*.5); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+    g.connect(e.out); const s = c.createGain(); s.gain.value = .3; g.connect(s); e.revSend(s);
+    [o, o2, lf].forEach(n => { n.start(t); n.stop(t + dur + .05); });
+    e.noise({ t, dur:Math.min(.3, dur), vol:.05*vol, type:"bandpass", f:1800, q:1 });
+  }
+  function speak(text) {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "pt-BR"; const v = ptVoices.length ? pick(ptVoices) : null; if (v) u.voice = v;
+    u.pitch = rnd(.5, 1.9); u.rate = rnd(1.05, 1.5); u.volume = .85;
+    speechSynthesis.speak(u);
+  }
+  return {
+    /* uma pessoa foi acertada */
+    hit(opts = {}) {
+      const nowT = performance.now(); if (nowT - last < 140) return; last = nowT;     // evita um coral quando vários caem juntos
+      try {
+        if (opts.zombie) { scream(rnd(70, 120), rnd(.6, 1.0), .8); return; }
+        const speech = typeof speechSynthesis !== "undefined" && typeof SpeechSynthesisUtterance !== "undefined";
+        if (speech && Math.random() < .55 && !(speechSynthesis.speaking && speechSynthesis.pending)) speak(pick(WORDS));
+        else scream(Math.random() < .5 ? rnd(110, 170) : rnd(210, 330), rnd(.45, .85), 1);
+      } catch (e) {}
+    },
+  };
+})();
+function voiceHit(opts) { if (!muted) Voices.hit(opts); }
