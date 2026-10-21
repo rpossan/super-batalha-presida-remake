@@ -80,6 +80,7 @@ quando fazer uma pesquisa para descobrir onde o adversário se esconde e qual po
 | 🏆 **Nível, votos e recorde** | Votos são experiência (nunca zeram), com tela de resultados e *LEVEL UP!*; combo e recorde pessoal. |
 | ⏱️ **Cronômetro de jogo** | O relógio do topo conta o tempo jogado na trilha (pausa e menu não contam, e ele não encerra a partida). Ao zerar, o final mostra o tempo por fase e o melhor tempo. |
 | 🌐 **Modo online** | Duelo 1×1 contra outros jogadores: **partida aleatória** ou **desafio pelo ID**, com tabuleiros escondidos e conferidos no fim. [Veja a seção](#-modo-online). |
+| 🗺️ **Mapa de campanhas** | O Brasil 2026 é o **Mundo 1**; outras campanhas (Copa do Mundo, eleições de outros países…) entram como novos mundos, com lados, personagens, cenários, itens e skills próprios, no mesmo motor. [Guia de campanhas](CAMPANHAS.md). |
 | 🙋 **Perfil do jogador** | Crie o seu **nick** e monte o **avatar** (pele, cabelo, boné, camisa, fundo, óculos, barba). Aparece no menu, na batalha, nos resultados e no final, com estatísticas e **backup**. [Veja a seção](#-seu-perfil). |
 | 🎵 **Trilha sonora própria** | Uma música diferente por cenário (samba, baião, milonga, tambores, marcha…), gerada por código. |
 | 📱 **Funciona no celular** | A câmera acompanha o turno: na sua vez, só a arena do adversário, para dar precisão no toque. |
@@ -272,6 +273,14 @@ O jogador é identificado por um login **anônimo** do navegador. Limpar os dado
 
 ---
 
+## 🗺️ Campanhas
+
+A tela inicial tem o **mapa de campanhas**: cada cartão é um *mundo* (uma campanha), com as próximas já visíveis e bloqueadas ("em breve"). O nível, os votos, as skills e os itens do jogador valem em todas, e cada campanha guarda o seu próprio progresso.
+
+Cada campanha é **um arquivo** em [`js/campaigns/`](js/campaigns) (lados, personagens, cenários com desenho, fases, itens, skills, frases e final). Para adicionar um cenário, um personagem ou uma campanha inteira, inclusive pedindo a uma IA, veja o **[Guia de campanhas](CAMPANHAS.md)**. Para validar um pacote: `node tools/check-campaigns.mjs`.
+
+---
+
 ## 🙋 Seu perfil
 
 Na primeira vez que abre o jogo você cria o **nome (nick)** e monta o **avatar**. Clique no seu avatar no canto do menu para editar quando quiser.
@@ -314,7 +323,7 @@ Energia: **+1 por turno** e **+1 por torcedor atingido**. No celular, a câmera 
 
 ## 🛠️ Tecnologia
 
-- [`index.html`](index.html) (lógica e interface) + [`js/`](js) (`gfx.js` renderer, `art.js` sprites, `scenery.js` cenários), renderizados com [Phaser 4](https://phaser.io/) via CDN. Sem build e sem backend: é só servir arquivos estáticos (por exemplo, no GitHub Pages).
+- [`index.html`](index.html) (lógica e interface) + [`js/`](js) (`gfx.js` renderer, `art.js` sprites, `scenery.js` cenários, `campaigns/` pacotes de campanha), renderizados com [Phaser 4](https://phaser.io/) via CDN. Sem build e sem backend: é só servir arquivos estáticos (por exemplo, no GitHub Pages).
 - Personagens, cenários, músicas, efeitos sonoros e ilustrações são **gerados por código** (canvas 2D, SVG e Web Audio).
 - Progresso salvo no navegador (`localStorage`), sem servidor: veja [Salvamento](#-salvamento-local).
 

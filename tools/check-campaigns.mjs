@@ -9,7 +9,7 @@ const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..")
 const dir = path.join(root, "js/campaigns");
 const require = createRequire(import.meta.url);
 const SPBCampaigns = require(path.join(dir, "registry.js"));
-const files = process.argv.length > 2 ? process.argv.slice(2).map(f => path.resolve(f)) : readdirSync(dir).filter(f => f.endsWith(".js") && !["registry.js"].includes(f) && !f.startsWith("_")).map(f => path.join(dir, f));
+const files = process.argv.length > 2 ? process.argv.slice(2).map(f => path.resolve(f)) : readdirSync(dir).filter(f => f.endsWith(".js") && !["registry.js", "manifest.js"].includes(f) && !f.startsWith("_")).map(f => path.join(dir, f));
 let bad = 0;
 for (const file of files) {
   const errs = [], warns = [];

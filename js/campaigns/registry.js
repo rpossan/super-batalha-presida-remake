@@ -8,7 +8,8 @@
    O registro valida o pacote e normaliza cores ("#rrggbb" ou 0xRRGGBB) e campos opcionais.
    ================================================================ */
 const SPBCampaigns = (() => {
-  const packs = new Map();
+  const packs = new Map();        // id -> { raw, norm } (norm é recalculado quando o idioma muda)
+  let locale = "pt";
 
   /* ---------------- catálogos do motor: o que um pacote pode escolher ---------------- */
   /* Efeitos de skill que o motor sabe executar. O pacote dá o nome, o ícone, o preço, os níveis exigidos e o texto. */
@@ -51,6 +52,8 @@ const SPBCampaigns = (() => {
   const HAIR_STYLES = ["short", "buzz", "bob", "long", "bald"];
   const ULTRA_MODES = ["row", "col"];
   const FLAG_PATTERNS = ["solid", "hstripes", "vstripes", "cross", "diagonal", "star", "diamond", "circle", "custom"];
+  const MATERIALS = ["asfalto", "calcada", "grama", "gramado", "areia", "terra", "concreto", "granito", "mata", "queimado"];   // g.poly(pontos, "material")
+  const TREE_PALETTES = ["broad", "broad2", "dark", "olive", "ipe"];
   const SCENE_PIECES = ["building", "tree", "palm", "deadTree", "cactus", "bush", "car", "lamp", "piece", "make", "put"];
 
   /* ---------------- utilidades ---------------- */
@@ -59,8 +62,21 @@ const SPBCampaigns = (() => {
   const intToCss = n => "#" + (n >>> 0).toString(16).padStart(6, "0").slice(-6);
   const col = c => hexToInt(c);
 
+  /* ---------------- idiomas ----------------
+     Qualquer texto de um pacote pode ser uma string ("Olá") ou um objeto por idioma ({ pt:"Olá", en:"Hello" }).
+     O registro escolhe o idioma ativo (com queda para pt, en e o primeiro disponível). Funções do pacote
+     (capítulos do final etc.) recebem o idioma como último argumento. */
+  const isLocaleObj = o => isObj(o) && Object.keys(o).length > 0 && Object.keys(o).every(k => /^[a-z]{2}(-[A-Za-z]{2})?$/.test(k)) && Object.values(o).every(v => typeof v === "string");
+  function localize(v) {
+    if (Array.isArray(v)) return v.map(localize);
+    if (isLocaleObj(v)) return v[locale] ?? v[locale.split("-")[0]] ?? v.pt ?? v.en ?? Object.values(v)[0];
+    if (isObj(v)) { const o = {}; for (const k of Object.keys(v)) o[k] = localize(v[k]); return o; }
+    return v;
+  }
+
   /* ---------------- normalização ---------------- */
-  function normalize(def) {
+  function normalize(rawDef) {
+    const def = localize(rawDef);
     const o = { ...def };
     o.status = o.status || "ready";
     o.world = o.world || 1;
@@ -86,6 +102,7 @@ const SPBCampaigns = (() => {
     if (def.ng) o.ng = { ...def.ng, side:{ ...def.ng.side, key:def.ng.side.key || "regime", main:col(def.ng.side.main), alt:col(def.ng.side.alt), css:intToCss(col(def.ng.side.main)), cssAlt:intToCss(col(def.ng.side.alt)),
       skin:col(def.ng.side.skin ?? 0xd9b08c), hair:col(def.ng.side.hair ?? 0x151515), shirts:(def.ng.side.shirts || [def.ng.side.main, def.ng.side.alt]).map(col), ultraDesc:def.ng.side.ultraDesc || "linha inteira", ultraMode:def.ng.side.ultraMode || "row" } };
     o.ending = def.ending || {};
+    o.lang = locale;
     return o;
   }
 
@@ -168,20 +185,24 @@ const SPBCampaigns = (() => {
     if (packs.has(def.id)) throw new Error(`Campanha "${def.id}" já registrada`);
     const n = normalize(def);
     if (n.status === "ready") {                                                 // chaves de lado e ids de cenário não podem se repetir entre campanhas
-      for (const p of packs.values()) {
-        if (p.status !== "ready") continue;
+      for (const e of packs.values()) {
+        const p = e.norm; if (p.status !== "ready") continue;
         Object.keys(n.sides).forEach(k => { if (p.sides[k]) throw new Error(`Campanha "${def.id}": o lado "${k}" já existe em "${p.id}". Use chaves únicas (ex.: "${def.id.split("-")[0]}_${k}")`); });
         n.scenarios.forEach(s => { if (p.scenarios.some(x => x.id === s.id)) throw new Error(`Campanha "${def.id}": cenário "${s.id}" já existe em "${p.id}". Use ids únicos (ex.: "${def.id.split("-")[0]}_${s.id}")`); });
       }
     }
-    packs.set(def.id, n);
+    packs.set(def.id, { raw:def, norm:n });
     return n;
   }
+  const norm = e => e ? (e.norm.lang === locale ? e.norm : (e.norm = normalize(e.raw))) : null;
   return {
     register, validate, normalize,
-    get: id => packs.get(id) || null,
-    list: () => [...packs.values()].sort((a, b) => a.world - b.world),
-    catalog: { SKILL_KINDS, ITEM_KINDS, BOSS_POWERS, HAZARDS, MUSIC, HAIR_STYLES, ULTRA_MODES, FLAG_PATTERNS, SCENE_PIECES },
+    get: id => norm(packs.get(id)),
+    list: () => [...packs.values()].map(norm).sort((a, b) => a.world - b.world),
+    get locale() { return locale; },
+    setLocale(l) { locale = String(l || "pt"); },
+    localize,
+    catalog: { SKILL_KINDS, ITEM_KINDS, BOSS_POWERS, HAZARDS, MUSIC, HAIR_STYLES, ULTRA_MODES, FLAG_PATTERNS, SCENE_PIECES, MATERIALS, TREE_PALETTES },
     hexToInt, intToCss,
     _reset() { packs.clear(); },
   };
