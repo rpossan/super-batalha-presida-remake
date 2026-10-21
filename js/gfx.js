@@ -141,6 +141,17 @@ const GFX = (() => {
     if (kind === "monster") return { skin:0x8a5aae, hair:0x1a1020, hairStyle:"bald", eye:0x802020, shirt:0x3a1e52, pants:0x2a1a3a, pantsType:"dark", shoes:0x20182a, zombie:true, horns:true, age:.5 };
     return { skin:choose(People.SKINS), hair:0x1a1a14, hairStyle:"short", eye:0x3a2418, shirt:choose([0x4e5d2e, 0x56633a, 0x46542a]), pants:0x4a5530, pantsType:"dark", shoes:0x1a1a18, helmet:true, glasses:false, collar:null };
   }
+  /* pessoa avulsa para cenários e eventos (sem bandeira). pose: cheer | clap | ginga | run | zombie… */
+  function makePerson(spec, o = {}) {
+    const n = buildPerson(spec, { s:o.s || 1, hold:"none", holder:"R", pose:o.pose || "cheer" });
+    n.k = o.k || 1; return n;
+  }
+  /* o ladrão: boné preto, camisa listrada, corre curvado */
+  function makeThief() {
+    const n = makePerson({ fem:false, skin:0x7a4a30, hair:0x111111, hairStyle:"short", eye:0x1a1210, shirt:0x1b1b1f, collar:0x1b1b1f, stripe:0xf2f2f2, sleeveStripe:0xf2f2f2,
+      pants:0x1c2230, pantsType:"dark", shoes:0x23262c, beard:"stubble", glasses:false, age:0, cap:{ color:0x15151a, logo:0x15151a } }, { pose:"run", s:1.08 });
+    n.u.thief = true; return n;
+  }
   function makeUnit(kind) {
     const spec = unitSpec(kind);
     const n = buildPerson(spec, { s:kind === "monster" ? 1.3 : 1, hold:kind === "soldier" ? "rifle" : "none", holder:"R", pose:kind });
@@ -170,6 +181,18 @@ const GFX = (() => {
       const sd = u.holder === "R" ? 1 : -1, w = Math.sin(t*(2.2 + ch*3) + ph);
       setArm(u.H, -sd*(2.3 + ch*.25) + .1*w, -sd*(.55) + sd*(-.2 - ch*.25)*Math.sin(t*(3 + ch*5) + ph));
       setArm(u.F, sd*(.12 + .06*Math.sin(t*1.3 + ph) + ch*(.6 + .5*Math.max(0, Math.sin(t*5 + ph)))), sd*(.14 + .08*Math.sin(t*1.7 + ph)));
+    },
+    clap(u, t, ph) {                                        // palmas à frente do peito (roda de capoeira)
+      const w = Math.sin(t*7.5 + ph*3), v = .5 + .5*Math.sin(t*1.1 + ph);
+      setArm(u.L, .62 + .2*w, 1.75 + .1*v); setArm(u.R, -.62 - .2*w, -1.75 - .1*v);
+    },
+    ginga(u, t, ph) {                                       // balanço de capoeirista: braços baixos alternando
+      const w = Math.sin(t*3.4 + ph);
+      setArm(u.L, .45 + .5*w, .9 - .4*w); setArm(u.R, -.45 + .5*w, -.9 + .4*w);
+    },
+    run(u, t, ph) {                                         // corrida (o ladrão): braços bombeando
+      const w = Math.sin(t*15 + ph);
+      setArm(u.L, .9*w, 1.2 + .5*w); setArm(u.R, .9*w, -1.2 + .5*w);
     },
     zombie(u, t, ph) {
       const w = Math.sin(t*2.6 + ph);
@@ -739,7 +762,7 @@ const GFX = (() => {
     init, frame, pinToScreen, grade, puff, smoke, zoomBy, panBy, resetView, setYaw, boardLowPoint, rot, get yaw() { return yaw; }, runFx, addFx, resize, setFocus, shake, pick, P, unproj, depthOf, tex, img, flagKey, texInfo,
     get scene() { return scene; }, get cam() { return cam; }, get view() { return view; }, get cfg() { return cfg; },
     Node, nodes, drop, fixed, markers, tileCenter,
-    makeFan, makeUnit, makeBossFan, makeCaptain, updateFan, updateCaptain, captainThrow, chantBoost,
+    makeFan, makePerson, makeThief, updateFan, makeUnit, makeBossFan, makeCaptain, updateFan, updateCaptain, captainThrow, chantBoost,
     makeMoto, makeBus, makeSoundTruck, makeHeli, makeThrow, makeBullet, makeArrow, makeBomb, makeUmbrella, makeConeMark,
     makeRing, setRing, addDecal, makeGroundShadow, pickup, clearMarkers, burst, flash, makeHint, makeFlame, flicker, flameKey,
     setTile, setFrameColor, setPreview, clearPreview, D_GROUND, D_BOARD, D_FLAT, D_SORT, D_FX, D_HINT

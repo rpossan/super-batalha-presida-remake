@@ -102,9 +102,9 @@ SPBCampaigns.register({
 
 **`fleet`**: 5 grupos `{ name, len }` com `len` de 1 a 5 (padrão 5, 4, 3, 3, 2). **`levels[].def`** usa índices desta lista.
 
-**`levels`**: `{ scn, diff, ai (1 a 4), def:[índices], hazard?, boss?, calm? }`. Exatamente uma fase com `boss:true`. Perigos (`hazard`): `bala`, `fogo`, `flechas`, `bombas`.
+**`levels`**: `{ scn, diff, ai (1 a 4), def:[índices], hazard?, boss?, calm? }`. Exatamente uma fase com `boss:true`. Perigos (`hazard`): `bala`, `fogo`, `flechas`, `bombas`, `ladrao` (um ladrão cruza uma fila da arena; cada torcedor tocado perde grana, um item ou votos, aleatoriamente, com um aviso flutuante e o ícone do que foi levado).
 
-**`scenarios`**: `{ id, name, short, of, emoji, city, thumb (CSS), sky, fog:[cor, perto, longe], tiles:[cor1, cor2], ground, music, scenery }`. `music`: `anthem`, `urban`, `samba`, `milonga`, `baiao`, `tribal`, `tropical`, `solemn` ou `industrial`. `scenery`: a função de desenho ou o id de um cenário já registrado (para reaproveitar).
+**`scenarios`**: `{ id, name, short, of, emoji, city, thumb (CSS), sky, fog:[cor, perto, longe], tiles:[cor1, cor2], ground, music, scenery }`. `music`: `anthem`, `urban`, `samba`, `milonga`, `baiao`, `capoeira`, `tribal`, `tropical`, `solemn` ou `industrial`. `scenery`: a função de desenho ou o id de um cenário já registrado (para reaproveitar).
 
 **`skills`** (efeitos do motor: `folego`, `instituto`, `guardachuva`, `supertiro`, `empolgacao`): `{ icon, name, price, req:[nível1, nível2, nível3], desc }`. No texto use `{v}` (valor do nível) e, no `instituto`, `{a}×{b}`.
 
@@ -120,7 +120,7 @@ SPBCampaigns.register({
 
 - **Chão `g`**: `poly(pontos, material|cor, {alpha, tint, tintA})`, `rect(x0,z0,x1,z1,…)`, `paint(a,b,largura,cor,alpha)` (faixa pintada), `ring(cx,cz,r,largura,cor)`, `blob(cx,cz,rx,rz,cor,alpha)` (mancha), `line`, `shadowBox(cx,cz,w,d,h)`, `ao(…)`. Materiais: `asfalto`, `calcada`, `grama`, `gramado`, `areia`, `terra`, `concreto`, `granito`, `mata`, `queimado`.
 - **Peças `K`**: `building(x,z,w,d,h,{style,lit,antenna,color})` (estilos `glass`, `concrete`, `apart`, `white`, `ruin`, `adobe`, `stone`, `wood`), `tree(x,z,{r,h,pal})` (paletas `broad`, `broad2`, `dark`, `olive`, `ipe`), `palm(x,z,h)`, `deadTree`, `cactus`, `bush`, `car(x,z,cor)`, `lamp(x,z,h)`. Para peças próprias: `piece(chave, rx, rz, h, K => {…}, x, z)`. Veja os cenários do Brasil em `br2026.js`.
-- **Efeitos `E`**: `grade({sat,con,bri})` (cor final), `cloudShadows(a)`, `mist(cor,a)`, `glow(fx,fy,cor,tam,a)`, `rays()`, `sparkle(poligono,n)`, `flag(chave,x,y,z,w)`, `fire(x,z)`, `mushroom(x,z)`, `tick(fn)`.
+- **Efeitos `E`**: `grade({sat,con,bri})` (cor final), `cloudShadows(a)`, `mist(cor,a)`, `glow(fx,fy,cor,tam,a)`, `rays()`, `sparkle(poligono,n)`, `flag(chave,x,y,z,w)`, `fire(x,z)`, `mushroom(x,z)`, `tick(fn)`, `person(x,z,spec,{pose,s,rot,…})` (um boneco parado ou animado; poses `cheer`, `clap`, `ginga`, `run`…; veja a roda de capoeira do Pelourinho em `br2026.js`).
 
 ## Idiomas
 

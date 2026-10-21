@@ -571,6 +571,13 @@ const Scenery = (() => {
             const p0 = T(W*x0, 0), p1 = T(W*(x0 + wd), 0), p2 = T(W*(x0 + wd - .28), H), p3 = T(W*(x0 - .28), H); im.beginPath(); im.moveTo(...p0); im.lineTo(...p1); im.lineTo(...p2); im.lineTo(...p3); im.closePath(); im.fillPath(); });
         }
       },
+      /* pessoa animada no cenário (palmas, ginga…). spec: veja People.randomSpec; o.pose: clap | ginga | cheer; o.motion(n, t, dt) roda depois da animação base */
+      person(x, z, spec, o = {}) {
+        const n = GFX.makePerson(spec, { s:o.s || 1, pose:o.pose || "clap" }); n.at(x, 0, z); if (o.scale) n.sc = o.scale;
+        env.objs.push({ destroy: () => n.destroy() });
+        env.ticks.push((t, dt) => { GFX.updateFan(n, t, dt); if (o.motion) o.motion(n, t, dt); });
+        return n;
+      },
       grade(c) { GFX.grade(c); },
       fire(x, z) {                                             // fogueira com chama animada e fumaça
         const fl = GFX.makeFlame(); fl.at(x, 0, z); fl.k = 1.6; env.objs.push({ destroy: () => fl.destroy() });

@@ -6,7 +6,7 @@
 
 <p align="center">
   Batalha naval das <b>eleições 2026</b>, em 2.5D isométrico com visual realista, direto no navegador.<br>
-  Uma campanha em 7 fases, 2 trilhas, 7 cenários do Brasil, um chefão final, um final cinematográfico e um modo NG+ apocalíptico.<br>
+  Uma campanha em 8 fases, 2 trilhas, 8 cenários do Brasil, um chefão final, um final cinematográfico e um modo NG+ apocalíptico.<br>
   <sub>Este é o <b>REMAKE</b> do <a href="https://github.com/rpossan/super-presida-batalha">Super Presida Batalha original</a>.</sub>
 </p>
 
@@ -72,8 +72,8 @@ quando fazer uma pesquisa para descobrir onde o adversário se esconde e qual po
 |---|---|
 | 🎮 **Batalha naval reinventada** | Tabuleiros 10×10 isométricos, torcedores como pessoas de verdade (corpo articulado, roupas, rostos, bandeiras de pano) e cenários com texturas, sombras projetadas e árvores ao vento, torcedores animados e objetos de protesto (cone, tomate, bandeira, cavalete, chinelo, pedra e ovo) que ficam espalhados pela arena. |
 | ⚡ **Poderes especiais** | Pesquisa, cruz (Buzinaço/Comício) e o poder final de cada lado: **Motociata** (linha inteira) e **Caravana** (coluna inteira), todos com animação própria. |
-| 🌎 **7 cenários do Brasil** | Av. Paulista, Aeroporto de Porto Alegre, Cristo Redentor, Sertão, Amazônia, Balneário Camboriú e Praça dos Três Poderes. |
-| ⚠️ **Perigos de cenário** | Bala perdida, fogo no sertão e chuva de flechas na floresta, em quantidade equilibrada ao nível. |
+| 🌎 **8 cenários do Brasil** | Av. Paulista, Aeroporto de Porto Alegre, Cristo Redentor, Pelourinho (Salvador), Sertão, Amazônia, Balneário Camboriú e Praça dos Três Poderes. |
+| ⚠️ **Perigos de cenário** | Bala perdida, **ladrão** no Pelourinho, fogo no sertão e chuva de flechas na floresta, em quantidade equilibrada ao nível. |
 | 👑 **Chefões únicos** | Sem torcida, com pontos de vida, que mudam de casa a cada acerto e reagem aos seus erros. |
 | 🛒 **Loja, itens e skills** | Compre itens com a grana do saque e aprenda skills com pontos de nível (Empolgação, Super tiro, Guarda-chuva, Instituto de pesquisa, Fôlego). [Veja a seção](#️-níveis-grana-itens-e-skills). |
 | 🎬 **Final cinematográfico** | Ao vencer o chefão: câmera passeando pela festa com fogos e confete, a cena da posse, a **linha do tempo da sua campanha** (fase a fase, com o tempo de cada uma) e créditos. [Veja a seção](#-o-final). |
@@ -96,11 +96,12 @@ Escolha o lado e vença uma fase por vez. Cada vitória libera a próxima e a di
 | 1 | Av. Paulista (SP) | Guilherme Bolos | Niko Ferrado | Fácil | — |
 | 2 | Aeroporto Salgado Filho (RS) | G. Rofman | Tarcizinho | Médio | — |
 | 3 | Cristo Redentor (RJ) | Alexandre sem Moral | Michela | Difícil | ⚠️ bala perdida |
-| 4 | Sertão Nordestino | Felipe Feto | Véio da Avon | Muito difícil | 🔥 fogo |
-| 5 | Floresta Amazônica | Marina Sílvia | Ricardo Venddas | Extremo | 🏹 flechas |
-| 6 | Balneário Camboriú (SC) | Pablo Vital | Carlucho | Pré-chefão | 🏖️ sem danos |
-| 7 | Praça dos Três Poderes (DF) | **Lula Molusco (chefão)** | **Flávio (chefão)** | Chefão | 👑 luta final |
-| 8 | Apocalipse (NG+) | **Generalíssimo Tirano** | **Generalíssimo Tirano** | NG+ extremo | ☢️ bombas + 🧟 zumbis |
+| 4 | Pelourinho (Salvador, BA) | Carol Acarajé | Mestre Bitoca | Difícil | 🦹 ladrão |
+| 5 | Sertão Nordestino | Felipe Feto | Véio da Avon | Muito difícil | 🔥 fogo |
+| 6 | Floresta Amazônica | Marina Sílvia | Ricardo Venddas | Extremo | 🏹 flechas |
+| 7 | Balneário Camboriú (SC) | Pablo Vital | Carlucho | Pré-chefão | 🏖️ sem danos |
+| 8 | Praça dos Três Poderes (DF) | **Lula Molusco (chefão)** | **Flávio (chefão)** | Chefão | 👑 luta final |
+| 9 | Apocalipse (NG+) | **Generalíssimo Tirano** | **Generalíssimo Tirano** | NG+ extremo | ☢️ bombas + 🧟 zumbis |
 
 ### Cenários
 
@@ -110,11 +111,14 @@ Escolha o lado e vença uma fase por vez. Cada vitória libera a próxima e a di
     <td align="center"><img src="docs/img/rio.png" width="390"><br><b>Cristo Redentor</b> · campo de futebol e favela nos morros</td>
   </tr>
   <tr>
+    <td align="center"><img src="docs/img/pelourinho.png" width="390"><br><b>Pelourinho</b> · roda de capoeira e o ladrão que passa pela arena</td>
     <td align="center"><img src="docs/img/sertao.png" width="390"><br><b>Sertão</b> · fogo queima casas da arena</td>
-    <td align="center"><img src="docs/img/amazonia.png" width="390"><br><b>Amazônia</b> · chuva de flechas</td>
   </tr>
   <tr>
+    <td align="center"><img src="docs/img/amazonia.png" width="390"><br><b>Amazônia</b> · chuva de flechas</td>
     <td align="center"><img src="docs/img/camboriu.png" width="390"><br><b>Balneário Camboriú</b> · praia, sem danos</td>
+  </tr>
+  <tr>
     <td align="center"><img src="docs/img/motociata.png" width="390"><br><b>Motociata</b> · poder final que varre uma linha</td>
   </tr>
 </table>
@@ -198,7 +202,7 @@ A progressão é de RPG: **votos são experiência**, a **grana** vem do saque e
 - Quando **você** derruba um adversário, ele pode **soltar grana ou um item** (ou nada). O saque aparece ali na arena, com a moeda saltando do corpo.
 - A chance sobe com o **combo** e com a **dispersão de um grupo inteiro** (bônus); há um raro **JACKPOT**. Quanto mais avançada a fase, maior o valor.
 - Vitória: **bônus de grana** (e, no chefão, grana extra e itens). Derrota: você **perde metade da grana e os itens que saqueou naquela batalha**, mas **mantém todos os votos**.
-- Perigos do cenário (bala perdida, fogo, flechas, bombas) **não** dão saque.
+- Perigos do cenário (bala perdida, ladrão, fogo, flechas, bombas) **não** dão saque.
 
 ### 🎒 Itens (só na loja ou no saque)
 Você começa **sem itens**. Compra na **🛒 Loja** com grana ou os encontra no saque. A mochila guarda **no máximo 9 de cada** (excedente do saque vira grana),

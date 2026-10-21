@@ -44,10 +44,11 @@ const SPBCampaigns = (() => {
     fogo:    "a cada 2 turnos o sol incendeia 4 casas de cada arena",
     flechas: "4 flechas caem por turno na arena de quem joga",
     bombas:  "bombas em cruz caem a cada turno (só no modo NG+)",
+    ladrao:  "às vezes um ladrão cruza uma fila da arena do jogador e rouba dinheiro, item ou votos de cada torcedor que passar",
   };
   /* Músicas disponíveis (apelido → faixa do motor). */
   const MUSIC = {
-    anthem:"menu", urban:"paulista", samba:"rio", milonga:"poa", baiao:"sertao", tribal:"amazonia", tropical:"camboriu", solemn:"brasilia", industrial:"apocalipse",
+    anthem:"menu", urban:"paulista", samba:"rio", milonga:"poa", baiao:"sertao", tribal:"amazonia", tropical:"camboriu", solemn:"brasilia", industrial:"apocalipse", capoeira:"capoeira",
   };
   const HAIR_STYLES = ["short", "buzz", "bob", "long", "bald"];
   const ULTRA_MODES = ["row", "col"];

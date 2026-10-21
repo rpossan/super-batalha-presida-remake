@@ -37,6 +37,71 @@ const SCENERY = {
     piece("bench", 1, .8, 1, K => { K.box(0, 0, 1.5, .4, .3, .1, 0x7a5a3a, { style:"wood", roof:false }); K.box(0, -.18, 1.5, .08, .4, .4, 0x7a5a3a, { style:"wood", roof:false }); K.box(-.6, 0, .08, .4, 0, .3, 0x333333, { roof:false }); K.box(.6, 0, .08, .4, 0, .3, 0x333333, { roof:false }); }, 10, -10.8, 0, { shadowBox:[1.5, .5, .8] });
     E.cloudShadows(.1); E.grade({ sat:1.08, con:1.04, bri:1.12 });
   },
+  /* Salvador · Pelourinho: casarões coloridos, igreja barroca, ladeira de pedra e uma RODA DE CAPOEIRA animada */
+  pelourinho: (E, g, K) => {
+    const { css, rnd, rint, pick, piece, tree, palm, lamp, building, bush } = K;
+    const cores = [0xe8c14a, 0x4aa3c9, 0xd9677a, 0x7bbf6a, 0xe08a4a, 0xf2e0b0, 0xb98ad9, 0x5fb7a0, 0xe86a4a];
+    // chão: paralelepípedo quente, largo de pedra mais claro e calçadas junto aos casarões
+    g.poly([[-70, -36], [70, -36], [70, 36], [-70, 36]], "granito", { tint:0x7c5f48, tintA:.5 });
+    g.poly([[-40, -17], [40, -17], [40, 24], [-40, 24]], "granito", { tint:0xb09a7e, tintA:.35 });
+    g.poly([[-70, -24], [70, -24], [70, -19], [-70, -19]], "calcada", { tint:0xc9a47c, tintA:.4 });
+    g.poly([[-44, -19], [-39, -19], [-39, 26], [-44, 26]], "calcada", { tint:0xc9a47c, tintA:.4 }); g.poly([[39, -19], [44, -19], [44, 26], [39, 26]], "calcada", { tint:0xc9a47c, tintA:.4 });
+    for (let i = 0; i < 40; i++) g.blob(rnd(-38, 38), rnd(-16, 22), rnd(.8, 2.2), rnd(.6, 1.4), pick([0x3a2a1c, 0x6a4a30, 0x8a6a4a]), rnd(.08, .2));
+    // casarões coloridos: fundo (duas fileiras) e laterais
+    for (let i = 0; i < 11; i++) building(-44 + i*8.8 + rnd(-.4, .4), -27.5 - rnd(0, 1), 7.6, 5.2, rnd(5.4, 7.6), { style:"adobe", color:pick(cores), balconies:true, lit:.12, rooftop:false });
+    for (let i = 0; i < 9; i++) building(-40 + i*10 + rnd(-.5, .5), -36 - rnd(0, 1.5), 8, 5.6, rnd(7.5, 10.5), { style:"adobe", color:pick(cores), balconies:true, lit:.1, rooftop:false });
+    for (let i = 0; i < 5; i++) building(-49 + rnd(-.3, .3), -14 + i*8.4, 5.2, 7, rnd(4.8, 7), { style:"adobe", color:pick(cores), balconies:true, lit:.12, rooftop:false });
+    for (let i = 0; i < 5; i++) building(49 + rnd(-.3, .3), -14 + i*8.4, 5.2, 7, rnd(4.8, 7), { style:"adobe", color:pick(cores), balconies:true, lit:.12, rooftop:false });
+    // igreja barroca com duas torres e cúpulas
+    piece("igreja", 7.5, 4.6, 14, K => {
+      const wh = 0xf3ecd8, gold = 0xd8b04a, dome = 0x4a8fa0;
+      K.box(0, 0, 10, 6, 0, 6.2, wh, { style:"stone", roof:false }); K.box(0, 0, 4.4, 1.4, 6.2, 1.5, wh, { style:"stone", roof:false });
+      K.box(-4.3, 0, 2.8, 2.8, 0, 9.8, wh, { style:"stone", roof:false }); K.box(4.3, 0, 2.8, 2.8, 0, 9.8, wh, { style:"stone", roof:false });
+      K.ball(-4.3, 10.1, 0, 1.55, dome, .85); K.ball(4.3, 10.1, 0, 1.55, dome, .85); K.cyl(-4.3, 0, .06, 12.1, 1.1, gold); K.cyl(4.3, 0, .06, 12.1, 1.1, gold);
+      K.box(0, 3.05, 2.4, .35, 0, 3.2, 0x5a3a24, { roof:false }); K.box(0, 3.1, 3.4, .3, 3.4, .35, gold, { roof:false });
+    }, 25, -23.5, 0, { scale:.95 }); g.shadowBox(25, -23.5, 12, 6, 9);
+    // roda de capoeira: círculo de areia, bandeirinhas, atabaques e berimbaus
+    const RX = -17.5, RZ = -9.5, RR = 3.6;
+    g.blob(RX, RZ, RR*1.55, RR*1.55, 0xe6cf9a, .55); g.ring(RX, RZ, RR, .3, 0xf3e6c0, .8); g.ring(RX, RZ, RR*.55, .12, 0xf3e6c0, .35);
+    const skins = [0x6e4a30, 0x8a5a3a, 0xa8734a, 0x5a3a28, 0xd49a6a, 0x7a4a30];
+    const abada = (fem, i) => ({ fem, skin:skins[i % skins.length], hair:pick([0x15110e, 0x2b1d14, 0x15110e]), hairStyle:fem ? pick(["long", "bob"]) : pick(["buzz", "short", "bald"]), eye:0x2a1a12,
+      shirt:i % 3 ? 0xffffff : pick([0xe8c14a, 0x4aa3c9, 0x7bbf6a]), collar:0xffffff, pants:0xf6f4ee, pantsType:fem ? "skirt" : "jeans", shoes:skins[i % skins.length], beard:false, glasses:false, age:0 });
+    for (let k = 0; k < 13; k++) {                                                          // a roda batendo palmas
+      const a = k/13*Math.PI*2 + .2; if (Math.cos(a) > .55 && Math.sin(a) < -.1) continue;      // abre espaço para os músicos
+      E.person(RX + Math.cos(a)*RR, RZ + Math.sin(a)*RR, abada(k % 3 === 0, k), { pose:"clap" });
+    }
+    for (let k = 0; k < 2; k++) {                                                           // os dois jogadores no meio: aú (estrela) e ginga, trocando de vez
+      const sgn = k ? -1 : 1, base = [RX + sgn*1.15, RZ - sgn*.2];
+      E.person(base[0], base[1], abada(false, 4 + k), { pose:"ginga", s:1.0, motion: (n, t) => {
+        const T = 4.4, ph = ((t + k*T/2) % T)/T;
+        if (ph < .45) { const q = ph/.45; n.rot = q*Math.PI*2*sgn; n.y = Math.sin(q*Math.PI)*.62; n.x = base[0] - sgn*q*.5; }
+        else { const q = (ph - .45)/.55; n.rot = 0; n.y = Math.abs(Math.sin(q*Math.PI*4))*.05; n.x = base[0] - sgn*.5*(1 - q) + Math.sin(t*2.6)*.3; }
+        n.z = base[1] + Math.cos(t*2.6 + k)*.3;
+      } });
+    }
+    const bx = RX + RR*.92, bz = RZ - RR*.5;
+    [[0, 0], [1.1, .5], [2.2, 1.0]].forEach(([dx, dz], i) => {                                  // três berimbaus tocando
+      E.person(bx + dx, bz + dz, abada(i === 1, 7 + i), { pose:"ginga" });
+      piece("berimbau" + i, .6, .4, 4.2, K => {
+        for (let q = 0; q < 12; q++) { const a0 = q/12, a1 = (q + 1)/12, bow = v => .34*Math.sin(v*Math.PI); K.line([bow(a0), .5 + a0*3.2, 0], [bow(a1), .5 + a1*3.2, 0], 2.4, 0x7a5030); }
+        K.line([0, .5, 0], [0, 3.7, 0], .9, 0xe8e8e8, .8); K.ball(.1, 1.0, .1, .26, 0xd9a24a, 1); }, bx + dx - .45, bz + dz + .1, 0, { scale:.9 });
+    });
+    [[RR + .5, -.2], [RR + 1.4, .9]].forEach(([dx, dz], i) => piece("atabaque" + i, .8, .8, 2, K => { K.cyl(0, 0, .45, 0, 1.4, 0x8a4a24); K.cyl(0, 0, .5, 1.4, .1, 0xeadcc0); K.line([-.45, .2, 0], [.45, 1.2, 0], 1, 0xd8c8a0); K.line([.45, .2, 0], [-.45, 1.2, 0], 1, 0xd8c8a0); }, RX + dx, RZ + dz - 1.4));
+    // baianas de acarajé com tabuleiro e sombrinha
+    [[19, 6.5, 0], [23.5, 9.5, 1]].forEach(([x, z, i]) => {
+      piece("tabuleiro" + i, 1.6, 1.1, 3.6, K => { K.box(0, 0, 2.4, 1.2, 0, 1.0, 0xc08a4a, { style:"wood", roof:false }); K.box(0, 0, 2.5, 1.3, 1.0, .12, 0xf4f0e0, { roof:false }); K.cyl(0, 0, .05, 1.1, 2.2, 0x6a4a30); K.ball(0, 3.3, 0, 1.5, [0xe8c14a, 0xe86a4a][i], .35); }, x, z);
+      E.person(x - 1.7, z + .3, { fem:true, skin:skins[i + 1], hair:0x15110e, hairStyle:"bob", eye:0x2a1a12, shirt:0xffffff, collar:0xffffff, pants:0xf6f4ee, pantsType:"skirt", shoes:0xf6f4ee, cap:{ color:0xffffff, logo:0xe8c14a }, beard:false, glasses:false, age:.3 }, { pose:"ginga" });
+    });
+    // bandeirinhas atravessando o largo
+    [[-30, -16, 8], [-12, -15, 8], [6, -16, 8], [24, -15, 8]].forEach(([x, z, w], i) => piece("bandeirinhas" + i, w + 1, 1, 7, K => {
+      K.line([-w, 5.2, 0], [w, 5.2, 0], .8, 0x4a3a2a, .8);
+      for (let q = 0; q < 14; q++) { const x0 = -w + q*(2*w/14), x1 = x0 + 2*w/14*.8, xm = (x0 + x1)/2; K.face([[x0, 5.2, 0], [x1, 5.2, 0], [xm, 4.45, 0]], css(pick(cores)), "rgba(0,0,0,.25)"); }
+    }, x + w, z));
+    for (let x = -34; x <= 34; x += 17) lamp(x, -17, 4);
+    [[-30, 24], [32, 22], [-8, 26]].forEach(([x, z]) => palm(x, z, 3.6));
+    [[-26, -16], [-5, -17], [12, -17]].forEach(([x, z]) => bush(x, z, .9));
+    E.glow(.82, .1, 0xffd6a0, 60, .26); E.cloudShadows(.07); E.grade({ sat:1.2, con:1.05, bri:1.08, tint:[1.04, .98, .9] });
+  },
   rio: (E, g, K) => {
     const { css, QS, rnd, rint, pick, rgba, P, make, put, piece, tree, palm, deadTree, cactus, bush, car, lamp, building } = K;
     g.poly([[-34, -22], [34, -22], [34, 22], [-34, 22]], "calcada", { tint:0x8c8470, tintA:.5 });
@@ -289,7 +354,9 @@ SPBCampaigns.register({
     nikolas: { name:"Niko Ferrado",    short:"Niko",  party:"PL",           camp:"flavio", skin:0xf2c9a5, hair:0x2b1d14, hairStyle:"short" },
     tarcisio:{ name:"Tarcizinho", short:"Tarcizinho", party:"Republicanos", camp:"flavio", skin:0xe8b48c, hair:0x2b2018, hairStyle:"short", glasses:true, age:.3 },
     michelle:{ name:"Michela",  short:"Michela", party:"PL",           camp:"flavio", skin:0xf2c9a5, hair:0xd9b36a, hairStyle:"long", fem:true, age:.2 },
-    felipe:  { name:"Felipe Feto",         short:"Feto",   party:"Influencer",   camp:"lula",   skin:0xf2c9a5, hair:0x1d1510, hairStyle:"short" },
+    carol:   { name:"Carol Acarajé",      short:"Acarajé",   party:"Influencer",   camp:"lula",   skin:0x8a5a3a, hair:0x15110e, hairStyle:"long", fem:true, age:.25 },
+  bitoca:  { name:"Mestre Bitoca",      short:"Bitoca",    party:"Influencer",   camp:"flavio", skin:0x6e4a30, hair:0x15110e, hairStyle:"buzz", beard:true, beardColor:0x15110e, age:.45 },
+  felipe:  { name:"Felipe Feto",         short:"Feto",   party:"Influencer",   camp:"lula",   skin:0xf2c9a5, hair:0x1d1510, hairStyle:"short" },
     hang:    { name:"Véio da Avon",        short:"Véio",     party:"Empresário",   camp:"flavio", skin:0xf2c9a5, hair:0xdcdcdc, hairStyle:"short", age:.85 },
     marina:  { name:"Marina Sílvia",        short:"Sílvia",   party:"Rede",         camp:"lula",   skin:0xe0ac82, hair:0x3a2a1a, hairStyle:"bob", fem:true, age:.5 },
     salles:  { name:"Ricardo Venddas",      short:"Venddas",   party:"PL",           camp:"flavio", skin:0xf2c9a5, hair:0x2b1d14, hairStyle:"short" },
@@ -299,8 +366,8 @@ SPBCampaigns.register({
   },
   /* adversários por fase, conforme o lado escolhido (o chefão é o líder do outro lado; o último é o vilão do NG+) */
   tracks: {
-    flavio: ["boulos","gleisi","moraes","felipe","marina","anitta","lula","ditador"],
-    lula:   ["nikolas","tarcisio","michelle","hang","salles","carlos","flavio","ditador"],
+    flavio: ["boulos","gleisi","moraes","carol","felipe","marina","anitta","lula","ditador"],
+    lula:   ["nikolas","tarcisio","michelle","bitoca","hang","salles","carlos","flavio","ditador"],
   },
 
   /* ---- torcida: grupos de cada arena (nome e tamanho) ---- */
@@ -317,7 +384,8 @@ SPBCampaigns.register({
     { scn:"paulista", diff:"Fácil",   ai:1, def:[4,3,2] },
     { scn:"poa",      diff:"Médio",   ai:2, def:[1,2,3,4] },
     { scn:"rio",      diff:"Difícil", ai:3, def:[0,1,2,4], hazard:"bala" },
-    { scn:"sertao",   diff:"Muito difícil", ai:3, def:[0,1,2,3], hazard:"fogo" },
+    { scn:"pelourinho", diff:"Difícil", ai:3, def:[0,1,2,4], hazard:"ladrao" },
+  { scn:"sertao",   diff:"Muito difícil", ai:3, def:[0,1,2,3], hazard:"fogo" },
     { scn:"amazonia", diff:"Extremo", ai:3, def:[0,1,2,3,4], hazard:"flechas" },
     { scn:"camboriu", diff:"Pré-chefão", ai:3, def:[0,1,2,3,4], calm:true },
     { scn:"brasilia", diff:"CHEFÃO",  ai:4, def:[0,1,2,3,4], boss:true },
@@ -346,6 +414,9 @@ SPBCampaigns.register({
     { id:"rio", name:"Cristo Redentor", short:"Cristo Redentor", of:"do Cristo Redentor", emoji:"⛰️", city:"Rio de Janeiro · RJ",
       thumb:"linear-gradient(170deg,#7fd0ff,#3d9a4d 75%)", sky:0x86cdfa, fog:[0xcfeaff,70,190], tiles:[0x2a5f35,0x214e2b],
       music:"samba", ground:0x7f7a66, scenery:SCENERY.rio },
+  { id:"pelourinho", name:"Pelourinho", short:"Pelourinho", of:"do Pelourinho", emoji:"🥁", city:"Salvador · BA",
+    thumb:"linear-gradient(170deg,#ffd27a,#d9677a 55%,#4aa3c9)", sky:0x8ccdf2, fog:[0xcfe6f2,65,185], tiles:[0x9a7a58,0x8a6a4a],
+    music:"capoeira", ground:0x7c5f48, scenery:SCENERY.pelourinho },
     { id:"poa", name:"Aeroporto Salgado Filho", short:"Aeroporto POA", of:"do Aeroporto de Porto Alegre", emoji:"✈️", city:"Porto Alegre · RS",
       thumb:"linear-gradient(170deg,#b5c9da,#4a4f57 75%)", sky:0xa8c0d4, fog:[0xbccbd8,60,160], tiles:[0x666a70,0x5a5e64],
       music:"milonga", ground:0x6a6e74, scenery:SCENERY.poa },

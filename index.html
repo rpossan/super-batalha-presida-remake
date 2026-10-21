@@ -1516,7 +1516,7 @@ function startBattle() {
   G.phase = "battle"; G.turn = G.online && !G.online.first ? 1 : 0; G.round = 1; G.power = "normal"; G.firstTurn = true;
   G.finished = false;
   G.furia = 0; G.repeatKind = "furia"; G.itemUse = { revive:0, furia:0, reforco:0, breja:0, plano:0 }; G.itemsSnap = { ...ITEMS }; G.loot = newLoot();
-  G.combo = 0; G.levelStartVotes = G.votes; shownVotes = G.votes;
+  G.stolen = { money:0, items:0, votes:0, hits:0 }; G.combo = 0; G.levelStartVotes = G.votes; shownVotes = G.votes;
   $("votesNum").textContent = fmtVotes(G.votes); renderCombo(); renderStats();
   G.energy = [1, LEVELS[G.levelIdx].cpuBonus ? (LEVELS[G.levelIdx].ng ? 4 : 3) : 1]; lastEnergy = 1; $("log").innerHTML = ""; setupSkills();
   G.walletSnap = MONEY;
@@ -1529,6 +1529,7 @@ function startBattle() {
   if (LEVELS[G.levelIdx].hazard === "bombas") log("☢️ APOCALIPSE: bombas caem a cada turno (mais a cada 3 rodadas) e cada erro seu invoca um zumbi. Com 5 zumbis a horda invade e morde 5 casas suas!");
   if (threat() > 0) log(`🎯 Ameaça do inimigo: <b>${threatName()}</b> (cresce com os votos que você investe em skills).`);
   if (LEVELS[G.levelIdx].ng) setTimeout(() => toast("NG+ · APOCALIPSE!", "#ff5a4a"), 300);
+  if (LEVELS[G.levelIdx].hazard === "ladrao") log("🦹 Perigo do cenário: de vez em quando um LADRÃO cruza uma fila da sua arena (antes do seu ataque). Cada torcedor seu que ele tocar perde dinheiro, um item ou votos!");
   if (LEVELS[G.levelIdx].hazard === "flechas") log(`🏹 Perigo do cenário: ${ARROWS_PER_TURN} flechas caem da floresta a cada turno: antes do seu ataque, no adversário; antes do ataque dele, em você.`);
   $("placePanel").classList.add("hidden");
   $("battlePanel").classList.remove("hidden");
@@ -1580,12 +1581,63 @@ function startTurn(repeat) {
   } else if (hz === "flechas") {                         // Amazônia: chuva de flechas na arena de quem vai jogar
     G.busy = true; ui();
     arrowRain(G.turn === 0 ? 1 : 0, begin);
+  } else if (hz === "ladrao") {                          // Pelourinho: às vezes um ladrão cruza uma fila da sua arena
+    if (G.turn === 0) { G.busy = true; ui(); thiefRun(begin); } else begin();
   } else if (hz === "bombas") {                          // Apocalipse: bombas na arena de quem será atacado
     G.busy = true; ui();
     bombRain(G.turn === 0 ? 1 : 0, begin);
   } else begin();
 }
 
+/* ---- perigo do cenário (Pelourinho): um LADRÃO cruza uma fila da arena do jogador; cada torcedor tocado perde dinheiro, item ou votos ---- */
+const THIEF_CHANCE = .45;
+function stealFrom(r, c) {
+  const p = tilePos(0, r, c), have = ITEM_DEFS.filter(d => ITEMS[d.id] > 0), floor = xpForLevel(levelOf(G.votes));
+  const kinds = []; if (MONEY > 0) kinds.push("money"); if (have.length) kinds.push("item"); if (G.votes - floor > 0) kinds.push("votes");
+  const fan = G.fans[0][r + "," + c]; if (fan) fan.u.cheer = 0;
+  GFX.flash({ x:p.x, y:.8, z:p.z }, 0xff3b30, 1.6, .5); burst(p, [0xffd23a, 0xff5a4a, 0x2b2b2b], 18, 5); tone(330, .12, "square", .08, -200); tone(160, .22, "sawtooth", .07, -80, .09);
+  if (!kinds.length) { GFX.pickup({ x:p.x + .3, z:p.z }, "emoji:😅", "Nada para roubar", "#cfd8e3"); return; }
+  const kind = kinds[rand(kinds.length)]; let icon, text;
+  if (kind === "money") { const amt = Math.min(MONEY, Math.max(10, Math.round((30 + 15*G.levelIdx)*(.6 + Math.random()*.9)/5)*5)); MONEY -= amt; G.stolen.money += amt; icon = "emoji:💸"; text = "−R$ " + fmtVotes(amt); }
+  else if (kind === "item") { const pool = []; have.forEach(d => { for (let i = 0; i < ITEMS[d.id]; i++) pool.push(d); }); const d = pool[rand(pool.length)]; ITEMS[d.id]--; G.stolen.items++; icon = d.pickup ? "emoji:" + d.pickup : d.id; text = "−1 " + d.name; }
+  else { const loss = Math.min(G.votes - floor, Math.max(5, Math.round((60 + 25*G.levelIdx)*(.6 + Math.random()*.9)/5)*5)); G.votes -= loss; G.stolen.votes += loss; icon = "emoji:🗳️"; text = "−" + fmtVotes(loss) + " votos"; }
+  G.stolen.hits++;
+  GFX.pickup({ x:p.x + .3, z:p.z }, icon, text, "#ff5a4a");
+  renderStats(); ui();
+}
+function thiefRun(done) {
+  if (G.phase !== "battle" || Math.random() > THIEF_CHANCE) { done(); return; }
+  const horiz = Math.random() < .5, idx = rand(N), dir = Math.random() < .5 ? 1 : -1;
+  const line = Array.from({ length:N }, (_, k) => horiz ? [idx, k] : [k, idx]); if (dir < 0) line.reverse();
+  const A = tilePos(0, ...line[0]), B = tilePos(0, ...line[N - 1]), sx = (B.x - A.x)/(N - 1), sz = (B.z - A.z)/(N - 1), pad = 2.4;
+  const x0 = A.x - sx*pad, z0 = A.z - sz*pad, x1 = B.x + sx*pad, z1 = B.z + sz*pad, T = 3.1, total = N - 1 + 2*pad;
+  G.stolen.hits0 = G.stolen.hits;
+  toast("🦹 LADRÃO NA ÁREA!", "#ff9a3a"); setAction("🦹 Ladrão!", "#ff9a3a", `Ele vai cruzar a ${horiz ? "linha" : "coluna"} ${idx + 1} da sua arena`);
+  log(`🦹 Um ladrão vai cruzar a ${horiz ? "linha" : "coluna"} <b>${idx + 1}</b> da sua arena!`);
+  [880, 660, 880, 660].forEach((f, i) => tone(f, .1, "square", .07, 0, i*.13));                       // alarme
+  line.forEach(([r, c]) => GFX.setTile(0, r, c, 0xd9352a, 0));                                      // a fila fica vermelha por um instante
+  setTimeout(() => {
+    line.forEach(([r, c]) => refreshTile(0, r, c));
+    if (G.phase !== "battle") { done(); return; }
+    const th = GFX.makeThief(); th.at(x0, 0, z0); th.fx = (sx - sz) >= 0 ? 1 : -1;
+    const key = "itemic_emoji:💰"; GFX.tex(key, () => Art.itemIcon("emoji:💰"));
+    const sack = new GFX.Node(GFX.img(key, 30), "fx"); sack.bias = 2000;
+    const seen = new Set(); let last = performance.now()/1000;
+    addFx(T, (t) => {
+      const k = t/T, now = performance.now()/1000; GFX.updateFan(th, now, now - last); last = now;
+      th.at(x0 + (x1 - x0)*k, Math.abs(Math.sin(t*17))*.17, z0 + (z1 - z0)*k); th.u.up.rotation = .24;
+      sack.at(th.x, th.y + 1.95, th.z); sack.alpha = 1;
+      const pos = k*total - pad;                                                                  // posição em casas ao longo da fila
+      line.forEach(([r, c], i) => { if (!seen.has(i) && pos >= i - .15) { seen.add(i); const cell = G.boards[0][r][c]; if (cell.ship >= 0 && !cell.shot) stealFrom(r, c); } });
+    }, () => {
+      th.destroy(); sack.destroy();
+      const gained = G.stolen.hits - G.stolen.hits0;
+      if (!gained) { log("🦹 O ladrão passou, mas ninguém da sua torcida estava na fila!"); setAction("🦹 O ladrão passou em branco", "#9aa7b5", "Ninguém da sua torcida estava na fila"); }
+      else { log(`🦹 O ladrão tocou em <b>${gained}</b> torcedor${gained > 1 ? "es" : ""} seu${gained > 1 ? "s" : ""} e fugiu com o butim!`); toast("🦹 ROUBADO!", "#ff5a4a"); }
+      if (G.phase === "battle") setTimeout(done, 700);
+    });
+  }, 1100);
+}
 /* ---- perigo do cenário (fase 3): uma bala perdida cai do céu em 1 casa aleatória da arena de quem joga ---- */
 function hazardDrop(b, done) {
   const r = rand(N), c = rand(N), p = tilePos(b, r, c);
@@ -1969,10 +2021,10 @@ function finish(winner, reason) {
    Fechamento da batalha: experiência, níveis, pontos de skill e saque
    ================================================================ */
 function settleResults(youWin) {
-  const L = LEVELS[G.levelIdx], xpBefore = G.levelStartVotes || 0, votesBattle = G.votes - xpBefore;
+  const L = LEVELS[G.levelIdx], xpBefore = Math.min(G.levelStartVotes || 0, G.votes), votesBattle = G.votes - xpBefore;   // (o ladrão pode ter levado votos: o ponto de partida desce junto)
   const bonusVotes = youWin ? 300 + 200*G.levelIdx : 0;
   G.votes += bonusVotes;
-  const R = { win:youWin, xpBefore, xpAfter:G.votes, votesBattle, bonusVotes, loot:G.loot || newLoot(), moneyBonus:0, itemsBonus:{}, lostMoney:0, lostItems:{} };
+  const R = { stolen:G.stolen, win:youWin, xpBefore, xpAfter:G.votes, votesBattle, bonusVotes, loot:G.loot || newLoot(), moneyBonus:0, itemsBonus:{}, lostMoney:0, lostItems:{} };
   if (youWin) {
     R.moneyBonus = 100*(G.levelIdx+1) + (L.boss ? 1500 : 0); MONEY += R.moneyBonus;
     if (L.boss) ["furia","reforco"].forEach(id => { if (ITEM_PRICE[id] != null && ITEMS[id] < ITEM_MAX[id]) { ITEMS[id]++; R.itemsBonus[id] = 1; } });
@@ -2049,7 +2101,8 @@ async function showResults(R, done) {
   const got = {}, lost = R.lostItems; Object.keys(R.loot.items).forEach(id => got[id] = R.loot.items[id] - (lost[id] || 0) + (R.itemsBonus[id] || 0));
   const chips = (obj, cls) => ITEM_DEFS.filter(d => obj[d.id] > 0).map(d => `<span class="${cls}">${d.svg} ${d.name} ×${obj[d.id]}</span>`).join("");
   const gotH = chips(got, ""), lostH = chips(lost, "lost");
-  if (gotH || lostH) { $("rItems").innerHTML = (gotH ? `<div>Itens obtidos</div><div class="ilist">${gotH}</div>` : "") + (lostH ? `<div class="lost" style="margin-top:6px">Itens perdidos na derrota</div><div class="ilist">${lostH}</div>` : ""); $("rItems").classList.remove("hidden"); try { Sfx.coin(true); } catch (e) {} }
+  const stl = R.stolen, stolenH = stl && stl.hits ? `<div class="lost" style="margin-top:6px">🦹 Levado pelo ladrão (${stl.hits} toque${stl.hits > 1 ? "s" : ""})</div><div class="ilist"><span class="lost">${[stl.money ? "💸 R$ " + fmtVotes(stl.money) : "", stl.items ? "🎒 " + stl.items + " item" + (stl.items > 1 ? "s" : "") : "", stl.votes ? "🗳️ " + fmtVotes(stl.votes) + " votos" : ""].filter(Boolean).join(" · ")}</span></div>` : "";
+  if (gotH || lostH || stolenH) { $("rItems").innerHTML = (gotH ? `<div>Itens obtidos</div><div class="ilist">${gotH}</div>` : "") + (lostH ? `<div class="lost" style="margin-top:6px">Itens perdidos na derrota</div><div class="ilist">${lostH}</div>` : "") + stolenH; $("rItems").classList.remove("hidden"); try { Sfx.coin(true); } catch (e) {} }
   else if (R.win && !gotH) { /* sem itens desta vez */ }
   if (R.spGained > 0 || SKILL_POINTS > 0) $("rSP").textContent = fmtVotes(SKILL_POINTS);
   await wait(500);

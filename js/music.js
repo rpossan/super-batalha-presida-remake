@@ -7,6 +7,7 @@
    - rio: samba moderno                  - poa: milonga gaúcha
    - sertao: baião                       - amazonia: ambiente tribal
    - camboriu: tropical house            - brasilia: cinema solene
+   - capoeira: roda de capoeira (Pelourinho)
    - apocalipse: híbrido orquestral/industrial
    ================================================================ */
 "use strict";
@@ -290,6 +291,37 @@ const MusicEngine = (() => {
       if (Math.random() < .03) E.chirp(t, rnd(2400, 3600), .8);
       if (st === 0 && Math.random() < .25) E.chirp(t + rnd(.1, 1.5), rnd(1800, 2800), .7);
       const n = M[bar][st]; if (n) E.flute(t, mf(n.n), n.l*sd*.97, 1);
+    } };
+  })();
+
+  /* Pelourinho: roda de capoeira. Berimbau, atabaque, pandeiro, agogô, palmas e coro em pergunta e resposta, Lá dórico */
+  (() => {
+    const bPat = [[0, "L"], [3, "x"], [4, "H"], [6, "x"], [8, "L"], [11, "x"], [12, "H"], [14, "x"], [15, "x"]];       // berimbau: dong · chi · dong agudo · chi …
+    const M = mel("57*3 60*2 62*3 60*2 57*3 r*3", "57*2 60*2 62*2 64*4 62*2 60*2 r*2", "60*2 62*2 64*2 62*2 60*2 57*2 55*4", "57*6 r*10",
+                  "64*3 64*2 62*3 60*2 62*3 r*3", "64*2 62*2 60*2 57*4 60*2 62*2 r*2", "60*2 60*2 62*2 64*2 62*2 60*2 57*4", "57*8 r*8");
+    SONGS.capoeira = { gain:.95, bpm:104, swing:.1, step(c) {
+      const { t, st, bar, L, sd, E } = c, resp = bar >= 4;
+      /* berimbau: corda grave, corda aguda e o "chi" abafado com o caxixi */
+      bPat.forEach(([s0, k]) => { if (s0 !== st) return;
+        if (k === "L") E.voice({ t, f:mf(50), dur:sd*3.2, vol:.3, a:.003, d:.35, s:.35, r:.18, glide:{ from:1.045, time:.07 }, oscs:[{ type:"sine" }, { type:"triangle", mul:2, gain:.3 }, { type:"sine", mul:3.02, gain:.12 }], rev:.3, pan:-.2 });
+        else if (k === "H") E.voice({ t, f:mf(57), dur:sd*2.4, vol:.26, a:.003, d:.25, s:.3, r:.14, glide:{ from:1.05, time:.06 }, oscs:[{ type:"sine" }, { type:"triangle", mul:2, gain:.25 }], rev:.3, pan:-.2 });
+        else { E.voice({ t, f:mf(62), dur:.05, vol:.1, a:.002, r:.03, oscs:[{ type:"triangle" }], lp:[900, 600, .04], pan:-.2 }); E.noise({ t, dur:.06, vol:.13, type:"bandpass", f:3600, q:1.3, pan:-.2 }); }
+      });
+      /* atabaque (grave e agudo) e pandeiro */
+      if (st === 0) E.surdo(t, 1, { f:62 }); if (st === 8) E.surdo(t, .6, { f:62 });
+      if ([6, 10, 14].includes(st)) E.conga(t, st === 10 ? 190 : 230, .9);
+      if (st%2 === 0) E.pandeiro(t, st%4 === 0 ? 1 : .6, false); else if (st%4 === 3) E.pandeiro(t, .4, true);
+      /* agogô de dois tons e palmas */
+      if ([0, 6, 12].includes(st)) E.agogo(t, .8, true); if ([3, 8, 10, 14].includes(st)) E.agogo(t, .7, false);
+      if (st === 4 || st === 12) E.clap(t, resp ? .7 : .45); if (resp && (st === 2 || st === 10)) E.clap(t, .3);
+      /* coro: o mestre puxa (compassos 1–4) e a roda responde em coro (5–8) */
+      const n = M[bar][st];
+      if (n) {
+        const f = mf(n.n), lead = { t, dur:n.l*sd*.95, a:.04, r:.14, lp:[820, 1500, .16], q:2.2, vib:{ rate:5.4, depth:13, delay:.12 }, rev:.32 };
+        E.voice({ ...lead, f, vol:resp ? .07 : .09, oscs:[{ type:"sawtooth", det:-9 }, { type:"sawtooth", det:9 }], pan:-.1 });
+        E.voice({ ...lead, f:f/2, vol:.05, oscs:[{ type:"sawtooth", det:-6 }, { type:"square", gain:.5 }], lp:[500, 900, .16], pan:.1 });
+        if (resp) for (let v = 0; v < 3; v++) E.voice({ ...lead, f:f*(v === 2 ? 2 : 1)*(1 + (v - 1)*.004), vol:.045, oscs:[{ type:"sawtooth", det:-12 + v*12 }, { type:"sawtooth", det:8 }], pan:(v - 1)*.5 });
+      }
     } };
   })();
 

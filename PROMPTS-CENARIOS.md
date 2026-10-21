@@ -29,8 +29,8 @@ hora e clima:      «fim de tarde, céu alaranjado, sem chuva»
 paleta:            «areia clara, mar azul-turquesa, calçadão preto e branco, prédios claros»
 elementos que DEVEM aparecer:   «calçadão em ondas, quiosques, palmeiras, mar ao fundo, bandeiras»
 elementos que NÃO podem:        «marcas reais, logotipos, pessoas, texto, violência»
-música:            «tropical»   (anthem | urban | samba | milonga | baiao | tribal | tropical | solemn | industrial)
-perigo da fase:    «nenhum»     (nenhum | bala | fogo | flechas | bombas)
+música:            «tropical»   (anthem | urban | samba | milonga | baiao | capoeira | tribal | tropical | solemn | industrial)
+perigo da fase:    «nenhum»     (nenhum | bala | fogo | flechas | bombas | ladrao)
 dificuldade:       «Médio»      (texto livre, aparece na fase; ex.: Fácil, Médio, Difícil, CHEFÃO)
 adversário (personagem): «novo: nome, partido/grupo, cabelo, óculos…» ou «já existe: <chave de chars>»
 posição na campanha: «fase 3 de 7» ou «só para o duelo online (sem fase)»
@@ -71,8 +71,8 @@ posição na campanha: «fase 3 de 7» ou «só para o duelo online (sem fase)»
 Você vai me ajudar a criar um cenário para o jogo (batalha naval isométrica, campanhas temáticas).
 Leia o CAMPANHAS.md em anexo. Depois me entreviste, uma pergunta de cada vez, para preencher esta ficha:
 id, nome, nome curto, "of" (frase: "… foi dispersado ____"), emoji, cidade/local, hora e clima, paleta,
-elementos que devem e que não devem aparecer, música (anthem|urban|samba|milonga|baiao|tribal|tropical|solemn|industrial),
-perigo da fase (nenhum|bala|fogo|flechas|bombas), dificuldade, adversário e posição na campanha.
+elementos que devem e que não devem aparecer, música (anthem|urban|samba|milonga|baiao|capoeira|tribal|tropical|solemn|industrial),
+perigo da fase (nenhum|bala|fogo|flechas|bombas|ladrao), dificuldade, adversário e posição na campanha.
 Sugira 2 opções quando eu estiver em dúvida. No fim, devolva a ficha preenchida em bloco de código.
 ```
 
