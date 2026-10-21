@@ -7,12 +7,12 @@
 <meta name="description" content="Super Presida Batalha: batalha naval das eleições 2026 em 2.5D isométrico. Use sua estratégia política para conquistar votos e vencer a corrida presidencial!">
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2212%22%20fill%3D%22%2310151c%22/%3E%3Cpath%20d%3D%22M10%2044%20L6%2018%20L20%2030%20L32%2010%20L44%2030%20L58%2018%20L54%2044%20Z%22%20fill%3D%22%23ffd23a%22%20stroke%3D%22%233b2600%22%20stroke-width%3D%223%22%20stroke-linejoin%3D%22round%22/%3E%3Cpolygon%20points%3D%2232.0%2C21.0%2033.9%2C26.3%2039.6%2C26.5%2035.1%2C30.0%2036.7%2C35.5%2032.0%2C32.3%2027.3%2C35.5%2028.9%2C30.0%2024.4%2C26.5%2030.1%2C26.3%22%20fill%3D%22%23d7191c%22/%3E%3Crect%20x%3D%2210%22%20y%3D%2246%22%20width%3D%2244%22%20height%3D%227%22%20rx%3D%222%22%20fill%3D%22%23009c3b%22/%3E%3C/svg%3E">
 <style>
-  :root { --verde:#009c3b; --amarelo:#ffdf00; --vermelho:#d7191c; --ink:#10151c; --panel:rgba(14,18,26,.82); }
+  :root { --verde:#009c3b; --amarelo:#ffdf00; --vermelho:#d7191c; --ink:#10151c; --panel:rgba(14,18,26,.88); }
   * { box-sizing:border-box; }
   html,body { margin:0; height:100%; overflow:hidden; background:#10151c; color:#fff; font-family:"Segoe UI",system-ui,sans-serif; user-select:none; -webkit-user-select:none; }
   canvas { display:block; }
   #viewCtl { right:10px; top:50%; transform:translateY(-50%); flex-direction:column; gap:6px; z-index:3; pointer-events:auto; }
-  .vbtn { width:42px; height:42px; border-radius:12px; border:1px solid #fff3; background:rgba(14,18,26,.78); color:#fff; font:700 20px/1 'Segoe UI',system-ui,sans-serif; cursor:pointer; backdrop-filter:blur(6px); transition:.15s; }
+  .vbtn { width:42px; height:42px; border-radius:12px; border:1px solid #fff3; background:rgba(14,18,26,.86); color:#fff; font:700 20px/1 'Segoe UI',system-ui,sans-serif; cursor:pointer; transition:.15s; }
   .vbtn:hover { background:rgba(58,70,89,.9); transform:translateY(-1px); }
   body.mobile .vbtn { width:36px; height:36px; font-size:17px; }
   #game { position:fixed; inset:0; overflow:hidden; background:#1a1d22; }
@@ -98,7 +98,7 @@
   #timerfill { height:100%; width:100%; background:var(--amarelo); transition:width .2s linear; }
   #mute { pointer-events:auto; background:#0006; border:1px solid #fff4; color:#fff; border-radius:8px; padding:6px 10px; cursor:pointer; }
   #bottom { left:0; right:0; bottom:0; padding:10px 14px 14px; display:flex; gap:12px; align-items:flex-end; justify-content:center; flex-wrap:wrap; pointer-events:none; }
-  .panel { background:var(--panel); border:1px solid #fff2; border-radius:14px; padding:10px 12px; pointer-events:auto; backdrop-filter:blur(6px); }
+  .panel { background:var(--panel); border:1px solid #fff2; border-radius:14px; padding:10px 12px; pointer-events:auto; }
   button.btn { font:inherit; font-weight:700; color:#fff; background:#2a3342; border:1px solid #fff3; border-radius:10px; padding:9px 14px; cursor:pointer; transition:.15s; }
   button.btn:hover:not(:disabled) { background:#3a4659; transform:translateY(-1px); }
   button.btn:disabled { opacity:.4; cursor:not-allowed; }
@@ -218,10 +218,10 @@
   #coffeeNudge { margin:6px 0 14px; display:flex; flex-direction:column; align-items:center; gap:8px; }
   #coffeeNudge b { font-size:18px; }
   #coffeeModal { position:fixed; inset:0; z-index:30; display:flex; align-items:center; justify-content:center; padding:16px;
-                 background:rgba(3,6,10,.82); backdrop-filter:blur(4px); }
+                 background:rgba(3,6,10,.82); }
   #coffeeModal .box { background:linear-gradient(#1c2638,#111823); border:2px solid #ffd23a; border-radius:18px; padding:20px; width:min(380px,100%);
                       text-align:center; box-shadow:0 12px 40px #000a; max-height:100%; overflow:auto; position:relative; }
-  #profileModal { position:fixed; inset:0; z-index:34; display:flex; align-items:center; justify-content:center; padding:12px; background:rgba(3,6,10,.88); backdrop-filter:blur(4px); }
+  #profileModal { position:fixed; inset:0; z-index:34; display:flex; align-items:center; justify-content:center; padding:12px; background:rgba(3,6,10,.88); }
   #profileModal .box { background:linear-gradient(#1c2638,#111823); border:2px solid #ffd23a; border-radius:18px; padding:18px; width:min(460px,100%); box-shadow:0 12px 40px #000a; max-height:100%; overflow:auto; position:relative; text-align:left; }
   #profileModal h2 { margin:0 0 10px; font-size:22px; text-align:center; }
   #profileModal .close { position:absolute; top:8px; right:10px; background:none; border:0; color:#fff; font-size:22px; cursor:pointer; opacity:.8; }
@@ -260,7 +260,7 @@
   .onlinebtn:hover { transform:scale(1.02); } .onlinebtn .ico { font-size:38px; line-height:1; } .onlinebtn b { display:block; font:900 24px/1.1 Impact,"Arial Black",sans-serif; letter-spacing:1.5px; }
   .onlinebtn small { display:block; font-size:12.5px; opacity:.9; margin-top:3px; font-weight:600; } .onlinebtn em { position:absolute; top:-10px; right:14px; font:900 11px Impact,"Arial Black",sans-serif; letter-spacing:1px; background:#ff3b30; padding:2px 9px; border-radius:6px; transform:rotate(4deg); font-style:normal; }
   @keyframes onpulse { 50% { box-shadow:0 0 34px #4db3ffaa, inset 0 0 18px #ffffff22; } }
-  #onlineModal, #inviteModal { position:fixed; inset:0; z-index:34; display:flex; align-items:center; justify-content:center; padding:12px; background:rgba(3,6,10,.88); backdrop-filter:blur(4px); } #inviteModal { z-index:36; }
+  #onlineModal, #inviteModal { position:fixed; inset:0; z-index:34; display:flex; align-items:center; justify-content:center; padding:12px; background:rgba(3,6,10,.88); } #inviteModal { z-index:36; }
   #onlineModal .box, #inviteModal .box { background:linear-gradient(#1c2638,#111823); border:2px solid #7fd0ff; border-radius:18px; padding:18px; width:min(440px,100%); box-shadow:0 12px 40px #000a; max-height:100%; overflow:auto; position:relative; text-align:center; }
   #onlineModal h2 { margin:0 0 6px; font-size:24px; } #onlineModal .close { position:absolute; top:8px; right:10px; background:none; border:0; color:#fff; font-size:22px; cursor:pointer; opacity:.8; }
   #onStatus { font-size:12.5px; opacity:.9; margin-bottom:10px; } #onStatus .dot { display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:4px; } .dot.ok { background:#4cd964; } .dot.test { background:#ffd23a; } .dot.off { background:#ff9a5a; }
@@ -275,7 +275,7 @@
   #boot { position:fixed; inset:0; z-index:60; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 50% 35%,#14213f,#04070d 75%); color:#fff; text-align:center; padding:20px; }
   #boot.gone { display:none; } #boot .spin { width:46px; height:46px; margin:0 auto 14px; border:5px solid #fff3; border-top-color:#7fd0ff; border-radius:50%; animation:onspin .9s linear infinite; }
   #bootText { font-weight:800; font-size:17px; max-width:340px; line-height:1.4; margin-bottom:12px; } #bootBtns { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
-  #rankModal { position:fixed; inset:0; z-index:34; display:flex; align-items:center; justify-content:center; padding:12px; background:rgba(3,6,10,.88); backdrop-filter:blur(4px); }
+  #rankModal { position:fixed; inset:0; z-index:34; display:flex; align-items:center; justify-content:center; padding:12px; background:rgba(3,6,10,.88); }
   #rankModal .box { background:linear-gradient(#1c2638,#111823); border:2px solid #ffd23a; border-radius:18px; padding:16px; width:min(520px,100%); max-height:100%; display:flex; flex-direction:column; box-shadow:0 12px 40px #000a; position:relative; }
   #rankModal h2 { margin:0 0 8px; font-size:22px; text-align:center; } #rankModal .close { position:absolute; top:8px; right:10px; background:none; border:0; color:#fff; font-size:22px; cursor:pointer; opacity:.8; }
   #rankModal .tabs { display:flex; gap:8px; margin-bottom:8px; } #rankModal .tabs .btn { flex:1; } #rankModal .tabs .btn.on { background:#3a3510; border-color:var(--amarelo); }
@@ -371,7 +371,7 @@
   .item .qty { position:absolute; top:-7px; right:-6px; background:var(--amarelo); color:#222; font-weight:900; font-size:12px; border-radius:999px; min-width:22px; padding:1px 6px; text-align:center; box-shadow:0 2px 6px #0008; }
   .item.empty { opacity:.35; text-decoration:line-through; }
   .item kbd { margin-left:2px; }
-  #shop { position:fixed; inset:0; z-index:32; display:flex; align-items:center; justify-content:center; padding:12px; background:rgba(3,6,10,.86); backdrop-filter:blur(4px); }
+  #shop { position:fixed; inset:0; z-index:32; display:flex; align-items:center; justify-content:center; padding:12px; background:rgba(3,6,10,.86); }
   #shop .box { background:linear-gradient(#1c2638,#111823); border:2px solid #ffd23a; border-radius:18px; padding:16px; width:min(760px,100%); max-height:100%; overflow:auto; box-shadow:0 12px 40px #000a; position:relative; }
   #shop h2 { margin:0; font-size:22px; } #shop .top { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:10px; }
   #shop .wallet { margin-left:auto; font:900 20px/1 Impact,"Arial Black",sans-serif; background:#000a; border:2px solid var(--amarelo); border-radius:10px; padding:6px 12px; }
@@ -387,7 +387,7 @@
   #shop .note { font-size:12px; opacity:.7; text-align:center; margin-top:8px; }
   .shoprow { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin:10px 0 2px; }
   .shoprow .btn { font-size:15px; padding:10px 16px; border-color:var(--amarelo); }
-  #pauseModal { position:fixed; inset:0; z-index:35; display:flex; align-items:center; justify-content:center; padding:16px; background:rgba(3,6,10,.78); backdrop-filter:blur(4px); }
+  #pauseModal { position:fixed; inset:0; z-index:35; display:flex; align-items:center; justify-content:center; padding:16px; background:rgba(3,6,10,.78); }
   #pauseModal .box { background:linear-gradient(#1c2638,#111823); border:2px solid #fff4; border-radius:18px; padding:20px; width:min(340px,100%); text-align:center; box-shadow:0 12px 40px #000a; }
   #pauseModal h2 { margin:0 0 4px; } #pauseModal p { margin:4px 0 12px; opacity:.85; font-size:14px; } #pauseModal p.small { font-size:12px; opacity:.65; margin:12px 0 0; }
   #pauseModal .col { display:flex; flex-direction:column; gap:10px; } #pauseModal .btn { font-size:16px; padding:12px; }
@@ -826,7 +826,7 @@ const SKILLS = [], SKILL_REQ = {}, LVT = {}, SKILL_TEXT = {};
 const SKILL_COST = [1, 2, 3];
 const STATS = { wins:0, losses:0, owins:0, olosses:0 };
 const RECORDS = { votes:0, best:{} };            // recordes do jogador (recorde de votos e melhores tempos "campanha/lado"): vão dentro do save
-const GAME_VERSION = "2.2.1", PRIVACY_VERSION = "2026-10";   // versão do jogo e da Política de Privacidade (mudar a política exige novo aceite)
+const GAME_VERSION = "2.2.2", PRIVACY_VERSION = "2026-10";   // versão do jogo e da Política de Privacidade (mudar a política exige novo aceite)
 const PERSIST_CLOUD = SPBNet.mode === "supabase";   // com servidor configurado, o progresso fica na nuvem (e não no navegador)             // vitórias e derrotas em batalhas concluídas
 let SAVE_LOCK = false;                         // true durante a importação de backup (evita o autosave sobrescrever)
 let PROFILE = null;                            // perfil do jogador: { id, nick, av } (guardado à parte do progresso)
@@ -987,13 +987,15 @@ function layoutUI() {
 }
 addEventListener("resize", layoutUI);
 layoutUI();
+let viewCtlShown = "";
 let READY = false, clockT = 0, pscene = null, onFrame = () => {};
-const dpr0 = Math.min(window.devicePixelRatio || 1, 2);
+const dpr0 = Math.min(window.devicePixelRatio || 1, GFX.quality.dpr);
 new Phaser.Game({
   type: Phaser.WEBGL, parent: "game", backgroundColor: "#1a1d22",
   scale: { mode: Phaser.Scale.NONE, width: Math.round(innerWidth*dpr0), height: Math.round(innerHeight*dpr0) },
-  render: { antialias: true, roundPixels: false },
-  scene: { create() { startGame(this); }, update(time, delta) { if (READY) onFrame(time, delta); } },
+  render: { antialias: !GFX.quality.touch, roundPixels: false },                    // celular: sem MSAA (custa caro e a câmera já usa filtros)
+  fps: { limit: 100 },                                                               // telas de 120 Hz rodam a 60: metade do trabalho da GPU
+  scene: { create() { startGame(this); }, update(time, delta) { if (READY) { onFrame(time, delta); GFX.perf(delta); } } },
 });
 
 function startGame(scn_) {
@@ -2661,7 +2663,7 @@ const endAt = (ms, fn) => endTimers.push(setTimeout(fn, ms));
 const endFx = { cv:null, ctx:null, cv2:null, ctx2:null, parts:[], raf:0, last:0, rockets:0, confetti:0, pal:[], on:false, w:0, h:0, d:1 };
 /* paleta dos fogos: a da campanha (ending.fx[lado]) ou derivada das cores do lado */
 function sidePalette(side) { const sd = SIDES[side]; return [[sd.css, sd.cssAlt], ["#ffd23a", "#fff3b0"], ["#ffffff", "#cfe3ff"], [sd.cssAlt, sd.css]]; }
-function fxResize() { const d = Math.min(window.devicePixelRatio || 1, 2); endFx.d = d; endFx.w = innerWidth; endFx.h = innerHeight; [endFx.cv, endFx.cv2].forEach(c => { c.width = endFx.w*d; c.height = endFx.h*d; }); }
+function fxResize() { const d = Math.min(window.devicePixelRatio || 1, GFX.quality.dpr); endFx.d = d; endFx.w = innerWidth; endFx.h = innerHeight; [endFx.cv, endFx.cv2].forEach(c => { c.width = endFx.w*d; c.height = endFx.h*d; }); }
 function fxBoom(big) {
   tone(70 + Math.random()*40, .55, "sawtooth", big ? .06 : .045, -40);
   for (let i = 0; i < 3; i++) tone(1400 + Math.random()*1800, .05, "square", .014, 0, .08 + i*.07 + Math.random()*.05);
@@ -4147,7 +4149,7 @@ onFrame = function(time, delta) {
   { const lp = GFX.boardLowPoint(1); hintAttack.at(lp.x, -.9+bob, lp.z); }
   hintPlace.visible = !isMobile() && G.phase==="place" && G.fleets[0].length < FLEET.length;
   { const lp = GFX.boardLowPoint(0); hintPlace.at(lp.x, -.9+bob, lp.z); }
-  $("viewCtl").style.display = G.phase==="menu" ? "none" : "flex";
+  { const vc = G.phase==="menu" ? "none" : "flex"; if (vc !== viewCtlShown) { viewCtlShown = vc; $("viewCtl").style.display = vc; } }
 
   // câmera: visão geral, ou (celular) só a arena do turno atual
   GFX.setFocus(isMobile() && (G.phase==="battle" || G.phase==="place") ? (G.phase==="place" ? 0 : (G.turn===0 ? 1 : 0)) : -1);

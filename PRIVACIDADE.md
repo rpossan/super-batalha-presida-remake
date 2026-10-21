@@ -49,7 +49,7 @@ No jogo, em **Perfil → Backup e transferência**:
 Para qualquer outro pedido, use o contato do item 1.
 
 ## 7. O que fica no seu navegador
-A sessão anônima do Supabase (identifica a sua conta), a época dos dados, o idioma e, temporariamente, uma pendência de salvamento. Limpar os dados do site apaga a sessão: você passa a ser um jogador novo (use o backup para levar o progresso).
+A sessão anônima do Supabase (identifica a sua conta), a época dos dados, o idioma e, temporariamente, uma pendência de salvamento. Só enquanto a aba está aberta, guarda também o nível de qualidade gráfica escolhido automaticamente para o seu aparelho. Limpar os dados do site apaga a sessão: você passa a ser um jogador novo (use o backup para levar o progresso).
 
 ## 8. Segurança
 O acesso ao banco é restrito por regras de segurança (RLS): ninguém altera as tabelas diretamente, os dados técnicos de acesso e o sal do hash não são legíveis pela internet, e as funções validam o que recebem. Nenhum sistema é 100% seguro; se houver incidente relevante, os afetados serão avisados.

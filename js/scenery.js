@@ -530,7 +530,7 @@ const Scenery = (() => {
         GFX.tex("glow", () => Art.glow());
         const im = GFX.img("glow").setBlendMode(1).setTint(color).setAlpha(alpha).setDepth(GFX.D_HINT - 10); env.objs.push(im);
         const pin = GFX.pinToScreen(im, fx, fy, 1);
-        env.ticks.push(() => { pin(); const z = GFX.view.zoom*GFX.view.dpr; im.setScale(size*4*GFX.view.dpr/z/Art.Q*Math.max(1, GFX.view.H/720)); });
+        env.ticks.push(() => { const on = GFX.quality.glow; im.setVisible(on); if (!on) return; pin(); const z = GFX.view.zoom*GFX.view.dpr; im.setScale(size*4*GFX.view.dpr/z/Art.Q*Math.max(1, GFX.view.H/720)); });
       },
       mist(color, a) {
         const r = GFX.scene.add.rectangle(0, 0, 40000, 40000, color, a).setDepth(GFX.D_HINT - 20); env.objs.push(r);
@@ -566,7 +566,7 @@ const Scenery = (() => {
         for (let i = 0; i < 4; i++) {
           const x0 = rnd(.05, .95), im = GFX.scene.add.graphics().setDepth(GFX.D_HINT - 15).setBlendMode(1).setScrollFactor(0); env.objs.push(im);
           const ph = rnd(0, 6), wd = rnd(.03, .07);
-          env.ticks.push(t => { const v = GFX.view, d = v.dpr, W = v.W*d, H = v.H*d, z = v.zoom*d, w2 = GFX.cam.width/2, h2 = GFX.cam.height/2, T = (px, py) => [w2 + (px - w2)/z, h2 + (py - h2)/z];
+          env.ticks.push(t => { if (!GFX.quality.fx) { if (im.visible) { im.clear(); im.setVisible(false); } return; } im.setVisible(true); const v = GFX.view, d = v.dpr, W = v.W*d, H = v.H*d, z = v.zoom*d, w2 = GFX.cam.width/2, h2 = GFX.cam.height/2, T = (px, py) => [w2 + (px - w2)/z, h2 + (py - h2)/z];
             im.clear(); im.fillStyle(0xfff2b8, .03 + .02*Math.sin(t*.4 + ph));
             const p0 = T(W*x0, 0), p1 = T(W*(x0 + wd), 0), p2 = T(W*(x0 + wd - .28), H), p3 = T(W*(x0 - .28), H); im.beginPath(); im.moveTo(...p0); im.lineTo(...p1); im.lineTo(...p2); im.lineTo(...p3); im.closePath(); im.fillPath(); });
         }

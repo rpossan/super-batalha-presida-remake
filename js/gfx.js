@@ -635,6 +635,33 @@ const GFX = (() => {
   /* ================================================================
      Picking e câmera
      ================================================================ */
+  /* ---------- qualidade (desempenho) ----------
+     Começa conforme o aparelho (celular = resolução menor, sem vinheta e sem luzes extras) e, se a média de
+     quadros ficar lenta, desce sozinha para o próximo nível. O nível fica na aba (sessionStorage) até fechar. */
+  const touchDev = (() => { try { return matchMedia("(pointer:coarse)").matches || /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent); } catch (e) { return false; } })();
+  const TIERS = touchDev
+    ? [{ dpr:1.5, vignette:false, fx:false, glow:true },  { dpr:1.25, vignette:false, fx:false, glow:false }, { dpr:1, vignette:false, fx:false, glow:false }]
+    : [{ dpr:2,   vignette:true,  fx:true,  glow:true },  { dpr:1.5,  vignette:false, fx:false, glow:true }, { dpr:1, vignette:false, fx:false, glow:false }];
+  const quality = { tier:0, touch:touchDev, ...TIERS[0] };
+  try { const s = +sessionStorage.getItem("spb_q"); if (s >= 1 && s < TIERS.length) Object.assign(quality, { tier:s }, TIERS[s]); } catch (e) { /* sem sessionStorage */ }
+  let vigFilter = null;
+  function applyQuality() {
+    try { if (vigFilter) vigFilter.active = quality.vignette; } catch (e) { /* filtros indisponíveis */ }
+    if (ready && view.inited) resize();
+  }
+  const perfWin = []; let perfSettle = 150;                        // ignora os primeiros quadros (carregamento de texturas)
+  function perf(delta) {
+    if (perfSettle > 0) { perfSettle--; return; }
+    if (delta > 400 || document.hidden) return;                    // pausas e troca de aba não contam
+    perfWin.push(delta); if (perfWin.length < 60) return;
+    perfWin.sort((a, b) => a - b); const med = perfWin[30]; perfWin.length = 0;
+    if (med > 34 && quality.tier < TIERS.length - 1) {              // mediana acima de 34 ms (menos de ~30 quadros/s): desce um nível
+      const t = quality.tier + 1; Object.assign(quality, { tier:t }, TIERS[t]); perfSettle = 150;
+      try { sessionStorage.setItem("spb_q", String(t)); } catch (e) {}
+      applyQuality();
+    }
+  }
+
   const view = { W:0, H:0, dpr:1, cx:0, cy:0, zoom:1, goalCx:0, goalCy:0, goalZoom:1, focus:-1, inited:false, uz:1, panX:0, panY:0 };
   function screenToWorld(px, py) {                     // px, py em px CSS
     const d = view.dpr, z = view.zoom*d;
@@ -705,7 +732,7 @@ const GFX = (() => {
     return best;
   }
   function resize() {
-    view.W = window.innerWidth; view.H = window.innerHeight; view.dpr = Math.min(window.devicePixelRatio || 1, 2);
+    view.W = window.innerWidth; view.H = window.innerHeight; view.dpr = Math.min(window.devicePixelRatio || 1, quality.dpr);
     game.scale.resize(Math.round(view.W*view.dpr), Math.round(view.H*view.dpr));
     game.canvas.style.width = view.W + "px"; game.canvas.style.height = view.H + "px";
     cam.setSize(game.scale.width, game.scale.height);
@@ -755,11 +782,11 @@ const GFX = (() => {
     initBoards();
     resize();
     window.addEventListener("resize", resize);
-    try { cam.filters.external.addVignette(.5, .5, .95, .26); } catch (e) { /* filtros indisponíveis: segue sem vinheta */ }
+    try { vigFilter = cam.filters.external.addVignette(.5, .5, .95, .26); vigFilter.active = quality.vignette; } catch (e) { /* filtros indisponíveis: segue sem vinheta */ }
   }
 
   return {
-    init, frame, pinToScreen, grade, puff, smoke, zoomBy, panBy, resetView, setYaw, boardLowPoint, rot, get yaw() { return yaw; }, runFx, addFx, resize, setFocus, shake, pick, P, unproj, depthOf, tex, img, flagKey, texInfo,
+    init, frame, perf, quality, pinToScreen, grade, puff, smoke, zoomBy, panBy, resetView, setYaw, boardLowPoint, rot, get yaw() { return yaw; }, runFx, addFx, resize, setFocus, shake, pick, P, unproj, depthOf, tex, img, flagKey, texInfo,
     get scene() { return scene; }, get cam() { return cam; }, get view() { return view; }, get cfg() { return cfg; },
     Node, nodes, drop, fixed, markers, tileCenter,
     makeFan, makePerson, makeThief, updateFan, makeUnit, makeBossFan, makeCaptain, updateFan, updateCaptain, captainThrow, chantBoost,
