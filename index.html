@@ -262,6 +262,21 @@
   #onSearch { padding:18px 0 6px; } #onSearch .spin { width:44px; height:44px; margin:0 auto 12px; border:5px solid #fff3; border-top-color:#7fd0ff; border-radius:50%; animation:onspin .9s linear infinite; } @keyframes onspin { to { transform:rotate(360deg); } }
   #onSearchText { margin-bottom:12px; font-weight:700; } #onMsg { min-height:18px; margin-top:8px; font-size:13px; font-weight:700; } #onStats { font-size:12px; opacity:.75; margin-top:8px; } #onlineModal .note { font-size:11.5px; opacity:.65; margin-top:8px; line-height:1.4; }
   #inviteModal .box { text-align:center; } #invAvatar svg { width:76px; height:76px; } #invText { margin:8px 0 14px; font-size:16px; line-height:1.4; } #inviteModal .row { display:flex; gap:10px; justify-content:center; }
+  #rankModal { position:fixed; inset:0; z-index:34; display:flex; align-items:center; justify-content:center; padding:12px; background:rgba(3,6,10,.88); backdrop-filter:blur(4px); }
+  #rankModal .box { background:linear-gradient(#1c2638,#111823); border:2px solid #ffd23a; border-radius:18px; padding:16px; width:min(520px,100%); max-height:100%; display:flex; flex-direction:column; box-shadow:0 12px 40px #000a; position:relative; }
+  #rankModal h2 { margin:0 0 8px; font-size:22px; text-align:center; } #rankModal .close { position:absolute; top:8px; right:10px; background:none; border:0; color:#fff; font-size:22px; cursor:pointer; opacity:.8; }
+  #rankModal .tabs { display:flex; gap:8px; margin-bottom:8px; } #rankModal .tabs .btn { flex:1; } #rankModal .tabs .btn.on { background:#3a3510; border-color:var(--amarelo); }
+  #rkInfo { font-size:12px; opacity:.75; text-align:center; margin-bottom:6px; line-height:1.4; }
+  #rkList { overflow:auto; flex:1; min-height:120px; display:flex; flex-direction:column; gap:5px; padding-right:2px; }
+  .rkrow { display:flex; align-items:center; gap:10px; padding:6px 10px; border-radius:12px; background:#0f1622; border:2px solid #fff1; }
+  .rkrow.me { border-color:#7fd0ff; background:#10233a; }
+  .rkrow .pos { width:42px; text-align:center; font:900 17px Impact,"Arial Black",sans-serif; opacity:.85; } .rkrow .pos.medal { font-size:27px; }
+  .rkrow.gold { border-color:#ffd23a; background:linear-gradient(90deg,#4a3a08,#0f1622 70%); box-shadow:0 0 14px #ffd23a44; }
+  .rkrow.silver { border-color:#d3dae6; background:linear-gradient(90deg,#3a4150,#0f1622 70%); box-shadow:0 0 12px #d3dae633; }
+  .rkrow.bronze { border-color:#d98a4a; background:linear-gradient(90deg,#43260f,#0f1622 70%); box-shadow:0 0 12px #d98a4a33; }
+  .rkrow svg { width:36px; height:36px; display:block; flex:none; } .rkrow .who { flex:1; min-width:0; } .rkrow .who b { display:block; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .rkrow .who small { font-size:11px; opacity:.7; }
+  .rkrow .score { font:900 19px Impact,"Arial Black",sans-serif; color:var(--amarelo); font-variant-numeric:tabular-nums; text-align:right; } .rkrow .score small { display:block; font:600 10px system-ui,sans-serif; color:#fff; opacity:.6; }
+  #rkMe { margin-top:8px; } #rkMsg { text-align:center; padding:26px 10px; opacity:.8; font-size:14px; line-height:1.5; }
   body.online #items, body.online #itemsToggle, body.online #votes, body.online #statRow, body.online #combo { display:none !important; }
   #profileChip { position:absolute; top:10px; right:12px; z-index:3; display:flex; align-items:center; gap:8px; padding:5px 12px 5px 6px; border-radius:999px; border:2px solid #fff3; background:rgba(14,18,26,.82); color:#fff; cursor:pointer; text-align:left; transition:.15s; }
   #profileChip:hover { border-color:var(--amarelo); } #profileChip svg { width:36px; height:36px; display:block; }
@@ -561,7 +576,7 @@
     <div class="step" id="levelsTitle">2 · Escolha a fase</div>
     <div id="levelGrid"></div>
   </div>
-  <div class="shoprow"><button class="btn" id="menuShop">🛒 Loja</button><button class="btn" id="menuSkills">⭐ Skills</button></div>
+  <div class="shoprow"><button class="btn" id="menuShop">🛒 Loja</button><button class="btn" id="menuSkills">⭐ Skills</button><button class="btn" id="menuRank">🏆 Ranking</button></div>
   <button class="coffee-btn" id="menuCoffee">☕ Me pague um café</button>
   <button class="btn" id="resetSaveBtn" style="margin-top:6px;font-size:12px;opacity:.8">🗑 Apagar progresso salvo</button>
   <button class="btn" id="devBtn" style="margin-top:6px;font-size:12px;opacity:.85"></button>
@@ -666,6 +681,18 @@
       <button class="btn" id="pExit">⌂ Sair para o menu principal</button>
     </div>
     <p class="small">Reiniciar ou sair desfaz os votos e itens gastos nesta fase.</p>
+  </div>
+</div>
+
+<div id="rankModal" class="hidden" role="dialog" aria-modal="true" aria-label="Ranking">
+  <div class="box">
+    <button class="close" id="rankClose" aria-label="Fechar">✕</button>
+    <h2>🏆 Ranking</h2>
+    <div class="tabs"><button class="btn on" id="rkTabCamp">📖 Campanha</button><button class="btn" id="rkTabOn">🌐 Online</button></div>
+    <div id="rkInfo"></div>
+    <div id="rkList"></div>
+    <div id="rkMe"></div>
+    <div style="text-align:center;margin-top:8px"><button class="btn" id="rkRefresh">↻ Atualizar</button></div>
   </div>
 </div>
 
@@ -1973,6 +2000,7 @@ function finish(winner, reason) {
     captainReact(winner,"jump");
   }
   const rounds = `${G.round} rodada${G.round>1?"s":""}`;
+  if (youWin) setTimeout(cloudSubmit, 3500);                                       // manda o progresso ao ranking
   const side = G.side[0], last = LEVELS.length-1, bossIdx = LEVELS.findIndex(l => l.boss);
   let title, text, btn;
   if (youWin) {
@@ -3285,6 +3313,7 @@ function submitProfile() {
   PROFILE = { id:PROFILE ? PROFILE.id : (profDraft.id || genId()), nick:r.nick, av:cleanAv(profDraft.av) };
   saveProfile(); profMandatory = false; $("profileModal").classList.add("hidden");
   renderProfileChip(); ui(); try { Sfx.coin(true); } catch (e) {}
+  cloudProfile(true).catch(() => {});
 }
 $("pOpts").addEventListener("click", e => {
   const b = e.target.closest("button"); if (!b) return;
@@ -3605,7 +3634,7 @@ function finishOnline(winner, reason) {
     }
     if (reason === "cheat") youWin = true;
     if (youWin) STATS.owins++; else STATS.olosses++;
-    saveGame();
+    saveGame(); cloudReport(O, youWin, reason, verdict);
     const rounds = `${G.round} rodada${G.round > 1 ? "s" : ""}`, opp = esc(O.opp.nick);
     const why = { resign:`${opp} desistiu.`, disconnect:`${opp} saiu da partida.`, idle:`${opp} ficou parado por muito tempo.`, cheat:`${opp} enviou jogadas inválidas.` }[reason] || "";
     const ver = verdict === "ok" ? "✅ Tabuleiros conferidos: partida limpa." : verdict === "cheat" ? "🚫 O tabuleiro do adversário não bate com as respostas dele: ele trapaceou, a vitória é sua." : verdict === "missing" ? "⚠️ O adversário não revelou o tabuleiro, então a partida não pôde ser conferida." : "";
@@ -3740,6 +3769,7 @@ function openOnline() {
   if (!PROFILE) { openProfile(true); return; }
   actx && actx.state === "suspended" && actx.resume();
   setOnlineMsg(""); showOnlineActions(); renderOnline(); $("onlineModal").classList.remove("hidden"); listenInvites();
+  cloudProfile().then(async sb => { if (!sb) return; const r = await sb.from("ranking_online").select("rank,rating").eq("id", Cloud.uid).maybeSingle(); if (r.data) $("onStats").textContent += ` · Rating ${r.data.rating} (#${r.data.rank})`; }).catch(() => {});
 }
 function closeOnline() {
   if (ON.search) stopSearch(true);
@@ -3756,6 +3786,84 @@ $("onCancel").onclick = () => { const S = ON.search; if (S && S.kind === "friend
 $("onCopyId").onclick = () => { copyText(PROFILE.id.toUpperCase(), ""); setOnlineMsg("ID copiado! Passe para o seu amigo."); };
 $("invAccept").onclick = acceptInvite; $("invDecline").onclick = declineInvite;
 document.querySelectorAll("[data-oside]").forEach(b => b.onclick = () => { ON.side = b.dataset.oside; renderOnline(); });
+
+/* ================================================================
+   Nuvem (Supabase): perfil, progresso, resultados do online e ranking
+   (tudo opcional: sem servidor configurado, o jogo funciona normalmente)
+   ================================================================ */
+const Cloud = { uid:null, synced:"", last:0 };
+async function cloudClient() {
+  if (SPBNet.mode !== "supabase") return null;
+  const sb = await SPBNet.client(); if (!sb) return null;
+  if (!Cloud.uid) {
+    const { data } = await sb.auth.getSession(); let u = data && data.session && data.session.user;
+    if (!u) { const r = await sb.auth.signInAnonymously(); if (r.error) throw r.error; u = r.data.user; }
+    Cloud.uid = u.id;
+  }
+  return sb;
+}
+async function cloudProfile(force) {
+  if (!PROFILE) return null; const sb = await cloudClient(); if (!sb) return null;
+  const key = PROFILE.id + "|" + PROFILE.nick + "|" + JSON.stringify(PROFILE.av); if (!force && Cloud.synced === key) return sb;
+  const call = () => sb.rpc("upsert_profile", { p_nick:PROFILE.nick, p_avatar:PROFILE.av, p_code:PROFILE.id.slice(0, 4).toUpperCase(), p_friend:PROFILE.id });
+  let r = await call();
+  if (r.error && /friend_id_taken/.test(r.error.message)) { PROFILE.id = genId(); saveProfile(); renderProfileChip(); r = await call(); }   // ID já usado por outro aparelho: gera um novo
+  if (r.error) throw r.error;
+  Cloud.synced = PROFILE.id + "|" + PROFILE.nick + "|" + JSON.stringify(PROFILE.av); return sb;
+}
+async function cloudSubmit() {
+  try {
+    const sb = await cloudProfile(); if (!sb || Date.now() - Cloud.last < 20000) return; Cloud.last = Date.now();
+    const best = sd => { const v = parseFloat(storage.get("spb_best_time_" + sd)); return v > 0 ? v : null; };
+    const { error } = await sb.rpc("submit_progress", { p_votes:Math.floor(G.votes), p_wins:STATS.wins, p_losses:STATS.losses, p_best_flavio:best("flavio"), p_best_lula:best("lula"), p_save:JSON.parse(JSON.stringify(snapshotForSave())) });
+    if (error) console.warn("submit_progress:", error.message);
+  } catch (e) { console.warn("nuvem:", e.message || e); }
+}
+async function cloudReport(O, youWin, reason, verdict) {
+  if (O.isBot || !O.opp) return;
+  try {
+    const sb = await cloudProfile(); if (!sb) return;
+    const v = reason === "cheat" ? "cheat" : verdict;
+    const { data, error } = await sb.rpc("report_online_match", { p_match:O.mid, p_opponent:O.opp.id, p_won:!!youWin, p_reason:reason, p_rounds:Math.min(500, G.round), p_verdict:["ok", "cheat", "missing", "skipped"].includes(v) ? v : "skipped" });
+    if (error) console.warn("report_online_match:", error.message); else O.reportStatus = data;
+  } catch (e) { console.warn("nuvem:", e.message || e); }
+}
+/* ---- tela de ranking ---- */
+let rankTab = "camp";
+const RANK_MEDALS = ["", "🥇", "🥈", "🥉"], RANK_CLASS = ["", "gold", "silver", "bronze"];
+function rankRow(r, mine, online) {
+  const pos = Number(r.rank), medal = pos >= 1 && pos <= 3;
+  const av = faceSVG(avToChar(cleanAv(r.avatar)), 36, false);
+  const score = online ? `${Number(r.rating)}<small>${Number(r.wins)}V · ${Number(r.losses)}D</small>` : `${fmtVotes(Number(r.votes))}<small>votos · nv ${Number(r.level)}</small>`;
+  return `<div class="rkrow ${medal ? RANK_CLASS[pos] : ""} ${mine ? "me" : ""}"><div class="pos ${medal ? "medal" : ""}">${medal ? RANK_MEDALS[pos] : "#" + pos}</div>${av}<div class="who"><b>${esc(r.nick)}${mine ? " (você)" : ""}</b><small>#${esc(r.code)}</small></div><div class="score">${score}</div></div>`;
+}
+async function loadRanking() {
+  const list = $("rkList"), info = $("rkInfo"), me = $("rkMe"); me.innerHTML = "";
+  $("rkTabCamp").classList.toggle("on", rankTab === "camp"); $("rkTabOn").classList.toggle("on", rankTab === "online");
+  info.textContent = rankTab === "camp" ? "Quem tem mais votos (experiência) na campanha." : "Rating dos duelos online contra outros jogadores (começa em 1000). Partidas contra jogadores simulados não contam.";
+  if (SPBNet.mode !== "supabase") { list.innerHTML = `<div id="rkMsg">O ranking precisa do servidor online (Supabase), que ainda não foi configurado neste jogo.</div>`; return; }
+  list.innerHTML = `<div id="rkMsg">Carregando…</div>`;
+  try {
+    const sb = await cloudClient(); await cloudSubmit();
+    const online = rankTab === "online", view = online ? "ranking_online" : "ranking", cols = online ? "rank,id,code,nick,avatar,rating,wins,losses,games" : "rank,id,code,nick,avatar,votes,level";
+    const top = await sb.from(view).select(cols).order("rank", { ascending:true }).limit(50);
+    if (top.error) throw top.error;
+    const rows = top.data || [];
+    list.innerHTML = rows.length ? rows.map(r => rankRow(r, r.id === Cloud.uid, online)).join("") : `<div id="rkMsg">${online ? "Ninguém pontuou ainda. Jogue um duelo online contra outra pessoa para entrar no ranking!" : "Ninguém no ranking ainda. Seja o primeiro!"}</div>`;
+    if (!rows.some(r => r.id === Cloud.uid)) {
+      const mine = await sb.from(view).select(cols).eq("id", Cloud.uid).maybeSingle();
+      if (mine.data) me.innerHTML = `<div style="font-size:11px;opacity:.7;margin:2px 0 4px;text-align:center">Sua posição</div>` + rankRow(mine.data, true, online);
+      else me.innerHTML = `<div style="font-size:12px;opacity:.7;text-align:center">${online ? "Você ainda não tem partidas valendo rating." : "Seu progresso será enviado após a próxima fase."}</div>`;
+    }
+  } catch (e) { console.warn("ranking:", e); list.innerHTML = `<div id="rkMsg">Não foi possível carregar o ranking agora. Tente de novo em instantes.</div>`; }
+}
+function openRanking(tab) { rankTab = tab || rankTab; $("rankModal").classList.remove("hidden"); loadRanking(); }
+$("menuRank").onclick = () => openRanking();
+$("rankClose").onclick = () => $("rankModal").classList.add("hidden");
+$("rkTabCamp").onclick = () => { rankTab = "camp"; loadRanking(); };
+$("rkTabOn").onclick = () => { rankTab = "online"; loadRanking(); };
+$("rkRefresh").onclick = () => { Cloud.last = 0; loadRanking(); };
+addEventListener("keydown", e => { if (e.key === "Escape" && !$("rankModal").classList.contains("hidden")) $("rankModal").classList.add("hidden"); });
 
 const hadSave = loadGame();
 if (DEV_MODE) { MONEY = Math.max(MONEY, 99999); SKILL_POINTS = Math.max(SKILL_POINTS, 99); }

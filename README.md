@@ -251,11 +251,24 @@ O botão **JOGAR ONLINE** fica logo na tela inicial. É um **duelo 1×1** com as
 - **Rede:** usa o **Supabase Realtime**. Sem configuração (arquivo `js/online-config.js` vazio) o jogo ainda oferece partidas contra jogadores simulados.
 - **Tempo:** 45 s por jogada (se estourar, o jogo atira por você). Desistir fica no botão ⏸. Se o adversário sumir por mais de 90 s, você vence.
 
-### Configurar o servidor online
-1. Crie um projeto no [Supabase](https://supabase.com) (o Realtime já vem ligado; para o modo online não é preciso criar tabelas).
-2. Em *Project Settings → API*, copie a **Project URL** e a chave pública **anon**.
-3. Cole as duas em [`js/online-config.js`](js/online-config.js). Nunca use a chave `service_role`.
-4. Para testar com duas abas sem servidor: abra o jogo com `?net=local` nas duas.
+### Ranking (campanha e online)
+O botão **🏆 Ranking** da tela inicial tem duas abas, com 🥇🥈🥉 para os três primeiros e a sua posição fixada embaixo:
+
+<p align="center"><img src="docs/img/ranking.png" alt="Ranking da campanha e do online (dados de exemplo)" width="760"><br><sub>Imagem com dados de exemplo.</sub></p>
+
+- **Campanha:** ordenado por **votos** (experiência). O progresso é enviado ao fim de cada fase vencida.
+- **Online:** ordenado por **rating** (tipo ELO, começa em 1000, K = 32). Só conta duelo contra **outra pessoa**: partida contra jogador simulado não vale.
+- **Como o rating é validado:** ao fim do duelo cada lado reporta o resultado ao servidor, que só aplica os pontos se os dois relatos batem. Resultados conflitantes viram "disputada" (ninguém pontua, e a acusação de trapaça fica registrada para revisão). Quem desiste admitindo a derrota pontua o outro lado mesmo se este não reportar; vitória sem confirmação não vale. Desistir logo no começo e treinar com a mesma pessoa mais de 5 vezes em 24 h não rendem pontos.
+- **Limite:** como o jogo roda no navegador, quem combinar resultados com um amigo ainda consegue inflar o rating. Para um ranking à prova de trapaça seria preciso validar as jogadas num servidor.
+
+### Configurar o servidor (Supabase)
+1. Crie um projeto no [Supabase](https://supabase.com). O duelo em si só usa o **Realtime** (já vem ligado) e não precisa de tabelas.
+2. Para **ranking e save na nuvem**: em *Authentication → Sign In / Providers*, ligue **Anonymous Sign-Ins**; depois, no *SQL Editor*, cole e rode [`supabase/schema.sql`](supabase/schema.sql) (pode rodar de novo sem problema).
+3. Em *Project Settings → API*, copie a **Project URL** e a chave pública **anon** e cole em [`js/online-config.js`](js/online-config.js). Nunca use a chave `service_role` nem a senha do banco.
+4. Opcional: *Authentication → Attack Protection → CAPTCHA*, para evitar contas anônimas em massa.
+5. Para testar o duelo com duas abas sem servidor: abra o jogo com `?net=local` nas duas.
+
+O jogador é identificado por um login **anônimo** do navegador. Limpar os dados do site cria um novo jogador; o ID do perfil e o backup continuam servindo, e o ranking ligado à conta antiga fica para trás.
 
 ---
 

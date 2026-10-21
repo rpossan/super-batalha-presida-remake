@@ -104,5 +104,7 @@ const SPBNet = (() => {
       return Promise.reject(new Error("Modo online indisponível."));
     },
     loopbackPair,
+    /* cliente do Supabase (login anônimo, funções e consultas) ou null fora do modo supabase */
+    client() { return mode === "supabase" ? loadSupabase() : Promise.resolve(null); },
   };
 })();
