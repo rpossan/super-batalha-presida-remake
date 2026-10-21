@@ -10,6 +10,7 @@
 --   * o ranking é público (só leitura); o save é privado (só o dono lê).
 
 create extension if not exists unaccent with schema extensions;
+create extension if not exists pgcrypto with schema extensions;
 
 -- ---------------------------------------------------------------- tabelas
 create table if not exists public.players (
@@ -24,10 +25,14 @@ create table if not exists public.players (
   losses           int         not null default 0 check (losses >= 0),
   best_times       jsonb       not null default '{}'::jsonb,                        -- melhor tempo (segundos) por campanha e lado: {"br2026/flavio": 4277.5}
   banned           boolean     not null default false,
+  consent_at       timestamptz,                                                     -- aceite da Política de Privacidade
+  consent_version  text,
   created_at       timestamptz not null default now(),
   updated_at       timestamptz not null default now()
 );
 alter table public.players add column if not exists best_times jsonb not null default '{}'::jsonb;
+alter table public.players add column if not exists consent_at timestamptz;
+alter table public.players add column if not exists consent_version text;
 alter table public.players add column if not exists friend_id text unique check (friend_id ~ '^[0-9a-f]{8}$');   -- (para quem já tinha rodado a versão anterior)
 create index if not exists players_votes_idx on public.players (votes desc, updated_at asc) where not banned;
 
@@ -65,6 +70,26 @@ create index if not exists online_matches_open_idx on public.online_matches (cre
 create index if not exists online_matches_pair_idx on public.online_matches (a_id, b_id, settled_at);
 create index if not exists online_ratings_rank_idx on public.online_ratings (rating desc, wins desc);
 
+-- dados técnicos de acesso (privados: nenhuma policy, só as funções escrevem e só o dono do projeto lê pelo painel)
+create table if not exists public.player_sessions (
+  id          bigint generated always as identity primary key,
+  player_id   uuid not null references public.players (id) on delete cascade,
+  created_at  timestamptz not null default now(),
+  country     text,                          -- país (2 letras), vindo do cabeçalho da hospedagem
+  ip_hash     text,                          -- IP "picotado": hash com sal que muda todo dia (não dá para voltar ao IP)
+  device      text,                          -- mobile | tablet | desktop | other
+  os          text, os_ver text,
+  browser     text, browser_ver text,
+  screen      text, dpr numeric,
+  lang        text, tz text,
+  touch       boolean, cores int, memory numeric,
+  campaign    text, app_version text
+);
+create index if not exists player_sessions_player_idx on public.player_sessions (player_id, created_at desc);
+create index if not exists player_sessions_date_idx on public.player_sessions (created_at);
+create table if not exists public.app_secrets (key text primary key, value text not null);          -- sal do hash do IP (nunca exposto)
+insert into public.app_secrets (key, value) values ('ip_salt', encode(extensions.gen_random_bytes(16), 'hex')) on conflict do nothing;
+
 create table if not exists public.blocked_words (word text primary key);            -- palavras proibidas em nicks (sem acento, minúsculas)
 insert into public.blocked_words (word) values
   ('caralho'), ('buceta'), ('arrombad'), ('porra'), ('merda'), ('foder'), ('fodase'), ('viado'),
@@ -76,6 +101,8 @@ alter table public.players       enable row level security;
 alter table public.saves         enable row level security;
 alter table public.online_ratings enable row level security;
 alter table public.online_matches enable row level security;                          -- sem policy: só as funções acessam
+alter table public.player_sessions enable row level security;                        -- sem policy: ninguém lê pela API
+alter table public.app_secrets enable row level security;
 alter table public.blocked_words enable row level security;                           -- sem policy: ninguém lê pela API
 
 drop policy if exists "ranking publico" on public.players;
@@ -94,7 +121,7 @@ revoke select on public.players from anon, authenticated;
 grant select (id, code, nick, avatar, votes, level, wins, losses, best_times, created_at, updated_at) on public.players to anon, authenticated;
 revoke all on public.online_matches from anon, authenticated;
 revoke all on public.saves from anon;
-revoke all on public.blocked_words from anon, authenticated;
+revoke all on public.blocked_words, public.player_sessions, public.app_secrets from anon, authenticated;
 
 -- ---------------------------------------------------------------- funções
 create or replace function public.nick_ok(p text) returns boolean
@@ -106,8 +133,9 @@ language sql stable set search_path = public, extensions as $$
 $$;
 
 -- cria ou atualiza o perfil do jogador logado
-drop function if exists public.upsert_profile(text, jsonb, text);                    -- assinatura antiga (sem friend_id)
-create or replace function public.upsert_profile(p_nick text, p_avatar jsonb, p_code text, p_friend text)
+drop function if exists public.upsert_profile(text, jsonb, text);                    -- assinaturas antigas
+drop function if exists public.upsert_profile(text, jsonb, text, text);
+create or replace function public.upsert_profile(p_nick text, p_avatar jsonb, p_code text, p_friend text, p_consent text default null)
 returns void language plpgsql security definer set search_path = public as $$
 declare uid uuid := auth.uid();
 begin
@@ -117,8 +145,12 @@ begin
   if p_friend !~ '^[0-9a-f]{8}$' then raise exception 'id inválido'; end if;
   if jsonb_typeof(p_avatar) is distinct from 'object' or pg_column_size(p_avatar) > 600 then raise exception 'avatar inválido'; end if;
   if exists (select 1 from public.players where friend_id = p_friend and id <> uid) then raise exception 'friend_id_taken'; end if;
-  insert into public.players (id, code, nick, avatar, friend_id) values (uid, p_code, p_nick, p_avatar, p_friend)
-  on conflict (id) do update set nick = excluded.nick, avatar = excluded.avatar, code = excluded.code, friend_id = excluded.friend_id
+  if p_consent is not null and p_consent !~ '^[0-9a-z.-]{3,20}$' then raise exception 'consentimento inválido'; end if;
+  if p_consent is null and not exists (select 1 from public.players where id = uid) then raise exception 'consentimento necessário'; end if;           -- conta nova exige o aceite da política
+  insert into public.players (id, code, nick, avatar, friend_id, consent_at, consent_version) values (uid, p_code, p_nick, p_avatar, p_friend, now(), p_consent)
+  on conflict (id) do update set nick = excluded.nick, avatar = excluded.avatar, code = excluded.code, friend_id = excluded.friend_id,
+    consent_at = case when p_consent is not null and public.players.consent_version is distinct from p_consent then now() else public.players.consent_at end,
+    consent_version = coalesce(p_consent, public.players.consent_version)
   where not public.players.banned;
 end $$;
 
@@ -185,7 +217,7 @@ end $$;
 -- devolve o perfil do próprio jogador (inclui o friend_id, que não é público) ou null se ainda não existe
 create or replace function public.get_my_profile() returns jsonb
 language sql stable security definer set search_path = public as $$
-  select jsonb_build_object('nick', nick, 'avatar', avatar, 'friend_id', friend_id, 'code', code)
+  select jsonb_build_object('nick', nick, 'avatar', avatar, 'friend_id', friend_id, 'code', code, 'consent_version', consent_version)
   from public.players where id = auth.uid() and not banned;
 $$;
 
@@ -270,18 +302,71 @@ begin
   return 'disputada';
 end $$;
 
+-- registra o acesso (dados técnicos mínimos). IP e país vêm dos cabeçalhos da hospedagem; o IP só é guardado como hash diário.
+-- Só registra quem já aceitou a política, no máximo 1 vez a cada 30 min, e apaga registros com mais de 90 dias.
+drop function if exists public.log_session(jsonb);
+create or replace function public.log_session(p_info jsonb) returns text
+language plpgsql security definer set search_path = public, extensions as $$
+declare
+  uid uuid := auth.uid(); h jsonb; ip text; salt text; cty text; i jsonb := coalesce(p_info, '{}'::jsonb);
+  v_device text; v_screen text; v_dpr numeric; v_cores int; v_mem numeric;
+begin
+  if uid is null then raise exception 'não autenticado'; end if;
+  if not exists (select 1 from public.players where id = uid and consent_at is not null and not banned) then return 'sem aceite'; end if;
+  if random() < .05 then delete from public.player_sessions where created_at < now() - interval '90 days'; end if;      -- retenção: 90 dias (limpeza ocasional)
+  if exists (select 1 from public.player_sessions where player_id = uid and created_at > now() - interval '30 minutes') then return 'recente'; end if;
+
+  begin h := coalesce(nullif(current_setting('request.headers', true), '')::jsonb, '{}'::jsonb); exception when others then h := '{}'::jsonb; end;
+  ip := nullif(trim(split_part(coalesce(h ->> 'x-forwarded-for', h ->> 'x-real-ip', ''), ',', 1)), '');
+  cty := upper(nullif(h ->> 'cf-ipcountry', ''));
+  if cty is null or cty !~ '^[A-Z]{2}$' or cty in ('XX', 'T1') then cty := null; end if;
+  select value into salt from public.app_secrets where key = 'ip_salt';
+
+  v_device := i ->> 'device'; if v_device not in ('mobile', 'tablet', 'desktop') then v_device := 'other'; end if;
+  v_screen := i ->> 'screen'; if v_screen !~ '^[0-9]{3,5}x[0-9]{3,5}$' then v_screen := null; end if;
+  v_dpr := case when (i ->> 'dpr') ~ '^[0-9]{1,2}(\.[0-9]{1,2})?$' then (i ->> 'dpr')::numeric end; if v_dpr is not null and (v_dpr < .5 or v_dpr > 6) then v_dpr := null; end if;
+  v_cores := case when (i ->> 'cores') ~ '^[0-9]{1,3}$' then (i ->> 'cores')::int end;
+  v_mem := case when (i ->> 'memory') ~ '^[0-9]{1,3}(\.[0-9]{1,2})?$' then (i ->> 'memory')::numeric end;
+
+  insert into public.player_sessions (player_id, country, ip_hash, device, os, os_ver, browser, browser_ver, screen, dpr, lang, tz, touch, cores, memory, campaign, app_version)
+  values (uid, cty,
+    case when ip is null then null else substr(encode(extensions.digest(ip || ':' || coalesce(salt, '') || ':' || current_date::text, 'sha256'), 'hex'), 1, 16) end,
+    v_device,
+    case when (i ->> 'os') ~ '^[A-Za-z0-9 ._-]{1,24}$' then i ->> 'os' end, case when (i ->> 'os_ver') ~ '^[0-9._]{1,12}$' then i ->> 'os_ver' end,
+    case when (i ->> 'browser') ~ '^[A-Za-z0-9 ._-]{1,24}$' then i ->> 'browser' end, case when (i ->> 'browser_ver') ~ '^[0-9._]{1,12}$' then i ->> 'browser_ver' end,
+    v_screen, v_dpr,
+    case when (i ->> 'lang') ~ '^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})?$' then i ->> 'lang' end,
+    case when (i ->> 'tz') ~ '^[A-Za-z0-9_+/-]{2,40}$' then i ->> 'tz' end,
+    case when (i ->> 'touch') in ('true', 'false') then (i ->> 'touch')::boolean end, v_cores, v_mem,
+    case when (i ->> 'campaign') ~ '^[a-z0-9-]{2,32}$' then i ->> 'campaign' end, case when (i ->> 'app_version') ~ '^[0-9.]{1,12}$' then i ->> 'app_version' end);
+
+  return 'ok';
+end $$;
+
+-- devolve ao jogador tudo o que o servidor tem sobre ele (direito de acesso)
+create or replace function public.export_my_data() returns jsonb
+language sql stable security definer set search_path = public as $$
+  select jsonb_build_object(
+    'perfil', (select to_jsonb(p) - 'banned' from public.players p where p.id = auth.uid()),
+    'save', (select data from public.saves where player_id = auth.uid()),
+    'rating_online', (select to_jsonb(r) from public.online_ratings r where r.player_id = auth.uid()),
+    'acessos', coalesce((select jsonb_agg(to_jsonb(s) - 'id' - 'player_id' order by s.created_at desc) from public.player_sessions s where s.player_id = auth.uid()), '[]'::jsonb));
+$$;
+
 -- apaga o perfil e o save do jogador logado (direito de exclusão)
 create or replace function public.delete_my_data() returns void
 language sql security definer set search_path = public as $$
   delete from public.players where id = auth.uid();
 $$;
 
-revoke all on function public.nick_ok(text), public.upsert_profile(text, jsonb, text, text),
+revoke all on function public.nick_ok(text), public.upsert_profile(text, jsonb, text, text, text),
   public.submit_progress(bigint, int, int, jsonb), public.save_game(jsonb), public.get_my_profile(), public.delete_my_data(),
+  public.log_session(jsonb), public.export_my_data(),
   public._apply_rating(text, uuid, uuid), public._settle_stale(),
   public.report_online_match(text, text, boolean, text, int, text) from public, anon, authenticated;
-grant execute on function public.upsert_profile(text, jsonb, text, text),
+grant execute on function public.upsert_profile(text, jsonb, text, text, text),
   public.submit_progress(bigint, int, int, jsonb), public.save_game(jsonb), public.get_my_profile(), public.delete_my_data(),
+  public.log_session(jsonb), public.export_my_data(),
   public.report_online_match(text, text, boolean, text, int, text) to authenticated;
 
 -- ---------------------------------------------------------------- ranking (leitura pública)

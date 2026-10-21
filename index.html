@@ -231,6 +231,7 @@
   #pNick { width:100%; margin-top:5px; padding:10px 12px; font:800 18px system-ui,sans-serif; color:#fff; background:#0b111a; border:2px solid #fff3; border-radius:10px; outline:none; box-sizing:border-box; }
   #pNick:focus { border-color:var(--amarelo); }
   #pTag { display:block; margin-top:5px; font-size:12px; opacity:.7; } #pErr { min-height:16px; margin-top:3px; font-size:12px; font-weight:700; color:#ff8a7a; }
+  #pConsent { display:block; margin:10px 0 2px; padding:9px 11px; border:1px solid #fff3; border-radius:10px; background:#0b111a; font-size:12px; line-height:1.45; text-transform:none; letter-spacing:0; color:#dfe6f2; font-weight:600; cursor:pointer; } #pConsent input { margin-right:6px; vertical-align:-2px; } #pConsent a { color:#7fd0ff; }
   #pOpts .orow { display:flex; align-items:center; gap:8px; margin:6px 0; } #pOpts .olbl { width:92px; flex:none; font-size:12px; opacity:.8; font-weight:700; }
   #pOpts .oset { display:flex; flex-wrap:wrap; gap:6px; }
   #pOpts .sw { width:28px; height:28px; border-radius:50%; border:2px solid #fff3; cursor:pointer; padding:0; position:relative; }
@@ -594,7 +595,7 @@
   <p id="musicHint" class="rules" style="margin:6px 0 0">🎵 Toque ou clique em qualquer lugar para ouvir o tema</p>
   <div class="rules">
     Jogo apartidário e imparcial: os dois lados têm as mesmas regras. Obra de paródia e ficção: personagens estilizados inspirados em figuras públicas, sem vínculo com partidos, campanhas ou pessoas citadas. Ninguém se machuca: quem é "atingido" só senta, cansado de tanto gritar. 🎺<br>
-    Atire com o mouse/toque · R gira a torcida · 1–4 poderes · 5–9 itens · Esc cancela · O progresso é salvo automaticamente neste navegador
+    <a href="https://github.com/rpossan/super-batalha-presida-remake/blob/main/PRIVACIDADE.md" target="_blank" rel="noopener" style="color:#7fd0ff">Política de Privacidade</a> · Atire com o mouse/toque · R gira a torcida · 1–4 poderes · 5–9 itens · Esc cancela · O progresso é salvo automaticamente neste navegador
   </div>
 </div>
 
@@ -742,6 +743,7 @@
       <div id="pAvatar"></div>
       <div class="pside"><label for="pNick">Seu nome</label><input id="pNick" maxlength="14" placeholder="Seu nick" autocomplete="off" spellcheck="false"><small id="pTag"></small><div id="pErr"></div></div>
     </div>
+    <label id="pConsent" class="hidden"><input type="checkbox" id="pConsentBox"> Li e aceito a <a href="https://github.com/rpossan/super-batalha-presida-remake/blob/main/PRIVACIDADE.md" target="_blank" rel="noopener">Política de Privacidade</a>: o jogo guarda o seu perfil e progresso e registra dados técnicos de acesso (país, aparelho, navegador).</label>
     <div id="pOpts"></div>
     <details id="pStats"><summary>📊 Estatísticas</summary><div id="pStatsBody"></div></details>
     <details id="pBackup"><summary>💾 Backup e transferência</summary>
@@ -750,6 +752,7 @@
       <textarea id="bkText" placeholder="Para restaurar, cole aqui o código de backup" spellcheck="false"></textarea>
       <div class="bkrow"><button class="btn" id="bkImport">⬆️ Importar código</button><label class="btn" style="cursor:pointer">📂 Importar arquivo<input type="file" id="bkFileIn" accept=".json,.txt,text/plain,application/json" hidden></label></div>
       <div id="bkMsg"></div>
+      <div class="bkrow"><button class="btn" id="pExport">⬇️ Baixar os meus dados (servidor)</button></div>
       <div class="bkrow"><button class="btn" id="pDelete" style="border-color:#ff5a4a;color:#ff9a8a">🗑 Excluir a minha conta e os meus dados</button></div>
     </details>
     <div class="actions"><button class="btn" id="pRandom">🎲 Aleatório</button><button class="btn primary" id="pSave">Salvar</button></div>
@@ -823,6 +826,7 @@ const SKILLS = [], SKILL_REQ = {}, LVT = {}, SKILL_TEXT = {};
 const SKILL_COST = [1, 2, 3];
 const STATS = { wins:0, losses:0, owins:0, olosses:0 };
 const RECORDS = { votes:0, best:{} };            // recordes do jogador (recorde de votos e melhores tempos "campanha/lado"): vão dentro do save
+const GAME_VERSION = "2.2.0", PRIVACY_VERSION = "2026-10";   // versão do jogo e da Política de Privacidade (mudar a política exige novo aceite)
 const PERSIST_CLOUD = SPBNet.mode === "supabase";   // com servidor configurado, o progresso fica na nuvem (e não no navegador)             // vitórias e derrotas em batalhas concluídas
 let SAVE_LOCK = false;                         // true durante a importação de backup (evita o autosave sobrescrever)
 let PROFILE = null;                            // perfil do jogador: { id, nick, av } (guardado à parte do progresso)
@@ -3194,6 +3198,16 @@ $("bkFile").onclick = () => {
 };
 $("bkImport").onclick = () => importBackup($("bkText").value);
 /* exclui o perfil, o save e o ranking do servidor e volta ao início (direito de exclusão) */
+$("pExport").onclick = async () => {
+  const msg = $("bkMsg"); msg.style.color = "#ff8a7a";
+  if (!PERSIST_CLOUD || Cloud.offlineMode) { msg.textContent = "Sem servidor: não há dados no servidor para baixar (use o backup)."; return; }
+  try {
+    const sb = await cloudClient(), r = await sb.rpc("export_my_data"); if (r.error) throw r.error;
+    const blob = new Blob([JSON.stringify(r.data, null, 1)], { type:"application/json" }), a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = "meus-dados-super-presida-batalha.json"; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    bkOk("Arquivo com os seus dados baixado.");
+  } catch (e) { msg.textContent = "Não foi possível baixar agora. Tente de novo."; }
+};
 $("pDelete").onclick = async () => {
   if (!confirm("Excluir a sua conta? O perfil, o progresso e o ranking serão apagados do servidor e do navegador. Isso não pode ser desfeito.")) return;
   const msg = $("bkMsg"); msg.style.color = "#ff8a7a";
@@ -3230,6 +3244,7 @@ function openProfile(mandatory) {
   $("profileTitle").textContent = PROFILE ? "Seu perfil" : "Crie o seu jogador";
   $("pSave").textContent = PROFILE ? "Salvar" : "Começar a jogar";
   $("profileClose").classList.toggle("hidden", profMandatory);
+  const needC = PERSIST_CLOUD && !Cloud.offlineMode && (!PROFILE || Cloud.needConsent); $("pConsent").classList.toggle("hidden", !needC); $("pConsentBox").checked = false;
   $("pNick").value = profDraft.nick; $("pErr").textContent = "";
   renderProfile(); renderProfileStats(); $("bkMsg").textContent = ""; $("bkText").value = ""; $("pBackup").open = false; $("pStats").open = false;
   $("profileModal").classList.remove("hidden");
@@ -3239,13 +3254,16 @@ function closeProfile() { if (profMandatory) return; $("profileModal").classList
 async function submitProfile() {
   const r = checkNick($("pNick").value);
   if (!r.nick) { $("pErr").textContent = r.err; return; }
+  const needC = PERSIST_CLOUD && !Cloud.offlineMode && (!PROFILE || Cloud.needConsent);
+  if (needC && !$("pConsentBox").checked) { $("pErr").textContent = "Marque o aceite da Política de Privacidade para continuar."; return; }
+  if (needC) Cloud.consentNow = PRIVACY_VERSION;
   const prev = PROFILE;
   PROFILE = { id:PROFILE ? PROFILE.id : (profDraft.id || genId()), nick:r.nick, av:cleanAv(profDraft.av) };
   if (PERSIST_CLOUD && !Cloud.offlineMode) {                         // o perfil mora no servidor: só fecha se salvar
     $("pSave").disabled = true; $("pErr").textContent = "Salvando…";
     try { await cloudProfile(true); }
-    catch (e) { PROFILE = prev; $("pSave").disabled = false; $("pErr").textContent = /nick/i.test(e.message || "") ? "Esse nome não é permitido. Escolha outro." : "Sem conexão com o servidor. Tente de novo."; return; }
-    $("pSave").disabled = false; Cloud.ready = true; saveGame();
+    catch (e) { PROFILE = prev; Cloud.consentNow = null; $("pSave").disabled = false; $("pErr").textContent = /nick/i.test(e.message || "") ? "Esse nome não é permitido. Escolha outro." : "Sem conexão com o servidor. Tente de novo."; return; }
+    $("pSave").disabled = false; Cloud.consentNow = null; Cloud.needConsent = false; Cloud.ready = true; saveGame(); cloudLogSession();
   } else saveProfile();
   profMandatory = false; $("profileModal").classList.add("hidden");
   renderProfileChip(); ui(); try { Sfx.coin(true); } catch (e) {}
@@ -3733,7 +3751,7 @@ $("onSides").addEventListener("click", e => { const b = e.target.closest("[data-
    Nuvem (Supabase): perfil, progresso, resultados do online e ranking
    (tudo opcional: sem servidor configurado, o jogo funciona normalmente)
    ================================================================ */
-const Cloud = { uid:null, synced:"", last:0, ready:false, offlineMode:false, dirty:false, saving:false, saveT:0, token:null, authSub:false };
+const Cloud = { consentNow:null, needConsent:false, sessionLogged:false, uid:null, synced:"", last:0, ready:false, offlineMode:false, dirty:false, saving:false, saveT:0, token:null, authSub:false };
 const PENDING_KEY = "spb_pending";               // único dado de jogo que pode ficar no navegador: alterações ainda não enviadas (apagado depois de sincronizar)
 async function cloudClient() {
   if (SPBNet.mode !== "supabase") return null;
@@ -3750,7 +3768,7 @@ async function cloudClient() {
 async function cloudProfile(force) {
   if (!PROFILE) return null; const sb = await cloudClient(); if (!sb) return null;
   const key = PROFILE.id + "|" + PROFILE.nick + "|" + JSON.stringify(PROFILE.av); if (!force && Cloud.synced === key) return sb;
-  const call = () => sb.rpc("upsert_profile", { p_nick:PROFILE.nick, p_avatar:PROFILE.av, p_code:PROFILE.id.slice(0, 4).toUpperCase(), p_friend:PROFILE.id });
+  const call = () => sb.rpc("upsert_profile", { p_nick:PROFILE.nick, p_avatar:PROFILE.av, p_code:PROFILE.id.slice(0, 4).toUpperCase(), p_friend:PROFILE.id, p_consent:Cloud.consentNow || null });
   let r = await call();
   if (r.error && /friend_id_taken/.test(r.error.message)) { PROFILE.id = genId(); saveProfile(); renderProfileChip(); r = await call(); }   // ID já usado por outro aparelho: gera um novo
   if (r.error) throw r.error;
@@ -3794,8 +3812,24 @@ async function cloudBoot() {
   try { pend = JSON.parse(storage.get(PENDING_KEY) || "null"); } catch (e) {}
   if (pend && pend.save && PROFILE && (!data || (pend.save.rev || 0) > (data.rev || 0))) { data = pend.save; Cloud.dirty = true; }   // havia alterações que não chegaram ao servidor
   if (data) applySave(data);
-  if (PROFILE) Cloud.ready = true;                           // sem perfil ainda (primeira vez): só libera os saves depois que o perfil for criado
+  if (PROFILE) { Cloud.ready = true; Cloud.needConsent = !(p && p.consent_version === PRIVACY_VERSION); }   // sem perfil ainda (primeira vez): só libera os saves depois que o perfil for criado
   if (Cloud.dirty) cloudSaveSoon(500); else storage.del(PENDING_KEY);
+}
+/* dados técnicos de acesso (mínimos): navegador e sistema só com a versão principal, nunca o texto completo do user-agent */
+function deviceInfo() {
+  const ua = navigator.userAgent || "", m = (re) => (ua.match(re) || [])[1] || "";
+  const os = /Windows/.test(ua) ? "Windows" : /Android/.test(ua) ? "Android" : /iPhone|iPad|iPod/.test(ua) ? "iOS" : /Mac OS X/.test(ua) ? "macOS" : /CrOS/.test(ua) ? "ChromeOS" : /Linux/.test(ua) ? "Linux" : "outro";
+  const osVer = os === "Android" ? m(/Android ([\d.]+)/) : os === "iOS" ? m(/OS ([\d_]+)/).replace(/_/g, ".") : os === "Windows" ? m(/Windows NT ([\d.]+)/) : os === "macOS" ? m(/Mac OS X ([\d_]+)/).replace(/_/g, ".") : "";
+  const [br, brVer] = /Edg\//.test(ua) ? ["Edge", m(/Edg\/(\d+)/)] : /OPR\//.test(ua) ? ["Opera", m(/OPR\/(\d+)/)] : /Firefox\//.test(ua) ? ["Firefox", m(/Firefox\/(\d+)/)] : /Chrome\//.test(ua) ? ["Chrome", m(/Chrome\/(\d+)/)] : /Safari\//.test(ua) ? ["Safari", m(/Version\/(\d+)/)] : ["outro", ""];
+  const tablet = /iPad|Tablet/.test(ua) || (/Android/.test(ua) && !/Mobile/.test(ua)), mobile = /Mobi|iPhone|Android.*Mobile/.test(ua);
+  return { device:tablet ? "tablet" : mobile ? "mobile" : "desktop", os, os_ver:osVer.split(".").slice(0, 2).join("."), browser:br, browser_ver:brVer,
+    screen:`${screen.width}x${screen.height}`, dpr:Math.round((window.devicePixelRatio || 1)*100)/100, lang:(navigator.language || "").slice(0, 10),
+    tz:(() => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch (e) { return ""; } })(), touch:(navigator.maxTouchPoints || 0) > 0,
+    cores:navigator.hardwareConcurrency || null, memory:navigator.deviceMemory || null, campaign:CAMP_ID, app_version:GAME_VERSION };
+}
+async function cloudLogSession() {
+  if (Cloud.sessionLogged || !PROFILE || !Cloud.ready || Cloud.needConsent) return; Cloud.sessionLogged = true;
+  try { const sb = await cloudClient(); const { error } = await sb.rpc("log_session", { p_info:deviceInfo() }); if (error) console.warn("log_session:", error.message); } catch (e) { console.warn("nuvem:", e.message || e); }
 }
 async function cloudReport(O, youWin, reason, verdict) {
   if (O.isBot || !O.opp) return;
@@ -3963,7 +3997,8 @@ activateCampaign("br2026");
 function startUI() {
   $("mute").textContent = muted ? "🔇" : "🔊"; $("musicBtn").classList.toggle("off", !Music.on);
   refreshShopButtons(); buildMenu(); renderProfileChip();
-  if (!PROFILE) openProfile(true);                          // primeira vez: cria o perfil antes de jogar
+  if (!PROFILE || Cloud.needConsent) openProfile(true);     // primeira vez (ou política nova): cria o perfil / aceita antes de jogar
+  else cloudLogSession();
 }
 function bootMsg(text, buttons) { $("bootText").textContent = text; $("bootBtns").classList.toggle("hidden", !buttons); }
 async function bootApp() {

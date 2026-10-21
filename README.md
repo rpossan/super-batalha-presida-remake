@@ -333,6 +333,8 @@ Para rodar localmente, abra o `index.html` no navegador. Para criar um cenário 
 
 ## 💾 Salvamento
 
+> Privacidade: veja a [Política de Privacidade](PRIVACIDADE.md) (o que é coletado, por quê, por quanto tempo e como excluir).
+
 Com o servidor configurado (Supabase), o **perfil e o progresso ficam na nuvem**, ligados a uma conta **anônima** (sem e-mail nem senha). O navegador guarda só o mínimo:
 
 | No navegador | Para quê |
@@ -378,7 +380,7 @@ com a chave Pix e o QR code:
   citados participou, patrocinou, aprovou ou tem qualquer relação com este projeto. Siglas, nomes e marcas
   pertencem aos seus respectivos titulares e são citados apenas de forma descritiva.
 - **Sem violência real.** Quem é "atingido" apenas senta, cansado de tanto gritar.
-- **Dados mínimos.** O jogo guarda na nuvem (Supabase) apenas o que você cria jogando: nick, avatar, progresso, estatísticas e resultados de duelos, ligados a uma conta anônima. Nick, avatar, votos, nível e rating aparecem no **ranking público**; o seu progresso completo (save) só você lê. No **modo online**, nick, avatar e ID também passam pelo serviço de tempo real (Supabase Realtime) para o adversário ver durante a partida. Você pode excluir tudo a qualquer momento pelo perfil.
+- **Dados mínimos e transparência.** A [Política de Privacidade](PRIVACIDADE.md) explica tudo. O jogo guarda na nuvem (Supabase) apenas o que você cria jogando: nick, avatar, progresso, estatísticas e resultados de duelos, ligados a uma conta anônima. Nick, avatar, votos, nível e rating aparecem no **ranking público**; o seu progresso completo (save) só você lê. No **modo online**, nick, avatar e ID também passam pelo serviço de tempo real (Supabase Realtime) para o adversário ver durante a partida. Ao abrir o jogo também são registrados **dados técnicos de acesso** (país aproximado, tipo de aparelho, sistema e navegador, tela, idioma e fuso; o IP só como hash diário, nunca o IP em si), guardados por **90 dias** e só legíveis pelo dono do projeto. É preciso **aceitar a política** para criar o perfil. Você pode **baixar** os seus dados ou **excluir** tudo a qualquer momento pelo perfil.
 - **Jogadores simulados.** Quando não há ninguém online, a partida aleatória é contra um jogador simulado (controlado pelo próprio jogo), e a tela final avisa isso.
 - **Pedidos de ajuste ou remoção** podem ser feitos abrindo uma *issue* neste repositório ou contatando
   o autor, e serão analisados com atenção.
